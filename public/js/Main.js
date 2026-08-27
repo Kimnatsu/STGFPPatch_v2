@@ -667,13 +667,13 @@
     var same = S.pvps.filter(function (x) {
       return String(x.charId) === String(g.charId) && String(x.date) === String(g.date);
     });
+    /* 내역이 없는 타입(버프/너프/기능수정)은 섹션 자체를 미노출 */
     var sections = ['buff', 'nerf', 'fix'].map(function (k) {
       var groups = same.filter(function (x) { return x.type === k; });
-      var body = groups.length
-        ? '<ul class="pvp-list">' + groups.map(function (gr) {
-            return gr.items.map(function (it) { return '<li><small>' + UI.escBr(it.text || '') + '</small></li>'; }).join('');
-          }).join('') + '</ul>'
-        : '<p class="pvp-empty">' + BNAME[k] + ' 내역이 없습니다.</p>';
+      if (!groups.length) return '';
+      var body = '<ul class="pvp-list">' + groups.map(function (gr) {
+          return gr.items.map(function (it) { return '<li><small>' + UI.escBr(it.text || '') + '</small></li>'; }).join('');
+        }).join('') + '</ul>';
       return '<div class="pvp-sec pvp-sec--' + k + '"><h4><span class="badge badge--' + k + '">' + BSYM[k] + '</span> ' + BNAME[k] + '</h4>' + body + '</div>';
     }).join('');
     UI.openModal({
