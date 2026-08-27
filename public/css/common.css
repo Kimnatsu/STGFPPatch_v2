@@ -535,9 +535,22 @@ body.body-lock{
 /* ---------- 스크롤 리빌 ---------- */
 .rv{opacity:0;transform:translateY(16px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
 .rv.on{opacity:1;transform:none}
+
+/* ---------- 페이지 전환 (빠르고 매끄럽게) ----------
+   단색 베일(#pageVeil)은 이 스타일시트가 적용되는 순간(=스타일된 콘텐츠가 준비된 시점)
+   즉시 빠르게 사라지고, 본문은 살짝 상승하며 페이드 인 된다.
+   → 흰 화면/무스타일 노출 없이 한 번에 부드럽게 전환된다. */
+#pageVeil{animation:veilOut .2s ease .02s forwards}
+@keyframes veilOut{to{opacity:0;visibility:hidden}}
+body{animation:pageIn .3s var(--ease) both}
+@keyframes pageIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
 @media (prefers-reduced-motion:reduce){
   .rv{opacity:1;transform:none;transition:none}
   .bimg,.bimg.on,.tick-track{animation:none!important;transition:none!important}
+  /* 모션 최소화 환경 — 전환 애니메이션 비활성화, 베일은 즉시 제거 */
+  #pageVeil{animation:none!important;opacity:0!important;visibility:hidden!important}
+  body{animation:none!important}
 }
 
 /* ---------- 푸터 ---------- */
