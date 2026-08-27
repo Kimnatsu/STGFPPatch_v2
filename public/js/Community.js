@@ -80,6 +80,8 @@
 
   /* ================= 패치노트 ================= */
   var patchMonth = 'all';
+  var patchPage = 1;
+  var PATCH_PAGE_SIZE = 10; /* 한 페이지 노출 건수 — 10개 초과 시 페이지네이션 동작 */
   function renderMonthFilter() {
     var months = {};
     S.patches.forEach(function (p) {
@@ -88,13 +90,14 @@
     });
     var keys = Object.keys(months).sort().reverse();
     var box = $('monthList');
-    box.innerHTML = '<button class="month-item' + (patchMonth === 'all' ? ' is-on' : '') + '" data-m="all" type="button">전체 <small>' + S.patches.length + '</small></button>' +
+    box.innerHTML = '<button class="month-item' + (patchMonth === 'all' ? ' is-on' : '') + '" data-m="all" type="button">전체</button>' +
       keys.map(function (k) {
-        return '<button class="month-item' + (patchMonth === k ? ' is-on' : '') + '" data-m="' + k + '" type="button">' + k.replace('-', '년 ') + '월 <small>' + months[k] + '</small></button>';
+        return '<button class="month-item' + (patchMonth === k ? ' is-on' : '') + '" data-m="' + k + '" type="button">' + k.replace('-', '년 ') + '월</button>';
       }).join('');
     box.querySelectorAll('.month-item').forEach(function (b) {
       b.addEventListener('click', function () {
         patchMonth = b.getAttribute('data-m');
+        patchPage = 1; /* 월이 바뀌면 첫 페이지로 */
         renderMonthFilter();
         renderPatchList();
       });
@@ -102,9 +105,9 @@
     /* 모바일 드롭다운 — 칩 목록과 동일한 옵션 생성 + 선택값 동기화 */
     var sel = $('monthSelect');
     if (sel) {
-      sel.innerHTML = '<option value="all">전체 (' + S.patches.length + '건)</option>' +
+      sel.innerHTML = '<option value="all">전체</option>' +
         keys.map(function (k) {
-          return '<option value="' + k + '">' + k.replace('-', '년 ') + '월 (' + months[k] + '건)</option>';
+          return '<option value="' + k + '">' + k.replace('-', '년 ') + '월</option>';
         }).join('');
       sel.value = patchMonth;
     }
@@ -114,7 +117,12 @@
     var list = patchMonth === 'all' ? S.patches : S.patches.filter(function (p) { return String(p.date || '').slice(0, 7) === patchMonth; });
     $('monthFilter').style.display = '';
     if (!list.length) { UI.empty(el, { title: '등록된 패치노트가 없습니다.' }); return; }
-    el.innerHTML = '<div class="pn-list">' + list.map(function (p) {
+    /* 페이지네이션 — PATCH_PAGE_SIZE(10개) 초과 시에만 동작 */
+    var totalPages = Math.ceil(list.length / PATCH_PAGE_SIZE);
+    if (patchPage > totalPages) patchPage = totalPages;
+    if (patchPage < 1) patchPage = 1;
+    var pageList = list.slice((patchPage - 1) * PATCH_PAGE_SIZE, patchPage * PATCH_PAGE_SIZE);
+    el.innerHTML = '<div class="pn-list">' + pageList.map(function (p) {
       var d = String(p.date || '').split('-');
       return '<div class="pn-row" data-view="' + UI.esc(p.docId) + '" tabindex="0" role="button" aria-label="' + UI.esc(p.title) + '">' +
         '<div class="pn-date"><b>' + UI.esc(d[2] || '') + '</b><small>' + UI.esc((d[0] || '').slice(2) + '.' + (d[1] || '')) + '</small></div>' +
@@ -122,9 +130,49 @@
         '<div class="pn-meta"><span>' + UI.esc(p.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(p.date)) + '</span>' +
         (UI.isNew(p.date) ? '<span class="lst-new">NEW</span>' : '') + '</div></div>' +
         '<span class="pn-arrow">›</span></div>';
-    }).join('') + '</div>';
+    }).join('') + '</div>' + pageNavHTML(patchPage, totalPages);
     bindView(el, 'patch');
+    bindPageNav(el);
     UI.watchReveals(el);
+  }
+  /* 페이지 번호 시퀀스 — 페이지가 많으면 1 … 주변 … 마지막 축약 */
+  function pageNums(cur, total) {
+    var arr = [];
+    if (total <= 7) { for (var i = 1; i <= total; i++) arr.push(i); return arr; }
+    arr.push(1);
+    if (cur > 3) arr.push('dots');
+    for (var j = Math.max(2, cur - 1); j <= Math.min(total - 1, cur + 1); j++) arr.push(j);
+    if (cur < total - 2) arr.push('dots');
+    arr.push(total);
+    return arr;
+  }
+  function pageNavHTML(cur, totalPages) {
+    if (totalPages < 2) return ''; /* 한 페이지로 충분하면 미노출 */
+    var chevL = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5l-7 7 7 7"/></svg>';
+    var chevR = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 5l7 7-7 7"/></svg>';
+    var h = '<nav class="pg-nav" aria-label="패치노트 페이지 이동">';
+    h += '<button class="pg-btn pg-nav-arrow" type="button" data-pg="prev" aria-label="이전 페이지"' + (cur === 1 ? ' disabled' : '') + '>' + chevL + '</button>';
+    pageNums(cur, totalPages).forEach(function (n) {
+      if (n === 'dots') { h += '<span class="pg-dots" aria-hidden="true">…</span>'; return; }
+      h += '<button class="pg-btn' + (n === cur ? ' is-on' : '') + '" type="button" data-pg="' + n + '" aria-label="' + n + ' 페이지로 이동"' + (n === cur ? ' aria-current="page"' : '') + '>' + n + '</button>';
+    });
+    h += '<button class="pg-btn pg-nav-arrow" type="button" data-pg="next" aria-label="다음 페이지"' + (cur === totalPages ? ' disabled' : '') + '>' + chevR + '</button>';
+    return h + '</nav>';
+  }
+  function bindPageNav(root) {
+    root.querySelectorAll('.pg-btn').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (b.disabled || b.classList.contains('is-on')) return;
+        var v = b.getAttribute('data-pg');
+        if (v === 'prev') patchPage = Math.max(1, patchPage - 1);
+        else if (v === 'next') patchPage = patchPage + 1;
+        else patchPage = parseInt(v, 10) || 1;
+        renderPatchList();
+        /* 목록 상단으로 부드럽게 스크롤 (고정 헤더 고려) */
+        var y = root.getBoundingClientRect().top + window.pageYOffset - 90;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+      });
+    });
   }
   function renderPatchDetail(id) {
     var p = S.patches.find(function (x) { return x.docId === id; });
@@ -532,6 +580,7 @@
     var ms = $('monthSelect');
     if (ms) ms.addEventListener('change', function (e) {
       patchMonth = e.target.value;
+      patchPage = 1; /* 월이 바뀌면 첫 페이지로 */
       renderMonthFilter();
       renderPatchList();
     });
