@@ -621,6 +621,9 @@
       var groups = S.pvps.filter(function (g) {
         return g.type === kind && (!pvpSelDate || String(g.date) === pvpSelDate);
       });
+      /* 선택 날짜 기준 컬럼별 인원 카운트 */
+      var cntEl = $(kind + 'Cnt');
+      if (cntEl) cntEl.textContent = groups.length + '명';
       if (!groups.length) {
         colEl.innerHTML = '<div class="empty" style="padding:18px 10px"><p>' + BNAME[kind] + ' 내역이 없습니다.</p></div>';
         return;

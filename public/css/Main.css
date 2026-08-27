@@ -303,6 +303,17 @@
 .pvp-col--nerf .pvp-col-title{color:var(--red)}
 .pvp-col--fix .pvp-col-title{color:#d2a679}
 .pvp-col-en{font-family:var(--font-b);font-size:10.5px;font-weight:800;letter-spacing:1.2px;color:var(--text-3);margin-left:auto;text-transform:uppercase}
+/* 컬럼 인원 카운트 — 선택 날짜 기준 몇 명인지 노출 */
+.pvp-col-cnt{
+  margin-left:auto;font-family:var(--font-b);font-size:11px;font-weight:900;letter-spacing:.3px;line-height:1.5;
+  color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--gold) 40%,transparent);
+  border-radius:99px;padding:2.5px 10px;transition:transform .25s var(--ease);
+}
+.pvp-col-cnt ~ .pvp-col-en{margin-left:8px}
+.pvp-col--buff .pvp-col-cnt{color:var(--green);background:color-mix(in srgb,var(--green) 13%,transparent);border-color:color-mix(in srgb,var(--green) 40%,transparent)}
+.pvp-col--nerf .pvp-col-cnt{color:var(--red);background:color-mix(in srgb,var(--red) 13%,transparent);border-color:color-mix(in srgb,var(--red) 40%,transparent)}
+.pvp-col--fix .pvp-col-cnt{color:#d2a679;background:color-mix(in srgb,#d2a679 15%,transparent);border-color:color-mix(in srgb,#d2a679 42%,transparent)}
 .pvp-col-body{padding:10px}
 /* 컬럼 내 아이콘 그리드 — 박스당 가로 4개씩 */
 .pvp-col-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 6px;justify-items:center;align-items:center;align-content:start}
