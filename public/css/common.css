@@ -213,12 +213,12 @@ body.fonticon-ok .gnb-font-icon svg{display:none}
 .banner-tag.swap{animation:tagSwap .55s var(--ease)}
 @keyframes tagSwap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .banner-tag-txt{
-  font-family:var(--font-d);font-size:clamp(24px,4.4vw,44px);color:#fff;letter-spacing:2px;line-height:1.28;
+  font-family:var(--font-d);font-size:clamp(24px,4.4vw,44px);color:#fff;letter-spacing:0;line-height:1.28;
   text-shadow:0 2px 3px rgba(0,0,0,.9),0 6px 22px rgba(0,0,0,.6);
   display:inline-block;position:relative;padding-bottom:7px;
 }
 .banner-tag-txt::after{content:"";position:absolute;left:2px;bottom:0;width:52px;height:4px;background:var(--gold);transform:skewX(-18deg)}
-.banner-tag-sub{display:block;color:#ffd479;font-size:13px;font-weight:900;letter-spacing:1.5px;margin-top:7px;text-shadow:0 2px 6px rgba(0,0,0,.85)}
+.banner-tag-sub{display:block;color:#ffd479;font-size:13px;font-weight:900;letter-spacing:.5px;margin-top:5px;text-shadow:0 2px 6px rgba(0,0,0,.85)}
 .banner-dots{position:absolute;right:16px;bottom:14px;z-index:4;display:flex;gap:6px}
 .bdot{width:9px;height:9px;border-radius:99px;background:rgba(255,255,255,.4);transition:.25s;padding:0}
 .bdot.on{background:var(--gold);width:22px}
