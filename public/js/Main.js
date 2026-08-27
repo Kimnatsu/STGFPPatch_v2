@@ -82,11 +82,11 @@
     });
     return order;
   }
-  /* 타입 뱃지 — 1개면 우측 하단, 2개면 좌·우 하단, 3개면 좌측·중앙·우측 하단에 반쯤 걸쳐 노출 */
+  /* 타입 뱃지 — 1개면 우측 하단, 2개면 중앙·우측 하단, 3개면 좌측·중앙·우측 하단에 반쯤 걸쳐 노출 */
   function orbBadgesHTML(types) {
     var canon = ['buff', 'nerf', 'fix'].filter(function (t) { return (types || []).indexOf(t) > -1; });
     if (!canon.length) canon = ['fix'];
-    var pos = canon.length === 1 ? ['r'] : canon.length === 2 ? ['l', 'r'] : ['l', 'c', 'r'];
+    var pos = canon.length === 1 ? ['r'] : canon.length === 2 ? ['c', 'r'] : ['l', 'c', 'r'];
     return canon.map(function (t, i) {
       return '<span class="orb-badge badge badge--' + t + ' orb-b--' + pos[i] + '" aria-hidden="true">' + BSYM[t] + '</span>';
     }).join('');
