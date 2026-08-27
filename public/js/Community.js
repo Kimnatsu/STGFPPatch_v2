@@ -81,7 +81,7 @@
   /* ================= 패치노트 ================= */
   var patchMonth = 'all';
   var patchPage = 1;
-  var PATCH_PAGE_SIZE = 10; /* 한 페이지 노출 건수 — 10개 초과 시 페이지네이션 동작 */
+  var PATCH_PAGE_SIZE = 10; /* 한 페이지 노출 건수 — 페이지네이션은 항상 노출 */
   function renderMonthFilter() {
     var months = {};
     S.patches.forEach(function (p) {
@@ -117,7 +117,7 @@
     var list = patchMonth === 'all' ? S.patches : S.patches.filter(function (p) { return String(p.date || '').slice(0, 7) === patchMonth; });
     $('monthFilter').style.display = '';
     if (!list.length) { UI.empty(el, { title: '등록된 패치노트가 없습니다.' }); return; }
-    /* 페이지네이션 — PATCH_PAGE_SIZE(10개) 초과 시에만 동작 */
+    /* 페이지네이션 — 10개 이하라도 항상 노출 */
     var totalPages = Math.ceil(list.length / PATCH_PAGE_SIZE);
     if (patchPage > totalPages) patchPage = totalPages;
     if (patchPage < 1) patchPage = 1;
@@ -132,7 +132,12 @@
         '<span class="pn-arrow">›</span></div>';
     }).join('') + '</div>' + pageNavHTML(patchPage, totalPages);
     bindView(el, 'patch');
-    bindPageNav(el);
+    bindPageNav(el, function (v) {
+      if (v === 'prev') patchPage = Math.max(1, patchPage - 1);
+      else if (v === 'next') patchPage = patchPage + 1;
+      else patchPage = parseInt(v, 10) || 1;
+      renderPatchList();
+    });
     UI.watchReveals(el);
   }
   /* 페이지 번호 시퀀스 — 페이지가 많으면 1 … 주변 … 마지막 축약 */
@@ -147,10 +152,10 @@
     return arr;
   }
   function pageNavHTML(cur, totalPages) {
-    if (totalPages < 2) return ''; /* 한 페이지로 충분하면 미노출 */
+    /* 한 페이지뿐이어도 항상 노출 */
     var chevL = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5l-7 7 7 7"/></svg>';
     var chevR = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 5l7 7-7 7"/></svg>';
-    var h = '<nav class="pg-nav" aria-label="패치노트 페이지 이동">';
+    var h = '<nav class="pg-nav" aria-label="페이지 이동">';
     h += '<button class="pg-btn pg-nav-arrow" type="button" data-pg="prev" aria-label="이전 페이지"' + (cur === 1 ? ' disabled' : '') + '>' + chevL + '</button>';
     pageNums(cur, totalPages).forEach(function (n) {
       if (n === 'dots') { h += '<span class="pg-dots" aria-hidden="true">…</span>'; return; }
@@ -159,15 +164,12 @@
     h += '<button class="pg-btn pg-nav-arrow" type="button" data-pg="next" aria-label="다음 페이지"' + (cur === totalPages ? ' disabled' : '') + '>' + chevR + '</button>';
     return h + '</nav>';
   }
-  function bindPageNav(root) {
+  /* onNav(pageKey) — 'prev' | 'next' | 페이지 번호 문자열 */
+  function bindPageNav(root, onNav) {
     root.querySelectorAll('.pg-btn').forEach(function (b) {
       b.addEventListener('click', function () {
         if (b.disabled || b.classList.contains('is-on')) return;
-        var v = b.getAttribute('data-pg');
-        if (v === 'prev') patchPage = Math.max(1, patchPage - 1);
-        else if (v === 'next') patchPage = patchPage + 1;
-        else patchPage = parseInt(v, 10) || 1;
-        renderPatchList();
+        onNav(b.getAttribute('data-pg'));
         /* 목록 상단으로 부드럽게 스크롤 (고정 헤더 고려) */
         var y = root.getBoundingClientRect().top + window.pageYOffset - 90;
         window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
@@ -311,6 +313,8 @@
 
   /* ================= 게시판 ================= */
   var B = { cat: 'all', view: 'list', sort: 'new' };
+  var boardPage = 1;
+  var BOARD_PAGE_SIZE = 10;
   function sortItems(list, sort) {
     var arr = list.slice();
     if (sort === 'like') arr.sort(function (a, b) { return (b.likeCount || 0) - (a.likeCount || 0); });
@@ -329,16 +333,27 @@
     if (wt) wt.style.display = '';
     var list = boardListFiltered();
     if (!list.length) { UI.empty(el, { title: '게시글이 없습니다.', desc: B.cat === 'all' ? '첫 게시글의 주인공이 되어보세요.' : '\'' + B.cat + '\' 카테고리에 글이 없습니다.' }); return; }
+    /* 페이지네이션 — 10개 이하라도 항상 노출 */
+    var totalPages = Math.ceil(list.length / BOARD_PAGE_SIZE);
+    if (boardPage > totalPages) boardPage = totalPages;
+    if (boardPage < 1) boardPage = 1;
+    var pageList = list.slice((boardPage - 1) * BOARD_PAGE_SIZE, boardPage * BOARD_PAGE_SIZE);
     if (B.view === 'card') {
-      el.innerHTML = '<div class="cards cards--board">' + list.map(function (b) {
+      el.innerHTML = '<div class="cards cards--board">' + pageList.map(function (b) {
         return cardHTML({ id: b.docId, badgeHTML: catBadge(b.category), title: b.title, author: b.author, date: b.date, image: b.images && b.images[0], likeCount: b.likeCount, commentCount: b.commentCount });
-      }).join('') + '</div>';
+      }).join('') + '</div>' + pageNavHTML(boardPage, totalPages);
     } else {
-      el.innerHTML = '<div class="pn-list"><ul class="lst">' + list.map(function (b) {
+      el.innerHTML = '<div class="pn-list"><ul class="lst">' + pageList.map(function (b) {
         return listRow({ id: b.docId, badgeHTML: catBadge(b.category), title: b.title, author: b.author, date: b.date, ts: b.ts });
-      }).join('') + '</ul></div>';
+      }).join('') + '</ul></div>' + pageNavHTML(boardPage, totalPages);
     }
     bindView(el, 'board');
+    bindPageNav(el, function (v) {
+      if (v === 'prev') boardPage = Math.max(1, boardPage - 1);
+      else if (v === 'next') boardPage = boardPage + 1;
+      else boardPage = parseInt(v, 10) || 1;
+      renderBoardList();
+    });
     UI.watchReveals(el);
   }
   function renderBoardDetail(id) {
@@ -372,6 +387,8 @@
 
   /* ================= 이벤트 ================= */
   var E = { cat: 'all', view: 'card', sort: 'new' };
+  var eventPage = 1;
+  var EVENT_PAGE_SIZE = 10;
   function eventListFiltered() {
     var list = E.cat === 'all' ? S.events : S.events.filter(function (e) { return e.status === E.cat; });
     return sortItems(list, E.sort);
@@ -388,21 +405,32 @@
       UI.empty(el, { title: E.cat === 'ing' ? '진행 중인 이벤트가 없습니다.' : E.cat === 'end' ? '종료된 이벤트가 없습니다.' : '이벤트가 없습니다.' });
       return;
     }
+    /* 페이지네이션 — 10개 이하라도 항상 노출 */
+    var totalPages = Math.ceil(list.length / EVENT_PAGE_SIZE);
+    if (eventPage > totalPages) eventPage = totalPages;
+    if (eventPage < 1) eventPage = 1;
+    var pageList = list.slice((eventPage - 1) * EVENT_PAGE_SIZE, eventPage * EVENT_PAGE_SIZE);
     if (E.view === 'card') {
-      el.innerHTML = '<div class="cards cards--event">' + list.map(function (e) {
+      el.innerHTML = '<div class="cards cards--event">' + pageList.map(function (e) {
         return cardHTML({
           id: e.docId,
           badgeHTML: e.status === 'ing' ? '<span class="badge badge--ing">진행중</span>' : '<span class="badge badge--end">종료됨</span>',
           title: e.title, author: e.author, date: e.date, image: e.image, likeCount: e.likeCount, commentCount: e.commentCount,
           period: evPeriod(e)
         });
-      }).join('') + '</div>';
+      }).join('') + '</div>' + pageNavHTML(eventPage, totalPages);
     } else {
-      el.innerHTML = '<div class="pn-list"><ul class="lst">' + list.map(function (e) {
+      el.innerHTML = '<div class="pn-list"><ul class="lst">' + pageList.map(function (e) {
         return listRow({ id: e.docId, badgeHTML: e.status === 'ing' ? '<span class="badge badge--ing">진행중</span>' : '<span class="badge badge--end">종료됨</span>', title: e.title, author: e.author, date: e.date, ts: e.ts });
-      }).join('') + '</ul></div>';
+      }).join('') + '</ul></div>' + pageNavHTML(eventPage, totalPages);
     }
     bindView(el, 'event');
+    bindPageNav(el, function (v) {
+      if (v === 'prev') eventPage = Math.max(1, eventPage - 1);
+      else if (v === 'next') eventPage = eventPage + 1;
+      else eventPage = parseInt(v, 10) || 1;
+      renderEventList();
+    });
     UI.watchReveals(el);
   }
   function renderEventDetail(id) {
@@ -531,6 +559,7 @@
           document.querySelectorAll('#boardCats .chip').forEach(function (x) {
             x.classList.toggle('is-on', x.getAttribute('data-cat') === 'all');
           });
+          boardPage = 1; /* 새 글이 맨 앞에 오도록 첫 페이지로 */
           renderBoardList();
           UI.toast(res.remote ? '게시글이 등록되었습니다.' : '임시 저장되었습니다. (서버 연결 실패)', res.remote ? 'ok' : 'err');
         })
@@ -546,6 +575,7 @@
     document.querySelectorAll('#boardCats .chip').forEach(function (c) {
       c.addEventListener('click', function () {
         B.cat = c.getAttribute('data-cat');
+        boardPage = 1; /* 조건이 바뀌면 첫 페이지로 */
         document.querySelectorAll('#boardCats .chip').forEach(function (x) { x.classList.toggle('is-on', x === c); });
         renderBoardList();
       });
@@ -553,17 +583,19 @@
     document.querySelectorAll('#boardToolbar .seg-btn').forEach(function (c) {
       c.addEventListener('click', function () {
         B.view = c.getAttribute('data-view');
+        boardPage = 1;
         document.querySelectorAll('#boardToolbar .seg-btn').forEach(function (x) { x.classList.toggle('is-on', x === c); });
         renderBoardList();
       });
     });
-    $('boardSort').addEventListener('change', function (e) { B.sort = e.target.value; renderBoardList(); });
+    $('boardSort').addEventListener('change', function (e) { B.sort = e.target.value; boardPage = 1; renderBoardList(); });
     var wb = $('boardWriteBtn');
     if (wb) wb.addEventListener('click', openBoardWrite);
 
     document.querySelectorAll('#eventCats .chip').forEach(function (c) {
       c.addEventListener('click', function () {
         E.cat = c.getAttribute('data-cat');
+        eventPage = 1; /* 조건이 바뀌면 첫 페이지로 */
         document.querySelectorAll('#eventCats .chip').forEach(function (x) { x.classList.toggle('is-on', x === c); });
         renderEventList();
       });
@@ -571,11 +603,12 @@
     document.querySelectorAll('#eventToolbar .seg-btn').forEach(function (c) {
       c.addEventListener('click', function () {
         E.view = c.getAttribute('data-view');
+        eventPage = 1;
         document.querySelectorAll('#eventToolbar .seg-btn').forEach(function (x) { x.classList.toggle('is-on', x === c); });
         renderEventList();
       });
     });
-    $('eventSort').addEventListener('change', function (e) { E.sort = e.target.value; renderEventList(); });
+    $('eventSort').addEventListener('change', function (e) { E.sort = e.target.value; eventPage = 1; renderEventList(); });
     /* 모바일 월별 드롭다운 */
     var ms = $('monthSelect');
     if (ms) ms.addEventListener('change', function (e) {
