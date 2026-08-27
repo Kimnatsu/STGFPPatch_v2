@@ -67,6 +67,31 @@
   var BNAME = { buff: '버프', nerf: '너프', fix: '기능수정' };
   var BSYM = { buff: '▲', nerf: '▼', fix: '✦' };
 
+  /* 같은 캐릭터의 버프/너프/기능수정 그룹을 하나의 아이콘으로 합침 (등장 순서 유지) */
+  function mergePvpByChar(groups) {
+    var map = {}, order = [];
+    (groups || []).forEach(function (g) {
+      var key = g.charId != null ? String(g.charId) : ('name:' + (g.name || g.docId));
+      if (!map[key]) {
+        map[key] = { charId: g.charId, name: g.name, image: g.image, date: g.date, types: [], groups: [] };
+        order.push(map[key]);
+      }
+      var m = map[key];
+      if (m.types.indexOf(g.type) < 0) m.types.push(g.type);
+      m.groups.push(g);
+    });
+    return order;
+  }
+  /* 타입 뱃지 — 1개면 우측 하단, 2개면 좌·우 하단, 3개면 좌측·중앙·우측 하단에 반쯤 걸쳐 노출 */
+  function orbBadgesHTML(types) {
+    var canon = ['buff', 'nerf', 'fix'].filter(function (t) { return (types || []).indexOf(t) > -1; });
+    if (!canon.length) canon = ['fix'];
+    var pos = canon.length === 1 ? ['r'] : canon.length === 2 ? ['l', 'r'] : ['l', 'c', 'r'];
+    return canon.map(function (t, i) {
+      return '<span class="orb-badge badge badge--' + t + ' orb-b--' + pos[i] + '" aria-hidden="true">' + BSYM[t] + '</span>';
+    }).join('');
+  }
+
   /* ================= 목록 행 (홈 공용) ================= */
   function rowHTML(o) {
     return '<li class="lst-row" data-go="' + UI.esc(o.page) + '" tabindex="0" role="button" aria-label="' + UI.esc(o.title) + '">' +
@@ -123,30 +148,33 @@
       bindRows(pl);
     }
 
-    /* 2) PvP 패치 — 최신 날짜 아이콘 그리드 (데스크톱 12 / 모바일 8) */
+    /* 2) PvP 패치 — 최신 날짜 아이콘 그리드 (데스크톱 12 / 모바일 8)
+       같은 캐릭터의 버프/너프/기능수정은 아이콘 하나로 합치고,
+       타입 뱃지를 좌측 하단·중앙 하단·우측 하단에 반쯤 걸쳐 노출 */
     var pg = $('homePvpGrid');
-    var bcls = { buff: 'badge--buff', nerf: 'badge--nerf', fix: 'badge--fix' };
-    var orbs = S.pvps.slice(0, 12);
+    var dayGroups = S.pvps;
     if (S.pvps.length) {
       var d0 = String(S.pvps[0].date || '');
-      orbs = S.pvps.filter(function (g) { return String(g.date) === d0; }).slice(0, 12);
+      dayGroups = S.pvps.filter(function (g) { return String(g.date) === d0; });
     }
+    var orbs = mergePvpByChar(dayGroups).slice(0, 12);
     if (!orbs.length) UI.empty(pg, { title: 'PvP 패치 내역이 없습니다.' });
     else {
       pg.innerHTML = orbs.map(function (o, i) {
         var c = o.charId != null ? findChar(o.charId) : null;
         var nm = (c && c.name) || o.name || ('No.' + o.charId);
         var img = (c && c.image) || o.image || UI.PLACEHOLDER_IMG;
-        return '<button class="orb" type="button" data-i="' + i + '" aria-label="' + UI.esc(nm) + ' — ' + BNAME[o.type] + '">' +
+        var label = o.types.map(function (t) { return BNAME[t] || '수정'; }).join('·');
+        return '<button class="orb" type="button" data-i="' + i + '" aria-label="' + UI.esc(nm) + ' — ' + UI.esc(label) + '">' +
           '<span class="orb-img"><img src="' + UI.esc(img) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">' +
-          '<span class="orb-badge badge ' + (bcls[o.type] || 'badge--fix') + '" aria-hidden="true">' + (BSYM[o.type] || '✦') + '</span></span>' +
+          orbBadgesHTML(o.types) + '</span>' +
           '<span class="orb-name">' + UI.esc(nm) + '</span></button>';
       }).join('');
       pg.querySelectorAll('.orb').forEach(function (b) {
         b.addEventListener('click', function () {
           var o = orbs[Number(b.getAttribute('data-i'))];
           route('pvp');
-          openPvpPatchDetail(o);
+          openPvpPatchDetail(o.groups[0]);
         });
       });
     }
