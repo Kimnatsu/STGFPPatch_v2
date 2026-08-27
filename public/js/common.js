@@ -265,6 +265,9 @@ window.UI = (function () {
     if (!tabs) return;
     var items = navForPage();
     if (items === NAV) items = NAV.slice(0, 4);
+    /* 탭 개수만큼 1열로 분할 — 커뮤니티(5탭)가 4열 그리드에 밀려 2행으로 꺾이던 문제 방지 */
+    tabs.style.gridTemplateColumns = 'repeat(' + items.length + ', minmax(0,1fr))';
+    tabs.classList.toggle('cols5', items.length === 5);
     tabs.innerHTML = items.map(function (n) {
       var label = (n.tabLabel && n.tabLabel[LANG]) || t(n.key);
       return '<a class="btab' + (n.exit ? ' btab--exit' : '') + '" data-nav="' + n.key + '" href="' + n.page + n.hash + '" aria-label="' + t(n.key) + '">' + n.icon + '<span>' + label + '</span></a>';
