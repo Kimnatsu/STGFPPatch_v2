@@ -540,17 +540,22 @@ body.body-lock{
    단색 베일(#pageVeil)은 이 스타일시트가 적용되는 순간(=스타일된 콘텐츠가 준비된 시점)
    즉시 빠르게 사라지고, 본문은 살짝 상승하며 페이드 인 된다.
    → 흰 화면/무스타일 노출 없이 한 번에 부드럽게 전환된다. */
+/* ★ body에는 transform을 쓰지 않음 — 조상 transform은 position:fixed의 기준을
+   뷰포트에서 body로 바꿔 모바일 하단 탭·드로어·팝업의 고정을 깨뜨린다.
+   body는 opacity만 페이드하고, 상승 효과는 fixed 요소의 조상이 아닌 main/푸터로 옮긴다. */
 #pageVeil{animation:veilOut .2s ease .02s forwards}
 @keyframes veilOut{to{opacity:0;visibility:hidden}}
-body{animation:pageIn .3s var(--ease) both}
-@keyframes pageIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+body{animation:pageIn .24s ease both}
+@keyframes pageIn{from{opacity:0}to{opacity:1}}
+@keyframes pageRise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+main,.app-footer{animation:pageRise .3s var(--ease) both}
 
 @media (prefers-reduced-motion:reduce){
   .rv{opacity:1;transform:none;transition:none}
   .bimg,.bimg.on,.tick-track{animation:none!important;transition:none!important}
   /* 모션 최소화 환경 — 전환 애니메이션 비활성화, 베일은 즉시 제거 */
   #pageVeil{animation:none!important;opacity:0!important;visibility:hidden!important}
-  body{animation:none!important}
+  body,main,.app-footer{animation:none!important}
 }
 
 /* ---------- 푸터 ---------- */
