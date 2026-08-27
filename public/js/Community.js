@@ -99,6 +99,15 @@
         renderPatchList();
       });
     });
+    /* 모바일 드롭다운 — 칩 목록과 동일한 옵션 생성 + 선택값 동기화 */
+    var sel = $('monthSelect');
+    if (sel) {
+      sel.innerHTML = '<option value="all">전체 (' + S.patches.length + '건)</option>' +
+        keys.map(function (k) {
+          return '<option value="' + k + '">' + k.replace('-', '년 ') + '월 (' + months[k] + '건)</option>';
+        }).join('');
+      sel.value = patchMonth;
+    }
   }
   function renderPatchList() {
     var el = $('patchContent');
@@ -519,6 +528,13 @@
       });
     });
     $('eventSort').addEventListener('change', function (e) { E.sort = e.target.value; renderEventList(); });
+    /* 모바일 월별 드롭다운 */
+    var ms = $('monthSelect');
+    if (ms) ms.addEventListener('change', function (e) {
+      patchMonth = e.target.value;
+      renderMonthFilter();
+      renderPatchList();
+    });
   }
 
   /* ================= 부팅 ================= */
