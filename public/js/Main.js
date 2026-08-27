@@ -1,6 +1,6 @@
 /* ============================================================
    FPP v2 — Main.js
-   홈 / 캐릭터(슬라이드 패널) / 현질 서폿 / PvP 패치 — 단일 페이지 라우팅
+   홈 / 캐릭터(중앙 팝업) / 현질 서폿 / PvP 패치 — 단일 페이지 라우팅
    ============================================================ */
 (function () {
   'use strict';
@@ -477,9 +477,11 @@
     else body.innerHTML = cpPatchesHTML(c);
     body.classList.remove('swap'); void body.offsetWidth; body.classList.add('swap');
   }
-  /* 이름 정규화 — 공백·기호·버전 표기를 걷어낸다 */
+  /* 이름 정규화 — 공백·기호·버전 표기를 걷어낸다 (괄호 안 표기는 검색에서 제외) */
   function nameKey(n) {
-    var s = String(n || '').replace(/[\s\-·・.,()（）\[\]【】'’""]/g, '').toLowerCase();
+    /* '루피 (니카)' → '루피' : 괄호 안 글자는 관련 캐릭터 매칭에서 제외 */
+    var s = String(n || '').replace(/\s*[(（][^)）]*[)）]\s*/g, ' ');
+    s = s.replace(/[\s\-·・.,()（）\[\]【】'’""]/g, '').toLowerCase();
     return s.replace(/(진화|각성|한계돌파|초월|개화|한돌)$/g, '');
   }
   function isRelatedName(a, b) {
@@ -495,9 +497,10 @@
   function renderCpRelated() {
     var box = $('cpRelatedIcons');
     var wrap = $('cpRelated');
-    if (!CP || !CP.c) { wrap.hidden = true; return; }
+    /* 현질 서폿 캐릭터는 관련 캐릭터에 미노출 — 서폿 상세에서도 섹션 자체를 숨김 */
+    if (!CP || !CP.c || CP.support) { wrap.hidden = true; return; }
     var name = CP.c.name;
-    var rel = S.chars.concat(S.supports).filter(function (x) {
+    var rel = S.chars.filter(function (x) {
       return isRelatedName(x.name, name) && String(x.id) !== String(CP.c.id);
     });
     if (!rel.length) { wrap.hidden = true; return; }
@@ -514,8 +517,8 @@
     box.querySelectorAll('.cp-rel').forEach(function (b) {
       b.addEventListener('click', function () {
         var rid = b.getAttribute('data-rid');
-        var next = S.chars.concat(S.supports).filter(function (x) { return String(x.id) === String(rid); })[0];
-        if (next) openCharPanel(next, isSupportChar(next));
+        var next = S.chars.filter(function (x) { return String(x.id) === String(rid); })[0];
+        if (next) openCharPanel(next, false); /* 관련 캐릭터는 항상 일반 캐릭터 구성으로 */
       });
     });
   }

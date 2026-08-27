@@ -170,20 +170,31 @@
   border-top:1px solid color-mix(in srgb,var(--line) 72%,transparent);
 }
 
-/* ===== 캐릭터 정보 슬라이드 패널 ===== */
-/* 패널 오픈 시 뒷배경 스크롤 잠금 (common.css의 body-lock과 동일 — position:fixed 방식) */
+/* ===== 캐릭터 정보 중앙 팝업 ===== */
+/* 팝업 오픈 시 뒷배경 스크롤 잠금 (common.css의 body-lock과 동일 — position:fixed 방식) */
 .cp-backdrop{
-  position:fixed;inset:0;z-index:90;background:rgba(2,8,16,.62);backdrop-filter:blur(3px);
+  position:fixed;inset:0;z-index:90;background:rgba(2,8,16,.66);backdrop-filter:blur(4px);
   opacity:0;pointer-events:none;transition:opacity .32s var(--ease);
 }
 .cp-backdrop.open{opacity:1;pointer-events:auto}
 .cp-panel{
-  position:fixed;top:0;right:0;bottom:0;z-index:95;width:min(430px,100%);
+  position:fixed;left:50%;top:50%;z-index:95;width:min(560px,calc(100vw - 28px));
+  max-height:min(86vh,860px);
   display:flex;flex-direction:column;background:var(--surface);
-  border-left:1px solid var(--line-2);box-shadow:-20px 0 60px rgba(0,0,0,.45);
-  transform:translateX(102%);transition:transform .38s var(--ease);
+  border:1px solid var(--line-2);border-radius:var(--r-lg);
+  box-shadow:0 30px 80px rgba(0,0,0,.55);
+  transform:translate(-50%,-46%) scale(.96);opacity:0;pointer-events:none;
+  transition:transform .34s var(--ease),opacity .26s var(--ease);
 }
-.cp-panel.open{transform:translateX(0)}
+.cp-panel::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;z-index:2;
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+  background:linear-gradient(90deg,var(--gold),var(--red) 55%,var(--blue));
+}
+.cp-panel.open{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
+@media (max-width:560px){
+  .cp-panel{width:calc(100vw - 20px);max-height:calc(100vh - 20px)}
+}
 .cp-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
 .cp-name{font-family:var(--font-d);font-size:21px;letter-spacing:.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cp-close{flex:none;width:38px;height:38px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:.2s}
