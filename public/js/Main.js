@@ -453,19 +453,19 @@
     var recent = dates.slice(0, 5); /* 최근 5개 날짜 */
 
     var order = { buff: 0, nerf: 1, fix: 2 };
-    return recent.map(function (d) {
+    return '<div class="pvp-date-groups">' + recent.map(function (d) {
       var list = byDate[d].slice().sort(function (a, b) {
         return (order[a.type] == null ? 9 : order[a.type]) - (order[b.type] == null ? 9 : order[b.type]);
       });
-      return '<div class="cpp-group">' +
-        '<div class="cpp-date"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg> ' +
+      return '<div class="pvp-date-group">' +
+        '<div class="pg-head"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg> ' +
         UI.esc(d === '미상' ? '날짜 미상' : UI.fmtDate(d)) +
-        '<span class="cpp-cnt">' + list.length + '건</span></div>' +
+        '<span class="pg-count">' + list.length + '건</span></div>' +
         '<ul class="cp-list">' + list.map(function (it) {
-          return '<li class="cpp-item cpp-item--' + it.type + '"><b>' + (BSYM[it.type] || '✦') + ' ' + UI.esc(BNAME[it.type] || '패치') + '</b>' +
+          return '<li class="cp-patch-row cp-patch-row--' + it.type + '"><b>' + (BSYM[it.type] || '✦') + ' ' + UI.esc(BNAME[it.type] || '패치') + '</b>' +
             '<small>' + UI.escBr(it.text) + '</small></li>';
         }).join('') + '</ul></div>';
-    }).join('');
+    }).join('') + '</div>';
   }
   function renderCpBody() {
     if (!CP) return;
