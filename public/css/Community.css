@@ -15,9 +15,10 @@
   display:flex;flex-direction:column;overflow:auto;order:-1;
 }
 @media (max-width:767px){
-  .patch-layout{flex-direction:column}
+  /* 세로 배치에서는 align-items가 가로축을 담당 → stretch로 전체 폭 채움 (우측 공백 방지) */
+  .patch-layout{flex-direction:column;align-items:stretch}
   .month-filter{width:100%;position:static;max-height:none;order:1}
-  .patch-content{order:2}
+  .patch-content{order:2;width:100%}
 }
 .month-title{font-family:var(--font-d);font-size:15px;color:var(--gold);padding:2px 6px 10px;border-bottom:1px solid var(--line);margin-bottom:8px;letter-spacing:.5px}
 .month-list{display:flex;flex-direction:column;gap:3px}
