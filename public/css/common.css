@@ -175,7 +175,7 @@ body.fonticon-ok .gnb-font-icon svg{display:none}
 .drawer-item.active{background:color-mix(in srgb,var(--gold) 14%,transparent);color:var(--gold)}
 
 /* ---------- 배너 ---------- */
-.banner{position:relative;overflow:hidden;height:250px}
+.banner{position:relative;overflow:hidden;height:200px}
 @media (min-width:768px){.banner{height:400px}}
 .banner-fallback{position:absolute;inset:0;background:var(--bg-2)}
 .banner--home .banner-fallback::before{
@@ -458,6 +458,10 @@ body.body-lock{
   border-bottom:1px solid var(--line);
 }
 .modal-head h3{font-family:var(--font-d);font-size:18px;letter-spacing:.5px}
+/* 중앙 정렬 변형 — 확인 다이얼로그 등에서 제목을 가운데 배치 (닫기 버튼은 우측 고정 유지) */
+.modal--center .modal-head{justify-content:center;position:relative}
+.modal--center .modal-head h3{text-align:center}
+.modal--center .modal-x{position:absolute;right:12px;top:50%;transform:translateY(-50%)}
 .modal-x{width:38px;height:38px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:.2s}
 .modal-x:hover{background:var(--surface-2);color:var(--red)}
 .modal-body{padding:18px 20px 22px;overflow:auto}

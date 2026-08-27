@@ -586,8 +586,9 @@
         var tipId = row.getAttribute('data-tip');
         var m = UI.openModal({
           title: '팁 삭제',
-          body: '<p style="font-size:13.5px;color:var(--text-2);line-height:1.7">이 꿀팁을 삭제할까요?<br>삭제 후에는 되돌릴 수 없습니다.</p>' +
-            '<div class="tip-edit-actions" style="margin-top:16px">' +
+          cls: 'modal--center',
+          body: '<p style="font-size:13.5px;color:var(--text-2);line-height:1.7;text-align:center">이 꿀팁을 삭제할까요?<br>삭제 후에는 되돌릴 수 없습니다.</p>' +
+            '<div class="tip-edit-actions" style="margin-top:16px;justify-content:center">' +
             '<button class="btn btn--ghost btn--sm" id="tipDelNo" type="button">취소</button>' +
             '<button class="btn btn--gold btn--sm" id="tipDelYes" type="button">삭제</button></div>'
         });
