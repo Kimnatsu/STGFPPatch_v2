@@ -337,6 +337,95 @@ window.FB = (function () {
     });
   }
 
+  /* ---------- 캐릭터 팁 (작성·투표·수정·삭제 / 로컬 폴백) ---------- */
+  function tipCol(charId) { return col('tips_' + String(charId).replace(/[^\w-]/g, '_')); }
+  function tipLocalKey(charId) { return 'fpp_tips_' + charId; }
+  function readLocalTips(charId) {
+    try { return JSON.parse(localStorage.getItem(tipLocalKey(charId)) || '[]'); } catch (e) { return []; }
+  }
+  function writeLocalTips(charId, arr) {
+    try { localStorage.setItem(tipLocalKey(charId), JSON.stringify(arr)); } catch (e) { }
+  }
+  function getTips(charId) {
+    var local = readLocalTips(charId);
+    if (!ready) return Promise.resolve(local);
+    return tipCol(charId).get().then(function (s) {
+      var remote = mapDocs(s, function (d, id) {
+        return {
+          id: id, text: pick(d, 'text', 'content') || '', uid: pick(d, 'uid') || '',
+          author: pick(d, 'author', 'nickname') || '선원', avatar: pick(d, 'avatar', 'profileIcon') || '',
+          date: dateKey(pick(d, 'date', 'createdAt')) || '', upBy: d.upBy || [], downBy: d.downBy || []
+        };
+      });
+      var ids = {};
+      remote.forEach(function (t) { ids[t.id] = 1; });
+      /* 원격에 아직 없는 로컬 임시 팁을 뒤에 붙임 */
+      return remote.concat(local.filter(function (t) { return !ids[t.id]; }));
+    }).catch(function () { return local; });
+  }
+  function addTip(charId, text, user, ud) {
+    var now = new Date();
+    var rec = {
+      id: 'local_' + now.getTime() + '_' + Math.floor(Math.random() * 1e5),
+      text: text, uid: user.uid,
+      author: (ud && ud.nickname) || user.displayName || '선원',
+      avatar: (ud && ud.profileIcon) || '',
+      date: now.toISOString().slice(0, 10),
+      createdAt: now.getTime(), upBy: [], downBy: []
+    };
+    var local = readLocalTips(charId);
+    local.unshift(rec);
+    writeLocalTips(charId, local);
+    if (!ready) return Promise.resolve({ tip: rec, remote: false });
+    return tipCol(charId).add({
+      text: text, uid: user.uid, author: rec.author, avatar: rec.avatar,
+      date: rec.date, upBy: [], downBy: [],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function (ref) {
+      /* 원격 등록 성공 — 로컬 임시본 제거 (중복 노출 방지) */
+      writeLocalTips(charId, readLocalTips(charId).filter(function (t) { return t.id !== rec.id; }));
+      rec.id = ref.id;
+      return { tip: rec, remote: true };
+    }).catch(function () { return { tip: rec, remote: false }; });
+  }
+  function updateTip(charId, tipId, text) {
+    var local = readLocalTips(charId).map(function (t) {
+      return t.id === tipId ? Object.assign({}, t, { text: text }) : t;
+    });
+    writeLocalTips(charId, local);
+    if (!ready || String(tipId).indexOf('local_') === 0) return Promise.resolve(local);
+    return tipCol(charId).doc(tipId).update({ text: text })
+      .then(function () { return local; }).catch(function () { return local; });
+  }
+  function deleteTip(charId, tipId) {
+    var local = readLocalTips(charId).filter(function (t) { return t.id !== tipId; });
+    writeLocalTips(charId, local);
+    if (!ready || String(tipId).indexOf('local_') === 0) return Promise.resolve(local);
+    return tipCol(charId).doc(tipId).delete()
+      .then(function () { return local; }).catch(function () { return local; });
+  }
+  function voteTip(charId, tipId, dir, uid) {
+    var local = readLocalTips(charId).map(function (t) {
+      if (t.id !== tipId) return t;
+      var up = (t.upBy || []).slice(), down = (t.downBy || []).slice();
+      var hadUp = up.indexOf(uid) > -1, hadDown = down.indexOf(uid) > -1;
+      if (dir === 'up') {
+        if (hadUp) up = up.filter(function (x) { return x !== uid; });
+        else { up.push(uid); down = down.filter(function (x) { return x !== uid; }); }
+      } else {
+        if (hadDown) down = down.filter(function (x) { return x !== uid; });
+        else { down.push(uid); up = up.filter(function (x) { return x !== uid; }); }
+      }
+      return Object.assign({}, t, { upBy: up, downBy: down });
+    });
+    writeLocalTips(charId, local);
+    var t = local.filter(function (x) { return x.id === tipId; })[0];
+    if (ready && t && String(tipId).indexOf('local_') !== 0) {
+      tipCol(charId).doc(tipId).update({ upBy: t.upBy, downBy: t.downBy }).catch(function () { });
+    }
+    return Promise.resolve(local);
+  }
+
   /* ---------- 좋아요 ---------- */
   function getLikeDoc(type, id) {
     if (!ready) return Promise.resolve(null);
@@ -503,6 +592,7 @@ window.FB = (function () {
     getCharacters: getCharacters, getSupportCharacters: getSupportCharacters,
     getPvpPatches: getPvpPatches, getPatchNotes: getPatchNotes, getNotices: getNotices,
     getBanners: getBanners, getEvents: getEvents, getBoards: getBoards, addBoard: addBoard,
+    getTips: getTips, addTip: addTip, updateTip: updateTip, deleteTip: deleteTip, voteTip: voteTip,
     getLikeDoc: getLikeDoc, toggleGenericLike: toggleGenericLike, toggleBoardLike: toggleBoardLike,
     getComments: getComments, addComment: addComment, deleteComment: deleteComment,
     getUserDoc: getUserDoc, ensureUserDoc: ensureUserDoc, updateUserDoc: updateUserDoc,

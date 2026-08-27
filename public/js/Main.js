@@ -420,12 +420,191 @@
       return '<li><b>' + UI.escBr(nm) + '</b>' + (ds ? '<small>' + UI.escBr(ds) + '</small>' : '') + '</li>';
     }).join('') + '</ul>';
   }
-  function cpTipsHTML(c) {
-    var tips = c.tips || [];
-    if (!tips.length) return '<p class="cp-empty">등록된 팁이 없습니다.</p>';
-    return '<ul class="cp-list">' + tips.map(function (t) {
-      return '<li><small>' + UI.escBr(typeof t === 'string' ? t : (t.text || '')) + '</small></li>';
-    }).join('') + '</ul>';
+  /* ================= 캐릭터 꿀팁 — 작성·투표·수정·삭제 ================= */
+  var tipCache = {}; /* charId → 팁 배열 캐시 */
+  var TIP_MAX = 300;
+  var TIP_IC = {
+    up: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M12 5l7 9H5z"/></svg>',
+    down: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M12 19L5 10h14z"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4.5-1L20 7.5 16.5 4 5 15.5z"/><path d="M14.5 6l3.5 3.5"/></svg>',
+    del: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M9.5 7V5h5v2M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>'
+  };
+  function tipScore(t) { return (t.upBy || []).length - (t.downBy || []).length; }
+  /* BEST 랭킹 — 점수 순 1/2/3위는 금·은·동, 나머지 양수 점수는 BEST 테두리 배지 */
+  function tipBestHTML(t, rank) {
+    if (rank <= 3) return '<span class="tip-best best-' + rank + '">BEST ' + rank + '</span>';
+    if (tipScore(t) > 0) return '<span class="tip-best best-rest">BEST</span>';
+    return '';
+  }
+  function tipAvaHTML(t) {
+    if (t.avatar) {
+      return '<span class="tip-ava"><span class="tip-ava-imgwrap"><img src="' + UI.esc(UI.avatarOf(t.avatar)) + '" alt="" loading="lazy"></span></span>';
+    }
+    var ch = (t.author || '선').charAt(0).toUpperCase();
+    return '<span class="tip-ava"><span class="tip-ava-initial">' + UI.esc(ch) + '</span></span>';
+  }
+  function tipRowHTML(t, rank, uid) {
+    var mine = !!(uid && t.uid && t.uid === uid);
+    var upOn = !!(uid && (t.upBy || []).indexOf(uid) > -1);
+    var downOn = !!(uid && (t.downBy || []).indexOf(uid) > -1);
+    var h = '<li class="tip-row' + (mine ? ' tip-row--own' : '') + '" data-tip="' + UI.esc(t.id) + '">';
+    h += tipAvaHTML(t);
+    h += '<div class="tip-main">' +
+      '<div class="tip-top"><b>' + UI.esc(t.author || '선원') + (mine ? ' (나)' : '') + '</b>' +
+      '<time>' + UI.esc(UI.fmtDate(t.date)) + '</time>' + tipBestHTML(t, rank) + '</div>' +
+      '<p class="tip-txt">' + UI.escBr(t.text || '') + '</p>' +
+      '<div class="tip-foot">' +
+      '<button class="tip-vote' + (upOn ? ' on' : '') + '" type="button" data-vote="up" aria-label="추천" aria-pressed="' + upOn + '"' + (uid ? '' : ' disabled') + '>' + TIP_IC.up + ' ' + (t.upBy || []).length + '</button>' +
+      '<button class="tip-vote tip-vote--down' + (downOn ? ' on' : '') + '" type="button" data-vote="down" aria-label="비추천" aria-pressed="' + downOn + '"' + (uid ? '' : ' disabled') + '>' + TIP_IC.down + ' ' + (t.downBy || []).length + '</button>' +
+      '</div></div>';
+    if (mine) {
+      h += '<div class="tip-own">' +
+        '<button class="tip-act tip-edit" type="button" aria-label="팁 수정">' + TIP_IC.edit + '</button>' +
+        '<button class="tip-act tip-del" type="button" aria-label="팁 삭제">' + TIP_IC.del + '</button>' +
+        '</div>';
+    }
+    return h + '</li>';
+  }
+  function tipWriteHTML(u) {
+    if (!u) {
+      return '<div class="tip-write tip-login"><span>꿀팁은 로그인 후 남길 수 있습니다.</span>' +
+        '<a class="btn btn--gold btn--sm" href="Login.html">로그인</a></div>';
+    }
+    return '<div class="tip-write">' +
+      '<div class="tip-write-head"><b>꿀팁 남기기</b></div>' +
+      '<textarea class="tip-input" id="tipInput" maxlength="' + TIP_MAX + '" placeholder="이 캐릭터를 쓸 때 알면 좋은 운영법·콤보·카운터 등을 공유해 주세요."></textarea>' +
+      '<div class="tip-write-foot"><span class="tip-count" id="tipCount">0/' + TIP_MAX + '</span>' +
+      '<button class="btn btn--gold btn--sm" id="tipSubmit" type="button">등록</button></div></div>';
+  }
+  function tipsHTML(c, list) {
+    var u = UI.currentUser();
+    var uid = u && u.uid;
+    /* 점수(추천-비추천) 내림차순 → 같은 점수면 최신순 */
+    var sorted = list.slice().sort(function (a, b) {
+      var s = tipScore(b) - tipScore(a);
+      if (s) return s;
+      return String(b.date || '').localeCompare(String(a.date || ''));
+    });
+    var rank = 0;
+    var rows = sorted.map(function (t) {
+      if (tipScore(t) > 0) rank += 1;
+      return tipRowHTML(t, rank || 99, uid);
+    }).join('');
+    var empty = '<p class="cp-empty">아직 등록된 꿀팁이 없습니다.<br>첫 꿀팁의 주인공이 되어보세요!</p>';
+    return (sorted.length ? '<ul class="tip-list">' + rows + '</ul>' : empty) + tipWriteHTML(u);
+  }
+  function renderTips(c) {
+    var body = $('cpBody');
+    if (!body) return;
+    function paint(list) {
+      if (!CP || String(CP.c.id) !== String(c.id) || CP.tab !== 'tips') return; /* 그 사이 탭이 바뀌었으면 무시 */
+      tipCache[c.id] = list;
+      body.innerHTML = tipsHTML(c, list);
+      bindTipEvents(c);
+    }
+    if (tipCache[c.id]) { paint(tipCache[c.id]); return; }
+    UI.skelRows(body, 4);
+    FB.getTips(c.id).then(paint).catch(function () { paint([]); });
+  }
+  function bindTipEvents(c) {
+    var body = $('cpBody');
+    if (!body) return;
+    var u = UI.currentUser();
+    var uid = u && u.uid;
+    /* 투표 */
+    body.querySelectorAll('.tip-vote').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (!uid) return;
+        var row = b.closest('.tip-row');
+        FB.voteTip(c.id, row.getAttribute('data-tip'), b.getAttribute('data-vote'), uid).then(function (list) {
+          tipCache[c.id] = list;
+          if (CP && String(CP.c.id) === String(c.id) && CP.tab === 'tips') {
+            body.innerHTML = tipsHTML(c, list);
+            bindTipEvents(c);
+          }
+        });
+      });
+    });
+    /* 작성 */
+    var ta = body.querySelector('#tipInput');
+    if (ta) {
+      var cnt = body.querySelector('#tipCount');
+      ta.addEventListener('input', function () { cnt.textContent = ta.value.length + '/' + TIP_MAX; });
+      body.querySelector('#tipSubmit').addEventListener('click', function () {
+        var v = ta.value.trim();
+        if (!v) { UI.toast('팁 내용을 입력해 주세요.', 'err'); ta.focus(); return; }
+        var ud = UI.userDoc() || {};
+        FB.addTip(c.id, v, u, ud).then(function (res) {
+          UI.toast(res.remote ? '꿀팁이 등록되었습니다.' : '임시 저장되었습니다. (서버 연결 실패)', res.remote ? 'ok' : 'err');
+          FB.getTips(c.id).then(function (list) {
+            tipCache[c.id] = list;
+            if (CP && String(CP.c.id) === String(c.id) && CP.tab === 'tips') {
+              body.innerHTML = tipsHTML(c, list);
+              bindTipEvents(c);
+            }
+          });
+        });
+      });
+    }
+    /* 수정 (인라인) */
+    body.querySelectorAll('.tip-edit').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var row = b.closest('.tip-row');
+        var main = row.querySelector('.tip-main');
+        var own = row.querySelector('.tip-own');
+        var old = row.querySelector('.tip-txt').textContent;
+        if (own) own.style.display = 'none';
+        main.innerHTML = '<div class="tip-edit-wrap">' +
+          '<textarea class="tip-input tip-edit-area" maxlength="' + TIP_MAX + '">' + UI.esc(old) + '</textarea>' +
+          '<div class="tip-edit-actions">' +
+          '<button class="btn btn--ghost btn--sm" type="button" data-act="cancel">취소</button>' +
+          '<button class="btn btn--gold btn--sm" type="button" data-act="save">저장</button>' +
+          '</div></div>';
+        var area = main.querySelector('.tip-edit-area');
+        area.focus();
+        main.querySelector('[data-act="cancel"]').addEventListener('click', function () {
+          tipCache[c.id] = tipCache[c.id] || [];
+          body.innerHTML = tipsHTML(c, tipCache[c.id]);
+          bindTipEvents(c);
+        });
+        main.querySelector('[data-act="save"]').addEventListener('click', function () {
+          var v = area.value.trim();
+          if (!v) { UI.toast('팁 내용을 입력해 주세요.', 'err'); area.focus(); return; }
+          FB.updateTip(c.id, row.getAttribute('data-tip'), v).then(function (list) {
+            tipCache[c.id] = list;
+            UI.toast('팁이 수정되었습니다.', 'ok');
+            body.innerHTML = tipsHTML(c, list);
+            bindTipEvents(c);
+          });
+        });
+      });
+    });
+    /* 삭제 (확인 모달) */
+    body.querySelectorAll('.tip-del').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var row = b.closest('.tip-row');
+        var tipId = row.getAttribute('data-tip');
+        var m = UI.openModal({
+          title: '팁 삭제',
+          body: '<p style="font-size:13.5px;color:var(--text-2);line-height:1.7">이 꿀팁을 삭제할까요?<br>삭제 후에는 되돌릴 수 없습니다.</p>' +
+            '<div class="tip-edit-actions" style="margin-top:16px">' +
+            '<button class="btn btn--ghost btn--sm" id="tipDelNo" type="button">취소</button>' +
+            '<button class="btn btn--gold btn--sm" id="tipDelYes" type="button">삭제</button></div>'
+        });
+        m.body.querySelector('#tipDelNo').addEventListener('click', m.close);
+        m.body.querySelector('#tipDelYes').addEventListener('click', function () {
+          m.close();
+          FB.deleteTip(c.id, tipId).then(function (list) {
+            tipCache[c.id] = list;
+            UI.toast('팁이 삭제되었습니다.', 'ok');
+            if (CP && String(CP.c.id) === String(c.id) && CP.tab === 'tips') {
+              body.innerHTML = tipsHTML(c, list);
+              bindTipEvents(c);
+            }
+          });
+        });
+      });
+    });
   }
   /* 최근패치 — 날짜별로 묶고, 가장 최근 5개 날짜분만 노출 */
   function cpPatchesHTML(c) {
@@ -476,7 +655,7 @@
     var body = $('cpBody');
     if (CP.tab === 'skills') body.innerHTML = cpSectionHTML(c.skills);
     else if (CP.tab === 'support') body.innerHTML = cpSectionHTML(c.supportSkills);
-    else if (CP.tab === 'tips') body.innerHTML = cpTipsHTML(c);
+    else if (CP.tab === 'tips') { renderTips(c); return; } /* 비동기 로드 — 스켈레톤 후 렌더 */
     else body.innerHTML = cpPatchesHTML(c);
     /* 최근패치 날짜 그룹 — 헤더 클릭 시 펼치기/접기 (기본 접힘) */
     if (CP.tab === 'patches') {
