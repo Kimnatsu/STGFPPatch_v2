@@ -385,10 +385,10 @@
       '</div>' +
       '<div class="cp-scroll">' +
       '<div class="cp-body" id="cpBody"></div>' +
+      '</div>' +
       '<div class="cp-related" id="cpRelated">' +
       '<div class="cp-related-head">관련 캐릭터</div>' +
       '<div class="cp-related-icons" id="cpRelatedIcons"></div>' +
-      '</div>' +
       '</div>';
     document.body.appendChild(back);
     document.body.appendChild(panel);
