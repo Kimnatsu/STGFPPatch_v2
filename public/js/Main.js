@@ -368,13 +368,13 @@
     panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-hidden', 'true');
     panel.innerHTML =
-      '<div class="cp-head">' +
-      '<h3 class="cp-name" id="cpName"></h3>' +
-      '<button class="cp-close" id="cpClose" type="button" aria-label="닫기">' +
-      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
       '<div class="cp-hero">' +
+      '<button class="cp-close" id="cpClose" type="button" aria-label="닫기">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
       '<span class="cp-ava" id="cpAva"></span>' +
-      '<div class="cp-side"><div class="cp-meta" id="cpMeta"></div>' +
+      '<div class="cp-side">' +
+      '<h3 class="cp-name" id="cpName"></h3>' +
+      '<div class="cp-meta" id="cpMeta"></div>' +
       '<button class="cp-fav" id="cpFav" type="button"><span id="cpFavTx">☆ 즐겨찾기 추가</span></button></div>' +
       '</div>' +
       '<div class="cp-tabs" id="cpTabs" role="tablist">' +
