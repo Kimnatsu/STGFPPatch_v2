@@ -885,6 +885,14 @@ window.UI = (function () {
     });
     watchReveals();
     window.addEventListener('load', function () { watchReveals(); });
+    /* 페이지 전환 베일 제거 — 스타일·부팅이 완료된 시점에 부드럽게 페이드아웃 (깜빡임 방지) */
+    var veil = document.getElementById('pageVeil');
+    if (veil) {
+      requestAnimationFrame(function () {
+        veil.classList.add('off');
+        setTimeout(function () { if (veil.parentNode) veil.parentNode.removeChild(veil); }, 450);
+      });
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

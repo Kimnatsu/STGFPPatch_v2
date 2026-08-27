@@ -10,12 +10,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
 <script>
-(function(){try{var t=localStorage.getItem('fpp_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+/* 테마 저장값(JSON 문자열)을 파싱해 정규화 — 따옴표 포함 값이 data-theme에 들어가 CSS 변수가 늦게 적용되던 문제 수정 */
+(function(){try{var t=localStorage.getItem('fpp_theme');if(t){try{t=JSON.parse(t);}catch(e){}document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}}catch(e){}})();
 </script>
 <style>
 /* 페이지 전환 시 흰 화면 깜빡임 방지 — CSS 로드 전에도 테마 배경 즉시 적용 */
 html{background:#0a1626;color-scheme:dark}
 html[data-theme="light"]{background:#eef3f8;color-scheme:light}
+/* 페이지 전환 베일 — 스타일/부팅이 끝날 때까지 단색으로 덮었다가 부드럽게 사라짐 (2.4초 후 강제 해제 폴백) */
+.page-veil{position:fixed;inset:0;z-index:9999;pointer-events:none;background:#0a1626;opacity:1;transition:opacity .38s ease;animation:pageVeilFail .45s ease 2.4s forwards}
+html[data-theme="light"] .page-veil{background:#eef3f8}
+.page-veil.off{opacity:0}
+@keyframes pageVeilFail{to{opacity:0;visibility:hidden}}
 </style>
 <link rel="stylesheet" href="css/common.css" />
 <link rel="stylesheet" href="css/Login.css" />
@@ -26,6 +32,7 @@ html[data-theme="light"]{background:#eef3f8;color-scheme:light}
 </head>
 <body data-page="login">
 
+<div id="pageVeil" class="page-veil" aria-hidden="true"></div>
 <div class="ambient" aria-hidden="true"></div>
 <div class="sea-lines" aria-hidden="true"></div>
 
