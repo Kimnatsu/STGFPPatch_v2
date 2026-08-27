@@ -263,10 +263,14 @@ window.FB = (function () {
       }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
     });
   }
+  /* 로컬 임시 게시글 — 원격 쓰기 실패 시 localStorage에 보관했다가 목록에 합친다 */
+  function localBoards() {
+    try { return JSON.parse(localStorage.getItem('fpp_local_boards') || '[]'); } catch (e) { return []; }
+  }
   function getBoards() {
     if (!ready) return Promise.reject(new Error('Firebase 미준비'));
     return col('boards').get().then(function (s) {
-      return mapDocs(s, function (d, id) {
+      var remote = mapDocs(s, function (d, id) {
         return {
           docId: id,
           title: pick(d, 'title') || '제목 없음',
@@ -281,7 +285,55 @@ window.FB = (function () {
           likeCount: pick(d, 'likeCount') || 0,
           commentCount: pick(d, 'commentCount') || 0
         };
-      }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+      });
+      return remote.concat(localBoards())
+        .sort(function (a, b) { return (b.ts || 0) - (a.ts || 0) || String(b.date).localeCompare(String(a.date)); });
+    }).catch(function (e) {
+      var lb = localBoards();
+      if (lb.length) return lb;
+      throw e;
+    });
+  }
+  /* 게시글 작성 — 원격 boards 컬렉션에 쓰고, 권한/네트워크 실패 시 로컬 보관 */
+  function addBoard(item, user, ud) {
+    if (!ready) return Promise.reject(new Error('Firebase 미준비'));
+    var now = new Date();
+    var base = {
+      title: item.title,
+      text: item.content,
+      content: item.content,
+      category: item.category || '자유',
+      prefix: item.category || '자유',
+      uid: user.uid,
+      author: (ud && ud.nickname) || '선원',
+      nickname: (ud && ud.nickname) || '선원',
+      date: now.toISOString().slice(0, 10),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      likeCount: 0,
+      commentCount: 0
+    };
+    return col('boards').add(base).then(function (ref) {
+      return { remote: true, docId: ref.id };
+    }).catch(function () {
+      /* 로컬 보관 — 다음 목록 로드에 합쳐서 노출 */
+      var lb = localBoards();
+      var ts = Math.floor(now.getTime() / 1000);
+      lb.unshift({
+        docId: 'local_' + ts,
+        title: item.title,
+        author: (ud && ud.nickname) || '선원',
+        date: now.toISOString().slice(0, 10),
+        ts: ts,
+        category: item.category || '자유',
+        content: item.content,
+        images: [],
+        uid: user.uid,
+        likedBy: [],
+        likeCount: 0,
+        commentCount: 0
+      });
+      try { localStorage.setItem('fpp_local_boards', JSON.stringify(lb)); } catch (e) { }
+      return { remote: false, docId: lb[0].docId };
     });
   }
 
@@ -450,7 +502,7 @@ window.FB = (function () {
     errMsg: errMsg, dateKey: dateKey, onReady: onReady,
     getCharacters: getCharacters, getSupportCharacters: getSupportCharacters,
     getPvpPatches: getPvpPatches, getPatchNotes: getPatchNotes, getNotices: getNotices,
-    getBanners: getBanners, getEvents: getEvents, getBoards: getBoards,
+    getBanners: getBanners, getEvents: getEvents, getBoards: getBoards, addBoard: addBoard,
     getLikeDoc: getLikeDoc, toggleGenericLike: toggleGenericLike, toggleBoardLike: toggleBoardLike,
     getComments: getComments, addComment: addComment, deleteComment: deleteComment,
     getUserDoc: getUserDoc, ensureUserDoc: ensureUserDoc, updateUserDoc: updateUserDoc,

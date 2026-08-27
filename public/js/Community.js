@@ -268,6 +268,8 @@
   function renderBoardList() {
     var el = $('boardContent');
     $('boardToolbar').style.display = '';
+    var wt = document.querySelector('#view-board .write-toolbar');
+    if (wt) wt.style.display = '';
     var list = boardListFiltered();
     if (!list.length) { UI.empty(el, { title: '게시글이 없습니다.', desc: B.cat === 'all' ? '첫 게시글의 주인공이 되어보세요.' : '\'' + B.cat + '\' 카테고리에 글이 없습니다.' }); return; }
     if (B.view === 'card') {
@@ -286,6 +288,8 @@
     var b = S.boards.find(function (x) { return x.docId === id; });
     var el = $('boardContent');
     $('boardToolbar').style.display = 'none';
+    var wt = document.querySelector('#view-board .write-toolbar');
+    if (wt) wt.style.display = 'none';
     if (!b) { UI.empty(el, { title: '게시글을 찾을 수 없습니다.', btnText: '게시판으로', btnHref: 'Community.html#board' }); return; }
     var bodyImages = (b.images || []).map(function (src) { return '<img src="' + UI.esc(src) + '" alt="" loading="lazy">'; }).join('');
     el.innerHTML =
@@ -405,6 +409,81 @@
     }
   }
 
+  /* ================= 글쓰기 ================= */
+  function openBoardWrite() {
+    var u = UI.currentUser();
+    if (!u) {
+      UI.toast('로그인 후 글을 작성할 수 있습니다.', 'err');
+      setTimeout(function () { location.href = 'Login.html'; }, 700);
+      return;
+    }
+    var ud = UI.userDoc() || {};
+    var cats = ['자유', '정보', '질문', '자랑'];
+    var defCat = (B.cat && B.cat !== 'all') ? B.cat : '자유';
+    var m = UI.openModal({
+      cls: 'write-modal',
+      title: '새 글 작성',
+      body:
+        '<div class="wm-field"><label class="wm-label" for="wmCat">카테고리</label>' +
+        '<select id="wmCat">' + cats.map(function (c) {
+          return '<option value="' + c + '"' + (c === defCat ? ' selected' : '') + '>' + c + '</option>';
+        }).join('') + '</select></div>' +
+        '<div class="wm-field"><label class="wm-label" for="wmTitle">제목</label>' +
+        '<input id="wmTitle" type="text" maxlength="60" placeholder="제목을 입력해 주세요. (최대 60자)" /></div>' +
+        '<div class="wm-field"><label class="wm-label" for="wmContent">내용</label>' +
+        '<textarea id="wmContent" maxlength="2000" placeholder="커뮤니티 규칙을 지키는 건강한 글을 남겨주세요."></textarea>' +
+        '<div class="wm-count" id="wmCount">0 / 2000</div></div>' +
+        '<div class="wm-foot"><button class="btn btn--ghost" id="wmCancel" type="button">취소</button>' +
+        '<button class="write-btn" id="wmSubmit" type="button">등록하기</button></div>'
+    });
+    var ta = m.body.querySelector('#wmContent');
+    var cnt = m.body.querySelector('#wmCount');
+    ta.addEventListener('input', function () { cnt.textContent = ta.value.length + ' / 2000'; });
+    m.body.querySelector('#wmCancel').addEventListener('click', m.close);
+    m.body.querySelector('#wmSubmit').addEventListener('click', function () {
+      var title = m.body.querySelector('#wmTitle').value.trim();
+      var content = ta.value.trim();
+      if (!title) { UI.toast('제목을 입력해 주세요.', 'err'); m.body.querySelector('#wmTitle').focus(); return; }
+      if (!content) { UI.toast('내용을 입력해 주세요.', 'err'); ta.focus(); return; }
+      var btn = m.body.querySelector('#wmSubmit');
+      btn.disabled = true; btn.textContent = '등록 중…';
+      FB.addBoard({ title: title, content: content, category: m.body.querySelector('#wmCat').value }, u, ud)
+        .then(function (res) {
+          m.close();
+          var now = new Date();
+          var rec = {
+            docId: res.docId,
+            title: title,
+            author: ud.nickname || '선원',
+            date: now.toISOString().slice(0, 10),
+            ts: Math.floor(now.getTime() / 1000),
+            category: m.body.querySelector('#wmCat').value,
+            content: content,
+            images: [],
+            uid: u.uid,
+            likedBy: [],
+            likeCount: 0,
+            commentCount: 0
+          };
+          /* 원격 저장에 성공했으면 새로고침 시 서버 목록에 포함됨 — 로컬 중복 방지 */
+          if (res.remote) {
+            S.boards = S.boards.filter(function (b) { return b.docId !== rec.docId; });
+          }
+          S.boards.unshift(rec);
+          B.cat = 'all';
+          document.querySelectorAll('#boardCats .chip').forEach(function (x) {
+            x.classList.toggle('is-on', x.getAttribute('data-cat') === 'all');
+          });
+          renderBoardList();
+          UI.toast(res.remote ? '게시글이 등록되었습니다.' : '임시 저장되었습니다. (서버 연결 실패)', res.remote ? 'ok' : 'err');
+        })
+        .catch(function (e) {
+          btn.disabled = false; btn.textContent = '등록하기';
+          UI.toast(FB.errMsg(e) + ' — 등록에 실패했습니다.', 'err');
+        });
+    });
+  }
+
   /* ================= 툴바 ================= */
   function bindToolbars() {
     document.querySelectorAll('#boardCats .chip').forEach(function (c) {
@@ -422,6 +501,8 @@
       });
     });
     $('boardSort').addEventListener('change', function (e) { B.sort = e.target.value; renderBoardList(); });
+    var wb = $('boardWriteBtn');
+    if (wb) wb.addEventListener('click', openBoardWrite);
 
     document.querySelectorAll('#eventCats .chip').forEach(function (c) {
       c.addEventListener('click', function () {

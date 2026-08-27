@@ -86,7 +86,15 @@
 .write-btn::after{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);transition:left .5s var(--ease)}
 .write-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px color-mix(in srgb,var(--gold) 42%,transparent)}
 .write-btn:hover::after{left:130%}
+.write-btn:disabled{opacity:.6;cursor:default;transform:none}
 @media (max-width:767px){.write-btn{width:100%;justify-content:center}}
+/* 글쓰기 모달 폼 */
+.wm-field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.wm-label{font-size:12px;font-weight:900;color:var(--text-2);letter-spacing:.3px}
+.wm-field textarea{resize:vertical;min-height:140px;line-height:1.65}
+.wm-count{align-self:flex-end;font-size:11px;font-weight:800;color:var(--text-3)}
+.wm-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.wm-foot .write-btn{min-height:44px}
 
 /* ===== 댓글 ===== */
 .comment-sec{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px}
