@@ -458,13 +458,16 @@
         return (order[a.type] == null ? 9 : order[a.type]) - (order[b.type] == null ? 9 : order[b.type]);
       });
       return '<div class="pvp-date-group">' +
-        '<div class="pg-head"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg> ' +
+        '<button class="pg-head" type="button" aria-expanded="false">' +
+        '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg>' +
         UI.esc(d === '미상' ? '날짜 미상' : UI.fmtDate(d)) +
-        '<span class="pg-count">' + list.length + '건</span></div>' +
+        '<span class="pg-count">' + list.length + '건</span>' +
+        '<svg class="pg-chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>' +
+        '<div class="pg-body"><div class="pg-body-inner">' +
         '<ul class="cp-list">' + list.map(function (it) {
           return '<li class="cp-patch-row cp-patch-row--' + it.type + '"><b>' + (BSYM[it.type] || '✦') + ' ' + UI.esc(BNAME[it.type] || '패치') + '</b>' +
             '<small>' + UI.escBr(it.text) + '</small></li>';
-        }).join('') + '</ul></div>';
+        }).join('') + '</ul></div></div></div>';
     }).join('') + '</div>';
   }
   function renderCpBody() {
@@ -475,6 +478,17 @@
     else if (CP.tab === 'support') body.innerHTML = cpSectionHTML(c.supportSkills);
     else if (CP.tab === 'tips') body.innerHTML = cpTipsHTML(c);
     else body.innerHTML = cpPatchesHTML(c);
+    /* 최근패치 날짜 그룹 — 헤더 클릭 시 펼치기/접기 (기본 접힘) */
+    if (CP.tab === 'patches') {
+      body.querySelectorAll('.pg-head').forEach(function (h) {
+        h.addEventListener('click', function () {
+          var g = h.closest('.pvp-date-group');
+          if (!g) return;
+          var open = g.classList.toggle('is-open');
+          h.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      });
+    }
     body.classList.remove('swap'); void body.offsetWidth; body.classList.add('swap');
   }
   /* 이름 정규화 — 공백·기호·버전 표기를 걷어낸다 (괄호 안 표기는 검색에서 제외) */
