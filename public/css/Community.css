@@ -53,23 +53,40 @@
 .pn-list .lst{display:flex;flex-direction:column;gap:4px}
 .pn-list .lst-row{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md)}
 
-/* ===== 툴바 — 항상 1열 (좌측 카테고리 · 우측 보기/정렬) ===== */
+/* ===== 툴바 — 1열 고정 ===== */
 .toolbar{
-  display:flex;align-items:center;gap:10px;flex-wrap:nowrap;margin:22px 0 16px;
-  overflow-x:auto;scrollbar-width:none;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin:14px 0 14px;flex-wrap:nowrap;
 }
-.toolbar::-webkit-scrollbar{display:none}
-.toolbar .chip-row{flex:none;display:flex;gap:6px;flex-wrap:nowrap}
-.toolbar .chip{white-space:nowrap;flex:none}
-.toolbar-right{flex:none;display:flex;gap:8px;align-items:center;flex-wrap:nowrap;margin-left:auto}
-/* 소형 화면은 칩·세그먼트·정렬을 슬림하게 */
-@media (max-width:767px){
-  .toolbar{gap:6px}
-  .toolbar .chip{padding:7px 11px;min-height:36px;font-size:11.5px}
-  .toolbar .seg-btn{padding:7px 10px;min-height:36px;font-size:11.5px}
-  .toolbar select{min-height:36px;height:36px;font-size:11.5px;padding:7px 26px 7px 10px}
-}
+.toolbar-right{display:flex;gap:10px;align-items:center;flex-wrap:nowrap;flex:none}
+.toolbar select{height:40px;min-height:40px;padding:0 10px;font-size:12.5px;font-weight:800;border-radius:var(--r-sm)}
+.toolbar .chip-row{display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.toolbar .chip-row::-webkit-scrollbar{display:none}
 #boardContent,#eventContent{margin-bottom:34px}
+/* 글쓰기 툴바 — 배너와 적당한 간격 */
+.write-toolbar{display:flex;justify-content:flex-end;margin-top:16px}
+@media (max-width:767px){.write-toolbar{margin-top:14px}}
+/* 모바일 — 툴바 2열: 1열 카테고리 칩 / 2열 보기방식 + 정렬
+   flex 폭 협상 없이 grid로 각 요소 자리를 고정 — 정렬 셀렉트가 보기방식을 밀어내지 못함 */
+@media (max-width:767px){
+  .toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .toolbar .chip-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;width:100%;overflow:visible}
+  .toolbar .chip-row .chip{width:100%;min-width:0;justify-content:center;padding:8px 4px;min-height:38px;font-size:11.5px}
+  .toolbar .toolbar-right{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;width:100%;align-items:center}
+  .toolbar .toolbar-right .seg{display:grid;grid-template-columns:1fr 1fr;width:100%;min-width:0}
+  .toolbar .toolbar-right .seg-btn{width:100%;min-width:0;justify-content:center;padding:8px 4px;min-height:38px;font-size:11.5px}
+  .toolbar .toolbar-right select{width:auto;min-width:0;max-width:44vw;font-size:11.5px;padding:0 8px;min-height:38px;height:38px}
+}
+.write-btn{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--r-sm);
+  background:linear-gradient(150deg,var(--gold-2),var(--gold));color:var(--gold-ink);
+  font-weight:900;font-size:13.5px;box-shadow:0 6px 18px color-mix(in srgb,var(--gold) 30%,transparent);
+  transition:.2s var(--ease);min-height:42px;position:relative;overflow:hidden;cursor:pointer;border:none;
+}
+.write-btn::after{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);transition:left .5s var(--ease)}
+.write-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px color-mix(in srgb,var(--gold) 42%,transparent)}
+.write-btn:hover::after{left:130%}
+@media (max-width:767px){.write-btn{width:100%;justify-content:center}}
 
 /* ===== 댓글 ===== */
 .comment-sec{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px}
