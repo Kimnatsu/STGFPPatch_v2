@@ -12,6 +12,11 @@
 <script>
 (function(){try{var t=localStorage.getItem('fpp_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
+<style>
+/* 페이지 전환 시 흰 화면 깜빡임 방지 — CSS 로드 전에도 테마 배경 즉시 적용 */
+html{background:#0a1626;color-scheme:dark}
+html[data-theme="light"]{background:#eef3f8;color-scheme:light}
+</style>
 <link rel="stylesheet" href="css/common.css" />
 <link rel="stylesheet" href="css/Login.css" />
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
