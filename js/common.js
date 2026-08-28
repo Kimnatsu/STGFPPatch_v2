@@ -344,11 +344,17 @@ window.UI = (function () {
     if (width) el.style.width = width;
     el.innerHTML = html;
     $('popupRoot').appendChild(el);
-    var r = anchor.getBoundingClientRect();
-    var pw = width ? parseInt(width, 10) : 300;
-    var left = Math.min(Math.max(8, r.right - pw), window.innerWidth - pw - 8);
-    el.style.left = left + 'px';
-    el.style.top = (r.bottom + 10) + 'px';
+    
+    /* pop--fav, pop--myinfo 는 CSS 에서 위치·애니메이션 처리 */
+    var isCentered = el.classList.contains('pop--fav') || el.classList.contains('pop--myinfo');
+    if (!isCentered) {
+      var r = anchor.getBoundingClientRect();
+      var pw = width ? parseInt(width, 10) : 300;
+      var left = Math.min(Math.max(8, r.right - pw), window.innerWidth - pw - 8);
+      el.style.left = left + 'px';
+      el.style.top = (r.bottom + 10) + 'px';
+    }
+    
     requestAnimationFrame(function () { el.classList.add('show'); });
     setTimeout(function () { document.addEventListener('click', onDocClickPop); }, 0);
     return { el: el, close: closePopups };
@@ -427,6 +433,7 @@ window.UI = (function () {
       '<div class="pop-body">' + items.map(function (it) {
         return '<button class="pop-item" data-act="' + it[0] + '" type="button">' + it[2] + '<span>' + it[1] + '</span></button>';
       }).join('') + '</div>', '260px');
+    pop.el.classList.add('pop--settings');
     pop.el.querySelectorAll('.pop-item').forEach(function (b) {
       b.addEventListener('click', function () {
         closePopups();
@@ -456,7 +463,7 @@ window.UI = (function () {
       '<button class="pop-item" id="pfOut" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h-8v16h8M10 12h11M18 8.5L21.5 12 18 15.5"/></svg><span>로그아웃</span></button>' +
       '</div>', '300px');
     pop.el.classList.add('pop--auth');
-    pop.el.querySelector('#pfMy').addEventListener('click', function () { closePopups(); openMyInfo(); });
+    pop.el.querySelector('#pfMy').addEventListener('click', function () { closePopups(); openMyInfoPopup(pop.el); });
     pop.el.querySelector('#pfOut').addEventListener('click', function () {
       closePopups();
       if (u.demo) { exitDemo(); return; }
@@ -701,6 +708,100 @@ window.UI = (function () {
         if (!user) { cf.close(); m.close(); return; }
         user.delete().then(function () {
           cf.close(); m.close();
+          toast('탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
+        }).catch(function (e) {
+          cf.close();
+          toast(FB.errMsg(e) + ' — 보안 정책상 최근 로그인 후 다시 시도해 주세요.', 'err');
+        });
+      });
+    });
+  }
+
+  /* ---------- 내정보 팝업 (설정 팝업 스타일) ---------- */
+  function openMyInfoPopup(anchor) {
+    var u = currentUser();
+    if (!u) return;
+    var ud = userDoc() || {};
+    var pop = openPopup(anchor,
+      '<div class="pop-head"><b>내 정보</b>' + (u.demo ? ' <span class="demo-chip demo-chip--sm">DEMO</span>' : '') + '</div>' +
+      '<div class="pop-body">' +
+      '<div class="profile-card">' +
+      '<div class="prof-top"><span class="prof-ava"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"></span>' +
+      '<b class="prof-nick">' + esc(ud.nickname || u.displayName || '선원') + '</b></div>' +
+      '<div class="prof-stats">' +
+      '<div><b>' + ((ud.counts && ud.counts.posts) || 0) + '</b><small>게시글</small></div>' +
+      '<div><b>' + ((ud.counts && ud.counts.comments) || 0) + '</b><small>댓글</small></div>' +
+      '<div><b>' + ((ud.counts && ud.counts.likes) || 0) + '</b><small>좋아요</small></div></div>' +
+      '</div>' +
+      '<div class="mi-sec"><span class="mi-lb">프로필 아이콘</span>' +
+      '<div class="ava-grid">' + AVATARS.map(function (a, i) {
+        return '<button class="ava-pick' + (Number(ud.profileIcon || 0) === i ? ' is-on' : '') + '" data-av="' + i + '" type="button" aria-label="프로필 아이콘 ' + (i + 1) + '"><img src="' + a + '" alt=""></button>';
+      }).join('') + '</div></div>' +
+      '<div class="mi-sec"><span class="mi-lb">닉네임</span>' +
+      '<div class="mi-row"><b id="miNick">' + esc(ud.nickname || u.displayName || '선원') + '</b>' +
+      '<button class="btn btn--ghost btn--sm" id="miNickBtn" type="button">변경</button></div></div>' +
+      '<div class="mi-sec"><span class="mi-lb">로그인 이메일</span>' +
+      '<div class="mi-row mi-mail">' + esc(u.email || '이메일 없음') + '</div></div>' +
+      '<button class="btn btn--danger btn--block" id="miDel" type="button" style="margin-top:8px">탈퇴하기</button>' +
+      '</div>', '320px');
+    pop.el.classList.add('pop--myinfo');
+    
+    /* 프로필 아이콘 선택 */
+    pop.body.querySelectorAll('.ava-pick').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var i = Number(b.getAttribute('data-av'));
+        saveUserPatch({ profileIcon: i }).then(function () {
+          pop.body.querySelectorAll('.ava-pick').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+          notifyUser();
+          toast('프로필 아이콘이 변경되었습니다.', 'ok');
+        }).catch(function (e) { toast(FB.errMsg(e), 'err'); });
+      });
+    });
+    
+    /* 닉네임 변경 */
+    pop.body.querySelector('#miNickBtn').addEventListener('click', function () {
+      var cur = pop.body.querySelector('#miNick');
+      if (cur.querySelector('input')) return;
+      var old = cur.textContent;
+      cur.innerHTML = '<input id="miNickIn" maxlength="16" value="' + esc(old) + '" style="max-width:160px">';
+      var save = function () {
+        var inp = pop.body.querySelector('#miNickIn');
+        if (!inp) return;
+        var v = inp.value.trim();
+        if (!v) { cur.textContent = old; return; }
+        saveUserPatch({ nickname: v }).then(function () {
+          cur.textContent = v;
+          notifyUser();
+          toast('닉네임이 변경되었습니다.', 'ok');
+        }).catch(function (e) { cur.textContent = old; toast(FB.errMsg(e), 'err'); });
+      };
+      var inp = pop.body.querySelector('#miNickIn');
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') save(); });
+      inp.addEventListener('blur', save);
+      inp.focus();
+    });
+    
+    /* 탈퇴하기 */
+    pop.body.querySelector('#miDel').addEventListener('click', function () {
+      closePopups();
+      if (u.demo) {
+        toast('데모 계정은 탈퇴 대신 로그아웃됩니다.');
+        exitDemo();
+        return;
+      }
+      var cf = openModal({
+        title: '탈퇴 확인',
+        body: '<p style="font-size:14px;line-height:1.7">정말 탈퇴하시겠습니까?<br><b style="color:var(--red)">계정과 Firebase 사용자 데이터가 삭제되며 복구할 수 없습니다.</b></p>' +
+          '<div style="display:flex;gap:8px;margin-top:16px">' +
+          '<button class="btn btn--ghost btn--block" id="delNo" type="button">취소</button>' +
+          '<button class="btn btn--danger btn--block" id="delYes" type="button">탈퇴하기</button></div>'
+      });
+      cf.body.querySelector('#delNo').addEventListener('click', cf.close);
+      cf.body.querySelector('#delYes').addEventListener('click', function () {
+        var user = FB.auth().currentUser;
+        if (!user) { cf.close(); return; }
+        user.delete().then(function () {
+          cf.close();
           toast('탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
         }).catch(function (e) {
           cf.close();

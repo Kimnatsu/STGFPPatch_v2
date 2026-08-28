@@ -644,6 +644,31 @@ main,.app-footer{animation:pageRise .3s var(--ease) both}
   }
   .pop.pop--fav.show{transform:translate(-50%,0) scale(1)!important}
 
+  /* 설정: 헤더 바로 아래, 화면 우측 (기존 auth 와 동일) */
+  .pop.pop--settings{
+    left:auto!important;
+    right:max(8px,env(safe-area-inset-right))!important;
+    top:var(--header-h)!important;
+    width:min(260px,calc(100vw - 16px))!important;
+    transform:translateY(-6px) scale(.98)!important;
+  }
+  .pop.pop--settings.show{transform:translateY(0) scale(1)!important}
+
+  /* 내정보: 설정 팝업 스타일 (헤더 바로 아래, 화면 중앙) */
+  .pop.pop--myinfo{
+    left:50%!important;
+    right:auto!important;
+    top:var(--header-h)!important;
+    width:min(320px,calc(100vw - 24px))!important;
+    max-height:min(520px, calc(100vh - var(--header-h) - 16px))!important;
+    transform:translate(-50%,-6px) scale(.98)!important;
+  }
+  .pop.pop--myinfo.show{transform:translate(-50%,0) scale(1)!important}
+  .pop.pop--myinfo .pop-body{
+    max-height:calc(100% - 48px);
+    overflow-y:auto;
+  }
+
   /* auth/프로필: 헤더 바로 아래, 화면 우측 */
   .pop.pop--auth{
     left:auto!important;
