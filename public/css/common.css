@@ -88,10 +88,23 @@ ul,ol{list-style:none}
 .logo-txt{font-family:var(--font-d);font-size:23px;letter-spacing:1.5px;color:var(--text)}
 .hd-right{display:flex;align-items:center;gap:6px}
 .icon-btn{
-  width:42px;height:42px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;
-  color:var(--text-2);transition:.2s;position:relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-sm, 8px);
+  color: var(--text-2, #a9bad0);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: 0.2s;
 }
-.icon-btn:hover{background:var(--surface-2);color:var(--gold);transform:translateY(-1px)}
+.icon-btn:hover{
+  background: var(--surface-2, #172940);
+  color: var(--gold, #f5b942);
+  border-color: var(--line, #29425e);
+}
 .hd-demo{font-size:11.5px;font-weight:900;letter-spacing:.6px;border:1px dashed var(--line-2);color:var(--gold);min-height:34px}
 .hd-demo:hover{background:color-mix(in srgb,var(--gold) 12%,transparent)}
 .hd-avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid var(--line-2);padding:0;transition:.2s}
@@ -111,6 +124,26 @@ ul,ol{list-style:none}
 .gnb-font-icon-gear::before{content:"\e994"}
 .gnb-font-icon svg{width:21px;height:21px}
 body.fonticon-ok .gnb-font-icon svg{display:none}
+
+/* 북마크 아이콘 폰트 - icon-btn 내부에서 사용 */
+.ficon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: inherit;
+}
+.ficon::before {
+  font-family: "stds-font-icon-v2" !important;
+  font-size: 22px;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.ficon-bookmark::before {
+  content: "\e98f";
+}
 
 /* ---------- 데스크톱 내비 ---------- */
 .desk-nav{display:none;border-bottom:1px solid var(--line);background:var(--bg-2)}
