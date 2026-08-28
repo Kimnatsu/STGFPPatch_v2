@@ -629,10 +629,10 @@ main,.app-footer{animation:pageRise .3s var(--ease) both}
   /* 햄버거·설정·북마크·auth 버튼 크기 통일 */
   .icon-btn{width:40px!important;height:40px!important;flex:0 0 40px}
 
-  /* 로그아웃 상태의 데스크톱용 텍스트 버튼은 숨기고 auth 아이콘만 표시 */
-  .hd-auth-desktop{display:none!important}
-  .hd-auth-mobile{display:flex}
-  .hd-auth{width:40px;flex:0 0 40px}
+  /* 모바일에서도 PC 와 동일하게 데스크톱용 버튼 표시 */
+  .hd-auth-desktop{display:flex!important}
+  .hd-auth-mobile{display:none!important}
+  .hd-auth{width:auto;flex:0 0 auto}
 
   /* 북마크: 헤더 바로 아래, 화면 중앙 */
   .pop.pop--fav{

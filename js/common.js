@@ -277,15 +277,7 @@ window.UI = (function () {
         '<button class="btn btn--ghost btn--sm" data-auth="signup">' + t('signup') + '</button>' +
         '<button class="btn btn--gold btn--sm" data-auth="login">' + t('login') + '</button>' +
         '<button class="btn btn--ghost btn--sm hd-demo" id="btnDemo" title="데모 로그인 — Firebase에 저장되지 않습니다">데모</button>' +
-        '</div>' +
-        '<button class="icon-btn hd-auth-mobile" id="btnAuthMobile" aria-label="계정 메뉴" type="button">' + IC.user + '</button>';
-      box.querySelector('[data-auth="login"]').addEventListener('click', function () { location.href = 'Login.html'; });
-      box.querySelector('[data-auth="signup"]').addEventListener('click', function () { location.href = 'Login.html#signup'; });
-      box.querySelector('#btnDemo').addEventListener('click', function () { enterDemo(); });
-      box.querySelector('#btnAuthMobile').addEventListener('click', function (e) {
-        e.stopPropagation();
-        openAuthPopup(box.querySelector('#btnAuthMobile'));
-      });
+        '</div>';
       return;
     }
     var ud = userDoc() || {};
