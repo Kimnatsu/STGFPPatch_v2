@@ -3,21 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FPP — 원피스 파이팅패스 커뮤니티</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230a1626'/%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%23f5b942' stroke-width='3.5'/%3E%3Cpath d='M32 13c-8 0-14 6-14 13 0 5 3 9 7 11v6l4-2 3 3 3-3 4 2v-6c4-2 7-6 7-11 0-7-6-13-14-13z' fill='%23f5b942'/%3E%3C/svg%3E" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
-    <script>
-      (function () { try { var t = localStorage.getItem('fpp_theme'); if (t) { try { t = JSON.parse(t); } catch (e) { } document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark'); } } catch (e) { } })();
-    </script>
-    <style>
-      html { background: #0a1626; color-scheme: dark; }
-      html[data-theme="light"] { background: #eef3f8; color-scheme: light; }
-    </style>
+    <title>FPP v2</title>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <p>페이지를 불러오는 중입니다...</p>
+
+    <script>
+      const target = "./public/Main.html" + window.location.hash;
+      window.location.replace(target);
+    </script>
   </body>
 </html>

@@ -10,7 +10,7 @@ export default function App() {
     const t = window.setTimeout(() => {
       setLeaving(true);
       window.location.replace(`${TARGET}${hash}`);
-    }, 500);
+    }, 700);
     return () => window.clearTimeout(t);
   }, []);
 
@@ -22,12 +22,12 @@ export default function App() {
         placeItems: "center",
         background:
           "radial-gradient(1100px 520px at 50% -10%, #16304f 0%, #0a1626 58%, #081120 100%)",
-        transition: "opacity .3s ease",
+        transition: "opacity .35s ease",
         opacity: leaving ? 0 : 1,
       }}
     >
       <div style={{ textAlign: "center" }}>
-        <svg viewBox="0 0 64 64" width="84" height="84" aria-hidden="true" style={{ animation: "fppPulse 1.4s ease-in-out infinite" }}>
+        <svg viewBox="0 0 64 64" width="84" height="84" aria-hidden="true" style={{ animation: "fppPulse 1.6s ease-in-out infinite" }}>
           <circle cx="32" cy="32" r="29" fill="none" stroke="#f5b942" strokeWidth="3.5" />
           <path
             d="M32 13c-8 0-14 6-14 13 0 5 3 9 7 11v6l4-2 3 3 3-3 4 2v-6c4-2 7-6 7-11 0-7-6-13-14-13z"
@@ -38,7 +38,7 @@ export default function App() {
           style={{
             fontFamily: "'Black Han Sans', 'Noto Sans KR', sans-serif",
             fontSize: "clamp(30px, 6vw, 44px)",
-            letterSpacing: "0.04em",
+            letterSpacing: "0.06em",
             color: "#f5b942",
             marginTop: 14,
           }}
@@ -55,7 +55,7 @@ export default function App() {
               height: "100%",
               borderRadius: 99,
               background: "linear-gradient(90deg,#f5b942,#ffd98a)",
-              animation: "fppBar 1s ease-in-out infinite",
+              animation: "fppBar 1.1s ease-in-out infinite",
             }}
           />
         </div>
