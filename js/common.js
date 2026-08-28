@@ -349,7 +349,7 @@ window.UI = (function () {
       body.innerHTML = '<div class="fav-grid">' + arr.slice(0, 16).map(function (id) {
         var c = window.__FPP_CHARS ? window.__FPP_CHARS(id, kind) : null;
         var img = c ? (c.image || PLACEHOLDER_IMG) : PLACEHOLDER_IMG;
-        var nm = c ? c.name : ('No.' + id);
+        var nm = c && c.name ? c.name : ('캐릭터 ' + id);
         return '<button class="fav-cell" type="button" data-fid="' + esc(id) + '" aria-label="' + esc(nm) + '">' +
           '<span class="fav-ava"><img src="' + esc(img) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'"></span>' +
           '<span class="fav-nm">' + esc(nm) + '</span></button>';
