@@ -73,7 +73,7 @@
       bindView(evBox, 'event');
     }
     document.querySelectorAll('#view-comhome [data-go]').forEach(function (b) {
-      b.addEventListener('click', function () { location.hash = b.getAttribute('data-go'); });
+      b.addEventListener('click', function () { location.hash = '#' + b.getAttribute('data-go'); });
     });
     UI.watchReveals($('view-comhome'));
   }
@@ -196,7 +196,7 @@
       }).join('') + '</ul></div></div>';
     bindDetail(el, p, 'patch');
     bindView(el, 'patch');
-    el.querySelectorAll('[data-back]').forEach(function (b) { b.addEventListener('click', function () { location.hash = 'patch'; }); });
+    el.querySelectorAll('[data-back]').forEach(function (b) { b.addEventListener('click', function () { location.hash = '#patch'; }); });
     guardImages(el);
   }
 
@@ -391,7 +391,7 @@
       }).join('') + '</ul></div></div>';
     bindDetail(el, b, 'board');
     bindView(el, 'board');
-    el.querySelectorAll('[data-back]').forEach(function (x) { x.addEventListener('click', function () { location.hash = 'board'; }); });
+    el.querySelectorAll('[data-back]').forEach(function (x) { x.addEventListener('click', function () { location.hash = '#board'; }); });
     
     /* 편집/삭제 버튼 이벤트 바인딩 */
     if (isOwner) {
@@ -402,7 +402,7 @@
         if (!confirm('정말 삭제하시겠습니까?')) return;
         FB.deleteBoard(b.docId).then(function () {
           UI.toast('게시글이 삭제되었습니다.', 'ok');
-          location.hash = 'board';
+          location.hash = '#board';
         }).catch(function (e) { UI.toast(FB.errMsg(e), 'err'); });
       });
     }
@@ -535,7 +535,7 @@
       }).join('') + '</ul></div></div>';
     bindDetail(el, e, 'event');
     bindView(el, 'event');
-    el.querySelectorAll('[data-back]').forEach(function (x) { x.addEventListener('click', function () { location.hash = 'event'; }); });
+    el.querySelectorAll('[data-back]').forEach(function (x) { x.addEventListener('click', function () { location.hash = '#event'; }); });
     renderComments('event', e.docId);
     guardImages(el);
   }
@@ -557,18 +557,21 @@
     UI.setActiveNav(r.page === 'home' ? 'comhome' : r.page);
     window.scrollTo({ top: 0 });
     if (!S.loaded) return;
-    if (r.page === 'home') renderComHome();
+    if (r.page === 'home') { renderComHome(); return; }
     if (r.page === 'patch') {
       if (r.mode === 'view' && r.id) renderPatchDetail(r.id);
       else { renderMonthFilter(); renderPatchList(); }
+      return;
     }
     if (r.page === 'board') {
       if (r.mode === 'view' && r.id) renderBoardDetail(r.id);
       else renderBoardList();
+      return;
     }
     if (r.page === 'event') {
       if (r.mode === 'view' && r.id) renderEventDetail(r.id);
       else renderEventList();
+      return;
     }
   }
 
