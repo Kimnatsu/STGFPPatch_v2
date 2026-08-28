@@ -153,6 +153,31 @@ window.UI = (function () {
 
   /* ---------- 즐겨찾기 ---------- */
   var favCache = { chars: [], supports: [] };
+  var charCache = { chars: [], supports: [], loaded: false };
+  
+  function loadCharCache() {
+    if (charCache.loaded) return Promise.resolve();
+    if (!FB.ready) return Promise.resolve();
+    return Promise.all([
+      FB.getCharacters().catch(function () { return []; }),
+      FB.getSupportCharacters().catch(function () { return []; })
+    ]).then(function (r) {
+      charCache.chars = r[0];
+      charCache.supports = r[1];
+      charCache.loaded = true;
+    });
+  }
+  
+  function findCharInCache(id, kind) {
+    var pool = kind === 'support' ? charCache.supports : charCache.chars;
+    var c = pool.filter(function (x) { return String(x.id) === String(id); })[0];
+    if (!c) {
+      var all = charCache.chars.concat(charCache.supports);
+      c = all.filter(function (x) { return String(x.id) === String(id); })[0];
+    }
+    return c || null;
+  }
+  
   function loadFavs() {
     var u = currentUser();
     if (!u) { favCache = { chars: [], supports: [] }; return Promise.resolve(favCache); }
@@ -347,7 +372,7 @@ window.UI = (function () {
         return;
       }
       body.innerHTML = '<div class="fav-grid">' + arr.slice(0, 16).map(function (id) {
-        var c = window.__FPP_CHARS ? window.__FPP_CHARS(id, kind) : null;
+        var c = findCharInCache(id, kind);
         var img = c ? (c.image || PLACEHOLDER_IMG) : PLACEHOLDER_IMG;
         var nm = c && c.name ? c.name : ('캐릭터 ' + id);
         return '<button class="fav-cell" type="button" data-fid="' + esc(id) + '" aria-label="' + esc(nm) + '">' +
@@ -368,7 +393,9 @@ window.UI = (function () {
         paint();
       });
     });
-    loadFavs().then(paint);
+    loadFavs().then(function() {
+      loadCharCache().then(paint);
+    });
   }
 
   function onSettingsClick(anchor) {
@@ -873,6 +900,7 @@ window.UI = (function () {
           if (u) {
             FB.ensureUserDoc(u).then(function () { return loadUserDoc(); }).then(function () {
               loadFavs();
+              loadCharCache();
               notifyUser();
             }).catch(function () { notifyUser(); });
           } else if (!isDemo()) {
