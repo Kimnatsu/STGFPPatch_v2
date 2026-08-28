@@ -363,11 +363,22 @@
     var wt = document.querySelector('#view-board .write-toolbar');
     if (wt) wt.style.display = 'none';
     if (!b) { UI.empty(el, { title: '게시글을 찾을 수 없습니다.', btnText: '게시판으로', btnHref: 'Community.html#board' }); return; }
+    
+    /* 작성자 확인 — 편집/삭제 버튼 표시 여부 결정 */
+    var u = UI.currentUser();
+    var isOwner = u && (b.authorId === u.uid || b.author === u.displayName);
+    var editDeleteHTML = isOwner ? 
+      '<div class="detail-actions-head">' +
+        '<button class="btn btn--ghost btn--sm" type="button" data-edit="' + UI.esc(b.docId) + '">' + UI.IC.edit + ' 수정</button>' +
+        '<button class="btn btn--ghost btn--sm" type="button" data-del="' + UI.esc(b.docId) + '">' + UI.IC.trash + ' 삭제</button>' +
+      '</div>' : '';
+    
     var bodyImages = (b.images || []).map(function (src) { return '<img src="' + UI.esc(src) + '" alt="" loading="lazy">'; }).join('');
     el.innerHTML =
       '<button class="detail-back" type="button" data-back="board">' + UI.IC.back + ' 게시판 목록</button>' +
       '<article class="detail"><div class="detail-head">' + catBadge(b.category) +
       '<h2 class="detail-title">' + UI.esc(b.title) + '</h2>' +
+      editDeleteHTML +
       '<div class="detail-meta"><span>' + UI.esc(b.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(b.date)) + '</span>' +
       (b.commentCount ? '<span>·</span><span>댓글 ' + b.commentCount + '</span>' : '') + '</div></div>' +
       '<div class="detail-body">' + UI.renderContent(b.content || b.text) + bodyImages + '</div>' +
@@ -381,6 +392,21 @@
     bindDetail(el, b, 'board');
     bindView(el, 'board');
     el.querySelectorAll('[data-back]').forEach(function (x) { x.addEventListener('click', function () { location.hash = 'board'; }); });
+    
+    /* 편집/삭제 버튼 이벤트 바인딩 */
+    if (isOwner) {
+      el.querySelector('[data-edit]').addEventListener('click', function () {
+        UI.toast('편집 기능은 준비중입니다.', 'info');
+      });
+      el.querySelector('[data-del]').addEventListener('click', function () {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+        FB.deleteBoard(b.docId).then(function () {
+          UI.toast('게시글이 삭제되었습니다.', 'ok');
+          location.hash = 'board';
+        }).catch(function (e) { UI.toast(FB.errMsg(e), 'err'); });
+      });
+    }
+    
     renderComments('board', b.docId);
     guardImages(el);
   }

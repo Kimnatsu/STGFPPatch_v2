@@ -511,6 +511,13 @@ window.FB = (function () {
     if (!ready) return Promise.reject(new Error('Firebase 미준비'));
     return col(commentCol(type)).doc(cid).delete();
   }
+  /* 게시판 글 삭제 */
+  function deleteBoard(id) {
+    if (!ready) return Promise.reject(new Error('Firebase 미준비'));
+    var u = auth.currentUser;
+    if (!u) return Promise.reject(new Error('로그인 필요'));
+    return col('boards').doc(id).delete();
+  }
 
   /* ---------- 사용자 ---------- */
   function getUserDoc(uid) {
@@ -591,7 +598,7 @@ window.FB = (function () {
     errMsg: errMsg, dateKey: dateKey, onReady: onReady,
     getCharacters: getCharacters, getSupportCharacters: getSupportCharacters,
     getPvpPatches: getPvpPatches, getPatchNotes: getPatchNotes, getNotices: getNotices,
-    getBanners: getBanners, getEvents: getEvents, getBoards: getBoards, addBoard: addBoard,
+    getBanners: getBanners, getEvents: getEvents, getBoards: getBoards, addBoard: addBoard, deleteBoard: deleteBoard,
     getTips: getTips, addTip: addTip, updateTip: updateTip, deleteTip: deleteTip, voteTip: voteTip,
     getLikeDoc: getLikeDoc, toggleGenericLike: toggleGenericLike, toggleBoardLike: toggleBoardLike,
     getComments: getComments, addComment: addComment, deleteComment: deleteComment,
