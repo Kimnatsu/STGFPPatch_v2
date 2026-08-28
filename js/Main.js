@@ -53,15 +53,14 @@
     if (k === 'attr-sim') return '심';
     return '';
   }
-  var REPO = 'https://cdn.jsdelivr.net/gh/OnePieceFightingPath/OPFP@HEAD/';
   function attrIconSrc(cls) {
     var m = { 'attr-force': 'force', 'attr-ki': 'ki', 'attr-sim': 'sim' };
-    return m[cls] ? REPO + 'img/attr/' + m[cls] + '.png' : '';
+    return m[cls] ? 'img/attr/' + m[cls] + '.png' : '';
   }
   function typeIconSrc(bt) {
     var m = { '원소': 'element', 'element': 'element', '검사': 'sword', 'sword': 'sword', '격투': 'fighter', 'fighter': 'fighter', '특수': 'special', 'special': 'special' };
     var k = m[bt];
-    return k ? REPO + 'img/type/' + k + '.webp' : '';
+    return k ? 'img/type/' + k + '.webp' : '';
   }
 
   var BNAME = { buff: '버프', nerf: '너프', fix: '기능수정' };
