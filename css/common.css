@@ -83,6 +83,10 @@ ul,ol{list-style:none}
 .hd-burger{display:flex}
 @media (min-width:768px){.hd-burger.icon-btn{display:none}}
 .logo{display:flex;align-items:center;gap:9px;color:var(--gold);margin-right:auto}
+.logo-img{height:30px;width:auto;display:block}
+.logo-img-dark{height:30px;width:auto;display:none}
+html[data-theme="dark"] .logo-img{display:none}
+html[data-theme="dark"] .logo-img-dark{display:block}
 .logo-mark{display:flex;filter:drop-shadow(0 4px 12px rgba(245,185,66,.28));transition:transform .3s var(--ease)}
 .logo:hover .logo-mark{transform:rotate(-8deg) scale(1.06)}
 .logo-txt{font-family:var(--font-d);font-size:23px;letter-spacing:1.5px;color:var(--text)}

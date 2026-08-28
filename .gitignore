@@ -1,5 +1,3 @@
-(js/common.js is a source file, so no ignores needed)
+(css/common.css, js/common.js) are source code files, and there are no build artifacts, dependencies, or temporary files in the changes provided.
 
-```javascript
-
-```
+Output: (nothing)
