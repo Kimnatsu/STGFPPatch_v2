@@ -396,7 +396,7 @@
     /* 편집/삭제 버튼 이벤트 바인딩 */
     if (isOwner) {
       el.querySelector('[data-edit]').addEventListener('click', function () {
-        UI.toast('편집 기능은 준비중입니다.', 'info');
+        showEditForm(b);
       });
       el.querySelector('[data-del]').addEventListener('click', function () {
         if (!confirm('정말 삭제하시겠습니까?')) return;
@@ -409,6 +409,58 @@
     
     renderComments('board', b.docId);
     guardImages(el);
+  }
+
+  /* ================= 게시판 수정 기능 ================= */
+  function showEditForm(b) {
+    var el = $('boardContent');
+    var u = UI.currentUser();
+    if (!u) { UI.toast('로그인이 필요합니다.', 'err'); return; }
+    
+    el.innerHTML =
+      '<button class=\"detail-back\" type=\"button\" data-cancel-edit=\"board\">' + UI.IC.back + ' 취소</button>' +\
+      '<article class=\"detail\"><div class=\"detail-head\">' +\
+      '<h2 class=\"detail-title\">게시글 수정</h2></div>' +\
+      '<div class=\"detail-form-group">' +\
+        '<label class=\"detail-form-label\">제목</label>' +\
+        '<input class=\"detail-input\" id=\"editTitle\" type=\"text\" value=\"' + UI.esc(b.title) + '\" maxlength=\"100\" />' +\
+      '</div>' +\
+      '<div class=\"detail-form-group">' +\
+        '<label class=\"detail-form-label\">내용</label>' +\
+        '<textarea class=\"detail-textarea\" id=\"editContent\" maxlength=\"5000\">' + UI.esc(b.content || b.text) + '</textarea>' +\
+      '</div>' +\
+      '<div class=\"detail-actions\" style=\"margin-top:20px;text-align:right\">' +\
+        '<button class=\"btn btn--ghost btn--sm\" type=\"button\" id=\"cancelEditBtn\">취소</button>' +\
+        '<button class=\"btn btn--gold btn--sm\" type=\"button\" id=\"saveEditBtn\">저장</button>' +\
+      '</div></article>';
+    
+    el.querySelector('[data-cancel-edit]').addEventListener('click', function () {
+      renderBoardDetail(b.docId);
+    });
+    el.querySelector('#cancelEditBtn').addEventListener('click', function () {
+      renderBoardDetail(b.docId);
+    });
+    el.querySelector('#saveEditBtn').addEventListener('click', function () {
+      saveEdit(b, u);
+    });
+  }
+
+  function saveEdit(b, u) {
+    var title = $('editTitle').value.trim();
+    var content = $('editContent').value.trim();
+    if (!title) { UI.toast('제목을 입력해 주세요.', 'err'); return; }
+    if (!content) { UI.toast('내용을 입력해 주세요.', 'err'); return; }
+    
+    FB.updateBoard(b.docId, title, content).then(function () {
+      UI.toast('게시글이 수정되었습니다.', 'ok');
+      S.boards = S.boards.map(function (x) {
+        if (x.docId === b.docId) {
+          return Object.assign({}, x, { title: title, content: content, date: new Date().toISOString().slice(0, 10) });
+        }
+        return x;
+      });
+      renderBoardDetail(b.docId);
+    }).catch(function (e) { UI.toast(FB.errMsg(e), 'err'); });
   }
 
   /* ================= 이벤트 ================= */
