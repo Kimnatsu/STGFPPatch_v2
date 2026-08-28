@@ -619,5 +619,8 @@ main,.app-footer{animation:pageRise .3s var(--ease) both}
 /* 모바일에서 즐겨찾기 팝업 중앙 정렬 */
 @media (max-width:767px){
   .pop{left:50%!important;top:50%!important;transform:translate(-50%,-50%) scale(.98)!important}
-  .pop.show{transform:translate(-50%,-50%)!important}
+  .pop.show{transform:translate(-50%,-132%)!important}
+  
+  /* 모바일에서 우측 툴바 버튼 너비 통일 */
+  .icon-btn{width:126.6666666666667px!important;height:40px!important}
 }
