@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FPP — 원피스 파이팅패스 커뮤니티</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230a1626'/%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%23f5b942' stroke-width='3.5'/%3E%3Cpath d='M32 13c-8 0-14 6-14 13 0 5 3 9 7 11v6l4-2 3 3 3-3 4 2v-6c4-2 7-6 7-11 0-7-6-13-14-13z' fill='%23f5b942'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <script>
+    /* 테마 저장값(JSON) 파싱 — 따옴표 포함 값 방지 */
+    (function () { try { var t = localStorage.getItem('fpp_theme'); if (t) { try { t = JSON.parse(t); } catch (e) { } document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark'); } } catch (e) { } })();
+  </script>
+  <style>
+    html { background: #0a1626; color-scheme: dark; }
+    html[data-theme="light"] { background: #eef3f8; color-scheme: light; }
+    #pageVeil { position: fixed; inset: 0; z-index: 9999; pointer-events: none; background: #0a1626; opacity: 1; transition: opacity .25s ease; animation: pageVeilFail .3s ease .9s forwards; }
+    html[data-theme="light"] #pageVeil { background: #eef3f8; }
+    #pageVeil.off { opacity: 0; }
+    @keyframes pageVeilFail { to { opacity: 0; visibility: hidden; } }
+  </style>
+  <link rel="stylesheet" href="css/common.css" />
+  <link rel="stylesheet" href="css/Main.css" />
+</head>
+<body data-page="main">
+
+  <div id="pageVeil" aria-hidden="true"></div>
+  <div class="ambient" aria-hidden="true"></div>
+
+  <header class="app-header" id="appHeader"></header>
+  <div class="drawer-backdrop" id="drawerBack"></div>
+  <aside class="drawer" id="navDrawer" aria-label="전체 메뉴"></aside>
+
+  <main>
+    <!-- ===== 홈 ===== -->
+    <section class="view" id="view-home">
+      <div class="banner banner--home rv" id="homeBanner">
+        <div class="banner-fallback" aria-hidden="true"></div>
+        <div class="banner-shade" aria-hidden="true"></div>
+        <div class="banner-tag">
+          <span class="banner-tag-txt" id="bnTitle">시즌8 · 위대한 항로</span>
+          <span class="banner-tag-sub" id="bnSub">랭킹전 보상 2배 이벤트 진행 중</span>
+        </div>
+        <div class="banner-dots" id="bnDots" aria-hidden="true"></div>
+      </div>
+      <div class="wrap">
+        <div class="home-quick rv">
+          <a class="qcard" href="Community.html#patch">
+            <span class="qcard-ic qcard-ic--gold"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9.5 12h6M9.5 15.5h4" stroke-linecap="round"/></svg></span>
+            <span><b>패치노트</b><small>밸런스 변경 내역 한눈에</small></span><span class="qcard-go">›</span>
+          </a>
+          <a class="qcard" href="Main.html#pvp">
+            <span class="qcard-ic qcard-ic--red"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 19l4.5-4.5M14.5 4.5l-9 9 3 3 9-9zM13 6l5 5M17.5 3.5l3 3"/></svg></span>
+            <span><b>PvP 패치</b><small>오늘의 버프 · 너프 · 기능수정</small></span><span class="qcard-go">›</span>
+          </a>
+          <a class="qcard" href="Community.html#board">
+            <span class="qcard-ic qcard-ic--blue"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v12h-9l-4.5 3.5V17H4z"/><path d="M8 9.5h8M8 12.5h5" stroke-linecap="round"/></svg></span>
+            <span><b>커뮤니티</b><small>선원들과 정보 공유</small></span><span class="qcard-go">›</span>
+          </a>
+        </div>
+
+        <div class="box rv" id="homePvpBox">
+          <div class="box-head">
+            <h2 class="box-title">오늘의 PvP 패치</h2>
+            <a class="box-go" href="Main.html#pvp">전체 보기 ›</a>
+          </div>
+          <div class="box-body" id="homePvp"></div>
+        </div>
+
+        <div class="box rv" id="favBox">
+          <div class="box-head">
+            <h2 class="box-title">즐겨찾기 캐릭터</h2>
+            <a class="box-go" href="Main.html#characters">전체 보기 ›</a>
+          </div>
+          <div class="box-body" id="favChars"></div>
+        </div>
+
+        <div class="box rv" id="hotCharBox">
+          <div class="box-head">
+            <h2 class="box-title">인기 캐릭터</h2>
+            <a class="box-go" href="Main.html#characters">전체 보기 ›</a>
+          </div>
+          <div class="box-body"><div class="orb-grid" id="hotChars"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 캐릭터 ===== -->
+    <section class="view" id="view-characters">
+      <div class="wrap">
+        <div class="page-head rv">
+          <h1 class="page-title">캐릭터 도감</h1>
+          <p class="page-desc">전체 캐릭터와 서포터를 확인하고 꿀팁을 공유하세요.</p>
+        </div>
+        <div class="char-tools rv">
+          <div class="char-search">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="search" id="charSearch" placeholder="캐릭터 검색 (예: 루피)" autocomplete="off" />
+          </div>
+          <div class="chip-row" id="gradeFilter">
+            <button class="chip is-on" data-grade="all" type="button">전체</button>
+            <button class="chip" data-grade="6" type="button">전설</button>
+            <button class="chip" data-grade="5" type="button">초월</button>
+            <button class="chip" data-grade="4" type="button">특급</button>
+            <button class="chip" data-grade="fav" type="button">☆ 즐겨찾기</button>
+          </div>
+        </div>
+        <div id="charGrid" class="char-grid rv"></div>
+
+        <div class="box rv" id="supBox">
+          <div class="box-head"><h2 class="box-title">서포터</h2></div>
+          <div class="box-body"><div class="orb-grid orb-grid--sup" id="supGrid"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PvP 패치 ===== -->
+    <section class="view" id="view-pvp">
+      <div class="wrap">
+        <div class="page-head rv">
+          <h1 class="page-title">PvP 패치</h1>
+          <p class="page-desc">날짜별 밸런스 변경 사항 — 캐릭터를 누르면 상세 내역이 열립니다.</p>
+        </div>
+        <div class="pvp-tools rv">
+          <select id="pvpDate" aria-label="패치 날짜 선택"></select>
+          <span class="pvp-tools-sum" id="pvpSum"></span>
+        </div>
+        <div class="pvp-cols rv">
+          <div class="pvp-col">
+            <h2 class="pvp-col-title"><span class="badge badge--buff" aria-hidden="true">▲</span> 버프 <span class="pvp-col-cnt" id="buffCnt" aria-live="polite">0명</span><small class="pvp-col-en">Buff</small></h2>
+            <div class="pvp-col-body" id="colBuff"></div>
+          </div>
+          <div class="pvp-col">
+            <h2 class="pvp-col-title"><span class="badge badge--nerf" aria-hidden="true">▼</span> 너프 <span class="pvp-col-cnt" id="nerfCnt" aria-live="polite">0명</span><small class="pvp-col-en">Nerf</small></h2>
+            <div class="pvp-col-body" id="colNerf"></div>
+          </div>
+          <div class="pvp-col">
+            <h2 class="pvp-col-title"><span class="badge badge--fix" aria-hidden="true">✦</span> 기능수정 <span class="pvp-col-cnt" id="fixCnt" aria-live="polite">0명</span><small class="pvp-col-en">Fix</small></h2>
+            <div class="pvp-col-body" id="colFix"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="wrap ft-in">
+      <span class="ft-logo">FPP v2</span>
+      <span>원피스 파이팅패스 팬 커뮤니티 — 본 사이트는 비공식 팬 페이지입니다.</span>
+      <span>© FPP Community</span>
+    </div>
+  </footer>
+
+  <nav id="bottomTabs" class="bottom-tabs" aria-label="하단 메뉴"></nav>
+
+  <!-- 캐릭터 상세 팝업 -->
+  <div class="cp-back" id="cpBackdrop" aria-hidden="true"></div>
+  <div class="cp-panel" id="cpPanel" role="dialog" aria-modal="true" aria-hidden="true" aria-label="캐릭터 상세"></div>
+
+  <div id="popupRoot"></div>
+  <div id="toastRoot" aria-live="polite"></div>
+
+  <script src="js/Firebase.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/Main.js"></script>
+</body>
+</html>
