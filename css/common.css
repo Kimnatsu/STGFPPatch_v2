@@ -638,7 +638,7 @@ main,.app-footer{animation:pageRise .3s var(--ease) both}
   .pop.pop--fav{
     left:50%!important;
     right:auto!important;
-    top:calc(var(--header-h) + 8px)!important;
+    top:var(--header-h)!important;
     width:min(320px,calc(100vw - 24px))!important;
     transform:translate(-50%,-6px) scale(.98)!important;
   }
@@ -648,7 +648,7 @@ main,.app-footer{animation:pageRise .3s var(--ease) both}
   .pop.pop--auth{
     left:auto!important;
     right:max(8px,env(safe-area-inset-right))!important;
-    top:calc(var(--header-h) + 8px)!important;
+    top:var(--header-h)!important;
     width:min(260px,calc(100vw - 16px))!important;
     transform:translateY(-6px) scale(.98)!important;
   }
