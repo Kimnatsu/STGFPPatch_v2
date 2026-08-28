@@ -615,3 +615,9 @@ main,.app-footer{animation:pageRise .3s var(--ease) both}
 .foot-logo{font-family:var(--font-d);font-size:22px;color:var(--gold);letter-spacing:1.5px}
 .foot-in p{font-size:12.5px;color:var(--text-3)}
 .foot-sub{font-size:11px!important;color:var(--text-3);opacity:.8}
+
+/* 모바일에서 즐겨찾기 팝업 중앙 정렬 */
+@media (max-width:767px){
+  .pop{left:50%!important;top:50%!important;transform:translate(-50%,-50%) scale(.98)!important}
+  .pop.show{transform:translate(-50%,-50%)!important}
+}
