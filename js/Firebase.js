@@ -514,15 +514,15 @@ window.FB = (function () {
   /* 게시판 글 삭제 */
   function deleteBoard(id) {
     if (!ready) return Promise.reject(new Error('Firebase 미준비'));
-    var u = auth.currentUser;
-    if (!u) return Promise.reject(new Error('로그인 필요'));
+    var u = auth();
+    if (!u || !u.currentUser) return Promise.reject(new Error('로그인 필요'));
     return col('boards').doc(id).delete();
   }
   /* 게시판 글 수정 */
   function updateBoard(id, title, content) {
     if (!ready) return Promise.reject(new Error('Firebase 미준비'));
-    var u = auth.currentUser;
-    if (!u) return Promise.reject(new Error('로그인 필요'));
+    var u = auth();
+    if (!u || !u.currentUser) return Promise.reject(new Error('로그인 필요'));
     return col('boards').doc(id).update({
       title: title,
       content: content,
