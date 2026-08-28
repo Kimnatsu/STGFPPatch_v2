@@ -273,12 +273,19 @@ window.UI = (function () {
     var u = currentUser();
     if (!u) {
       box.innerHTML =
+        '<div class="hd-auth-desktop">' +
         '<button class="btn btn--ghost btn--sm" data-auth="signup">' + t('signup') + '</button>' +
         '<button class="btn btn--gold btn--sm" data-auth="login">' + t('login') + '</button>' +
-        '<button class="btn btn--ghost btn--sm hd-demo" id="btnDemo" title="데모 로그인 — Firebase에 저장되지 않습니다">데모</button>';
+        '<button class="btn btn--ghost btn--sm hd-demo" id="btnDemo" title="데모 로그인 — Firebase에 저장되지 않습니다">데모</button>' +
+        '</div>' +
+        '<button class="icon-btn hd-auth-mobile" id="btnAuthMobile" aria-label="계정 메뉴" type="button">' + IC.user + '</button>';
       box.querySelector('[data-auth="login"]').addEventListener('click', function () { location.href = 'Login.html'; });
       box.querySelector('[data-auth="signup"]').addEventListener('click', function () { location.href = 'Login.html#signup'; });
       box.querySelector('#btnDemo').addEventListener('click', function () { enterDemo(); });
+      box.querySelector('#btnAuthMobile').addEventListener('click', function (e) {
+        e.stopPropagation();
+        openAuthPopup(box.querySelector('#btnAuthMobile'));
+      });
       return;
     }
     var ud = userDoc() || {};
@@ -362,6 +369,7 @@ window.UI = (function () {
       '<div class="pop-tabs"><button class="pop-tab is-on" data-ft="char" type="button">캐릭터</button>' +
       '<button class="pop-tab" data-ft="support" type="button">현질 서폿 캐릭터</button></div>' +
       '<div class="pop-body" id="favBody"></div>', '320px');
+    pop.el.classList.add('pop--fav');
     var kind = 'char';
     function paint() {
       var body = pop.el.querySelector('#favBody');
@@ -399,8 +407,22 @@ window.UI = (function () {
     });
   }
 
+  function openAuthPopup(anchor) {
+    var pop = openPopup(anchor,
+      '<div class="pop-head"><b>계정</b></div>' +
+      '<div class="pop-body">' +
+      '<a class="pop-item" href="Login.html">' + IC.user + '<span>로그인</span></a>' +
+      '<a class="pop-item" href="Login.html#signup">' + IC.edit + '<span>회원가입</span></a>' +
+      '<button class="pop-item" id="authDemo" type="button"><span class="demo-chip demo-chip--sm">DEMO</span><span>데모 로그인</span></button>' +
+      '</div>', '240px');
+    pop.el.classList.add('pop--auth');
+    pop.el.querySelector('#authDemo').addEventListener('click', function () {
+      closePopups();
+      enterDemo();
+    });
+  }
+
   function onSettingsClick(anchor) {
-    if (window.matchMedia('(max-width:767px)').matches) { location.href = 'Setting.html'; return; }
     var items = [
       ['notice', '공지사항', '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h5" stroke-linejoin="round" stroke-linecap="round"/></svg>'],
       ['notify', '알림 설정', '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0" stroke-linejoin="round"/></svg>'],
@@ -441,6 +463,7 @@ window.UI = (function () {
       '<button class="pop-item" id="pfMy" type="button">' + IC.user + '<span>내 정보</span></button>' +
       '<button class="pop-item" id="pfOut" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h-8v16h8M10 12h11M18 8.5L21.5 12 18 15.5"/></svg><span>로그아웃</span></button>' +
       '</div>', '300px');
+    pop.el.classList.add('pop--auth');
     pop.el.querySelector('#pfMy').addEventListener('click', function () { closePopups(); openMyInfo(); });
     pop.el.querySelector('#pfOut').addEventListener('click', function () {
       closePopups();
