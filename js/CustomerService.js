@@ -1,110 +1,43 @@
 /* ============================================================
    FPP v2 — CustomerService.js
-   고객센터: FAQ/공지 검색 · 상세 · 1:1 문의 · 나의 문의
+   고객센터: FAQ 검색 · 상세 · 1:1 문의 · 나의 문의
    ============================================================ */
 (function () {
   'use strict';
 
   function $(id) { return document.getElementById(id); }
 
-  var S = { notices: [], banners: [], loaded: false };
+  var S = { banners: [], loaded: false };
   var query = '';
 
   /* ================= 데이터 ================= */
   function loadAll() {
     if (S.loaded) return Promise.resolve();
     if (!FB.ready) return Promise.reject(new Error('Firebase SDK 없음'));
-    return Promise.all([FB.getNotices(), FB.getBanners()])
-      .then(function (r) { S.notices = r[0]; S.banners = r[1]; S.loaded = true; });
-  }
-
-  function catBadge(c) {
-    var cls = c ? 'badge--info' : 'badge--patch';
-    return '<span class="badge ' + cls + '">' + UI.esc(c || 'FAQ') + '</span>';
+    return FB.getBanners().then(function (r) { S.banners = r; S.loaded = true; });
   }
 
   /* ================= 목록 ================= */
   function filtered() {
-    var q = query.trim().toLowerCase();
-    if (!q) return S.notices;
-    return S.notices.filter(function (n) {
-      return String(n.title || '').toLowerCase().indexOf(q) > -1 ||
-        String(n.content || '').toLowerCase().indexOf(q) > -1 ||
-        String(n.author || '').toLowerCase().indexOf(q) > -1;
-    });
+    return [];
   }
-  function rowHTML(n) {
-    return '<li class="cs-row" data-view="' + UI.esc(n.docId) + '" tabindex="0" role="button" aria-label="' + UI.esc(n.title) + '">' +
-      '<span class="cs-q-ic" aria-hidden="true">Q</span>' +
-      '<div class="cs-row-tx"><b>' + UI.esc(n.title) + '</b>' +
-      '<small>' + catBadge(n.category) +
-      '<span>' + UI.esc(n.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(n.date)) + '</span>' +
-      (UI.isNew(n.date) ? '<span class="lst-new">NEW</span>' : '') + '</small></div>' +
-      '<span class="cs-arrow" aria-hidden="true">›</span></li>';
-  }
+  function rowHTML() { return ''; }
   function renderList() {
     var el = $('csGrid');
-    var list = filtered();
-    if (!list.length) {
-      UI.empty(el, query.trim()
-        ? { title: '\'' + query.trim() + '\' 검색 결과가 없습니다.', desc: '다른 키워드로 검색해 보세요.' }
-        : { title: '등록된 안내가 없습니다.', desc: '궁금한 점은 1:1 문의로 남겨주세요.' });
-      return;
-    }
-    el.innerHTML = '<ul class="cs-rows">' + list.map(rowHTML).join('') + '</ul>';
-    bindRows(el);
-    UI.watchReveals(el);
+    UI.empty(el, { title: '고객센터는 1:1 문의와 자주하는 질문만 지원합니다.', desc: '공지사항은 커뮤니티 페이지를 이용해 주세요.' });
   }
-  function bindRows(root) {
-    root.querySelectorAll('[data-view]').forEach(function (el) {
-      var go = function () { location.hash = 'view/' + el.getAttribute('data-view'); };
-      el.addEventListener('click', go);
-      el.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
-    });
-  }
+  function bindRows() {}
 
-  /* ================= 상세 ================= */
-  function renderDetail(id) {
-    var n = S.notices.filter(function (x) { return x.docId === id; })[0];
-    if (!n) {
-      UI.empty($('csGrid'), { title: '안내를 찾을 수 없습니다.', btnText: '목록으로', btnHref: 'CustomerService.html' });
-      return;
-    }
-    $('csListSection').hidden = true;
-    $('csDetail').hidden = false;
-    var badge = $('csBadge');
-    if (n.category) { badge.hidden = false; badge.textContent = n.category; }
-    else { badge.hidden = true; }
-    $('csTitle').textContent = n.title;
-    $('csMeta').innerHTML = '<span>' + UI.esc(n.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(n.date)) + '</span>' +
-      (UI.isNew(n.date) ? '<span class="lst-new">NEW</span>' : '');
-    $('csContent').innerHTML = UI.renderContent(n.content);
-    /* 하단 목록 Box — 최근 6건 */
-    var box = $('csList');
-    box.innerHTML = '<ul class="lst">' + S.notices.slice(0, 6).map(function (x) {
-      return '<li class="lst-row" data-view="' + UI.esc(x.docId) + '" tabindex="0" role="button" aria-label="' + UI.esc(x.title) + '">' +
-        '<div class="lst-main"><div class="lst-l1">' + catBadge(x.category) +
-        '<span class="lst-title">' + UI.esc(x.title) + '</span></div>' +
-        '<div class="lst-l2"><span>' + UI.esc(x.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(x.date)) + '</span></div></div>' +
-        (UI.isNew(x.date) ? '<span class="lst-new">NEW</span>' : '') + '</li>';
-    }).join('') + '</ul>';
-    bindRows(box);
-    window.scrollTo({ top: 0 });
+  /* ================= 라우팅 ================= */
+  function route() {
+    UI.setActiveNav('cs');
+    if (!S.loaded) return;
+    showList();
   }
   function showList() {
     $('csDetail').hidden = true;
     $('csListSection').hidden = false;
     renderList();
-  }
-
-  /* ================= 라우팅 ================= */
-  function route() {
-    UI.setActiveNav('cs');
-    var h = location.hash.replace(/^#/, '');
-    var m = h.match(/^view\/(.+)$/);
-    if (!S.loaded) return;
-    if (m) renderDetail(decodeURIComponent(m[1]));
-    else showList();
   }
 
   /* ================= 1:1 문의 ================= */
