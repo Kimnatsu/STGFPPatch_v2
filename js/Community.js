@@ -418,22 +418,24 @@
     if (!u) { UI.toast('로그인이 필요합니다.', 'err'); return; }
     
     el.innerHTML =
-      '<button class=\"detail-back\" type=\"button\" data-cancel-edit=\"board\">' + UI.IC.back + ' 취소</button>' +\
-      '<article class=\"detail\"><div class=\"detail-head\">' +\
-      '<h2 class=\"detail-title\">게시글 수정</h2></div>' +\
-      '<div class=\"detail-form-group">' +\
-        '<label class=\"detail-form-label\">제목</label>' +\
-        '<input class=\"detail-input\" id=\"editTitle\" type=\"text\" value=\"' + UI.esc(b.title) + '\" maxlength=\"100\" />' +\
-      '</div>' +\
-      '<div class=\"detail-form-group">' +\
-        '<label class=\"detail-form-label\">내용</label>' +\
-        '<textarea class=\"detail-textarea\" id=\"editContent\" maxlength=\"5000\">' + UI.esc(b.content || b.text) + '</textarea>' +\
-      '</div>' +\
-      '<div class=\"detail-actions\" style=\"margin-top:20px;text-align:right\">' +\
-        '<button class=\"btn btn--ghost btn--sm\" type=\"button\" id=\"cancelEditBtn\">취소</button>' +\
-        '<button class=\"btn btn--gold btn--sm\" type=\"button\" id=\"saveEditBtn\">저장</button>' +\
+      '<button class="detail-back" type="button" data-cancel-edit="board">' +
+        UI.IC.back + ' 취소</button>' +
+      '<article class="detail"><div class="detail-head">' +
+        '<h2 class="detail-title">게시글 수정</h2></div>' +
+      '<div class="detail-form-group">' +
+        '<label class="detail-form-label">제목</label>' +
+        '<input class="detail-input" id="editTitle" type="text" value="' +
+          UI.esc(b.title) + '" maxlength="100" />' +
+      '</div>' +
+      '<div class="detail-form-group">' +
+        '<label class="detail-form-label">내용</label>' +
+        '<textarea class="detail-textarea" id="editContent" maxlength="5000">' +
+          UI.esc(b.content || b.text) + '</textarea>' +
+      '</div>' +
+      '<div class="detail-actions" style="margin-top:20px;text-align:right">' +
+        '<button class="btn btn--ghost btn--sm" type="button" id="cancelEditBtn">취소</button>' +
+        '<button class="btn btn--gold btn--sm" type="button" id="saveEditBtn">저장</button>' +
       '</div></article>';
-    
     el.querySelector('[data-cancel-edit]').addEventListener('click', function () {
       renderBoardDetail(b.docId);
     });
