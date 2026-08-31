@@ -303,12 +303,50 @@ window.UI = (function () {
   function buildDrawer() {
     var dw = $('navDrawer');
     if (!dw) return;
+    
+    // 메인 홈 메뉴 항목
+    var mainHomeItems = [
+      { key: 'home', page: 'Main.html', hash: '#home', icon: NAV[0].icon, label: t('home') },
+      { key: 'characters', page: 'Main.html', hash: '#characters', icon: NAV[1].icon, label: t('characters') },
+      { key: 'pvp', page: 'Main.html', hash: '#pvp', icon: NAV[2].icon, label: t('pvp') },
+      { key: 'cs', page: 'CustomerService.html', hash: '', icon: NAV[4].icon, label: t('cs') }
+    ];
+    
+    // 커뮤니티 홈 메뉴 항목
+    var commHomeItems = [
+      { key: 'comhome', page: 'Community.html', hash: '#home', icon: COMM_NAV[0].icon, label: '커뮤니티 홈' },
+      { key: 'patch', page: 'Community.html', hash: '#patch', icon: COMM_NAV[1].icon, label: '패치노트' },
+      { key: 'board', page: 'Community.html', hash: '#board', icon: COMM_NAV[2].icon, label: '게시판' },
+      { key: 'event', page: 'Community.html', hash: '#event', icon: COMM_NAV[3].icon, label: '이벤트' }
+    ];
+    
     dw.innerHTML =
       '<div class="drawer-head"><span class="logo-txt">FPP</span>' +
       '<button class="icon-btn" id="btnDrawerClose" aria-label="메뉴 닫기"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
-      '<nav class="drawer-nav">' + NAV.map(function (n) {
-        return '<a class="drawer-item" data-nav="' + n.key + '" href="' + n.page + n.hash + '">' + n.icon + '<span>' + t(n.key) + '</span></a>';
+      '<div class="drawer-tabs">' +
+      '<button class="drawer-tab active" data-tab="main">' + (LANG === 'ko' ? '메인 홈' : 'Main Home') + '</button>' +
+      '<button class="drawer-tab" data-tab="community">' + (LANG === 'ko' ? '커뮤니티 홈' : 'Community Home') + '</button>' +
+      '</div>' +
+      '<nav class="drawer-nav drawer-nav-main">' + mainHomeItems.map(function (n) {
+        return '<a class="drawer-item" href="' + n.page + n.hash + '">' + n.icon + '<span>' + n.label + '</span></a>';
+      }).join('') + '</nav>' +
+      '<nav class="drawer-nav drawer-nav-community" style="display:none;">' + commHomeItems.map(function (n) {
+        return '<a class="drawer-item" href="' + n.page + n.hash + '">' + n.icon + '<span>' + n.label + '</span></a>';
       }).join('') + '</nav>';
+    
+    // 탭 전환 이벤트
+    var tabs = dw.querySelectorAll('.drawer-tab');
+    var navs = dw.querySelectorAll('.drawer-nav');
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var target = tab.getAttribute('data-tab');
+        tabs.forEach(function (t) { t.classList.toggle('active', t === tab); });
+        navs.forEach(function (n) { 
+          n.style.display = n.classList.contains('drawer-nav-' + target) ? 'block' : 'none'; 
+        });
+      });
+    });
+    
     $('btnDrawerClose').addEventListener('click', toggleDrawer);
     var bd = $('drawerBackdrop');
     if (bd) bd.addEventListener('click', toggleDrawer);

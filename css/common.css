@@ -206,6 +206,10 @@ body.fonticon-ok .gnb-font-icon svg{display:none}
 .drawer.open{transform:translateX(0)}
 .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
 .drawer-head .logo-txt{font-family:var(--font-d);font-size:22px;color:var(--gold)}
+.drawer-tabs{display:flex;padding:10px 18px;gap:8px;border-bottom:1px solid var(--line)}
+.drawer-tab{flex:1;padding:10px 8px;background:transparent;border:none;border-radius:var(--r-sm);font-weight:700;font-size:14px;color:var(--text-2);cursor:pointer;transition:.2s}
+.drawer-tab:hover{background:var(--surface-2);color:var(--text)}
+.drawer-tab.active{background:color-mix(in srgb,var(--gold) 14%,transparent);color:var(--gold)}
 .drawer-nav{display:flex;flex-direction:column;padding:10px}
 .drawer-item{
   display:flex;align-items:center;gap:13px;padding:14px 14px;min-height:52px;border-radius:var(--r-sm);
