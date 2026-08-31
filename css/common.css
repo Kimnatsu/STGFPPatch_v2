@@ -669,11 +669,114 @@ main,.app-footer{animation:pageRise .3s var(--ease) both}
     width:min(360px,calc(100vw - 24px))!important;
     max-height:min(520px, calc(100vh - 32px))!important;
     transform:translate(-50%,-50%) scale(.95)!important;
+    position:relative;
+    overflow:visible;
   }
   .pop.pop--myinfo.show{transform:translate(-50%,-50%) scale(1)!important}
   .pop.pop--myinfo .pop-body{
     max-height:calc(100% - 48px);
     overflow-y:auto;
+    position:relative;
+  }
+  
+  /* 프로필 슬라이드 패널 */
+  .profile-slide-panel{
+    position:absolute;
+    top:0;
+    right:-100%;
+    width:100%;
+    height:100%;
+    background:var(--surface);
+    border-radius:inherit;
+    box-shadow:var(--shadow);
+    transition:right 0.3s var(--ease);
+    z-index:10;
+    display:flex;
+    flex-direction:column;
+  }
+  .profile-slide-panel.is-open{
+    right:0;
+  }
+  .panel-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px;
+    border-bottom:1px solid var(--line);
+    font-size:16px;
+    font-weight:700;
+  }
+  .panel-close{
+    width:32px;
+    height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:var(--surface-2);
+    color:var(--text);
+  }
+  .panel-close:hover{
+    background:var(--surface-3);
+  }
+  .panel-body{
+    flex:1;
+    overflow-y:auto;
+    padding:16px;
+  }
+  .avatar-item{
+    width:60px;
+    height:60px;
+    border-radius:12px;
+    overflow:hidden;
+    border:2px solid transparent;
+    padding:0;
+    margin:4px;
+    transition:border-color 0.2s, transform 0.2s;
+    background:var(--surface-2);
+  }
+  .avatar-item:hover{
+    border-color:var(--gold);
+    transform:scale(1.05);
+  }
+  .avatar-item img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  .prof-ava-clickable{
+    cursor:pointer;
+    transition:transform 0.2s;
+  }
+  .prof-ava-clickable:hover{
+    transform:scale(1.08);
+  }
+  .ava-grid{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:8px;
+    margin-top:8px;
+  }
+  .ava-pick{
+    width:48px;
+    height:48px;
+    border-radius:10px;
+    overflow:hidden;
+    border:2px solid transparent;
+    padding:0;
+    background:var(--surface-2);
+    transition:border-color 0.2s, transform 0.2s;
+  }
+  .ava-pick.is-on{
+    border-color:var(--gold);
+  }
+  .ava-pick:hover{
+    transform:scale(1.05);
+  }
+  .ava-pick img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
   }
 
   /* auth/프로필: 헤더 바로 아래, 화면 우측 */

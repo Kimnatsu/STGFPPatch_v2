@@ -764,7 +764,7 @@ window.UI = (function () {
       '<div class="pop-head"><b>내 정보</b>' + (u.demo ? ' <span class="demo-chip demo-chip--sm">DEMO</span>' : '') + '</div>' +
       '<div class="pop-body">' +
       '<div class="profile-card">' +
-      '<div class="prof-top"><span class="prof-ava"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"></span>' +
+      '<div class="prof-top"><span class="prof-ava prof-ava-clickable" id="myInfoProfileTrigger"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"></span>' +
       '<b class="prof-nick">' + esc(ud.nickname || u.displayName || '선원') + '</b></div>' +
       '<div class="prof-stats">' +
       '<div><b>' + ((ud.counts && ud.counts.posts) || 0) + '</b><small>게시글</small></div>' +
@@ -781,15 +781,81 @@ window.UI = (function () {
       '<div class="mi-sec"><span class="mi-lb">로그인 이메일</span>' +
       '<div class="mi-row mi-mail">' + esc(u.email || '이메일 없음') + '</div></div>' +
       '<button class="btn btn--danger btn--block" id="miDel" type="button" style="margin-top:8px">탈퇴하기</button>' +
+      '</div>' +
+      '<div class="profile-slide-panel" id="profileSlidePanel">' +
+      '<div class="panel-header"><b>프로필 아이콘 선택</b><button class="icon-btn panel-close" id="panelCloseBtn" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>' +
+      '<div class="panel-body" id="avatarListContainer"></div>' +
       '</div>', '320px');
     pop.el.classList.add('pop--myinfo');
     
-    /* 프로필 아이콘 선택 */
+    /* 아바타 목록 로드 (실제 이미지 파일) */
+    var avatarContainer = pop.body.querySelector('#avatarListContainer');
+    FB.getAvatarList ? FB.getAvatarList().then(function(list) {
+      if (!list || list.length === 0) list = ['ace.png', 'luffy.png', 'zoro.png', 'sanji.png', 'nami.png'];
+      renderAvatarList(list);
+    }).catch(function() {
+      renderAvatarList(['ace.png', 'luffy.png', 'zoro.png', 'sanji.png', 'nami.png', 'chopper.png', 'robin.png', 'franky.png', 'brook.png', 'jinbe.png']);
+    }) : renderAvatarList(['ace.png', 'luffy.png', 'zoro.png', 'sanji.png', 'nami.png', 'chopper.png', 'robin.png', 'franky.png', 'brook.png', 'jinbe.png']);
+    
+    function renderAvatarList(avatarFiles) {
+      avatarContainer.innerHTML = avatarFiles.map(function(filename) {
+        var imgUrl = 'img/avatars/' + filename;
+        return '<button class="avatar-item" type="button" data-img="' + esc(imgUrl) + '"><img src="' + esc(imgUrl) + '" alt="' + esc(filename) + '"></button>';
+      }).join('');
+    }
+    
+    /* 프로필 이미지 클릭 시 슬라이드 패널 열기 */
+    var profileTrigger = pop.body.querySelector('#myInfoProfileTrigger');
+    var slidePanel = pop.body.querySelector('#profileSlidePanel');
+    var panelCloseBtn = pop.body.querySelector('#panelCloseBtn');
+    
+    function openPanel() {
+      slidePanel.classList.add('is-open');
+    }
+    
+    function closePanel() {
+      slidePanel.classList.remove('is-open');
+    }
+    
+    if (profileTrigger) {
+      profileTrigger.addEventListener('click', openPanel);
+    }
+    
+    if (panelCloseBtn) {
+      panelCloseBtn.addEventListener('click', closePanel);
+    }
+    
+    /* 아바타 선택 시 프로필 변경 */
+    avatarContainer.addEventListener('click', function(e) {
+      var btn = e.target.closest('.avatar-item');
+      if (!btn) return;
+      var imgUrl = btn.getAttribute('data-img');
+      var filename = imgUrl.split('/').pop();
+      var baseName = filename.replace('.png', '');
+      var avatarNames = ['ace', 'akainu', 'bigmom', 'bonney', 'brook', 'buggy', 'carrot', 'chopper', 'crocodile', 'dendenmushi', 'doflamingo', 'dragon', 'franky', 'garp', 'hancock', 'jinbe', 'kaido', 'katakuri', 'kid', 'kizaru', 'koby', 'kuma', 'law', 'luffy', 'mihawk', 'nami', 'nika', 'robin', 'roger', 'sabo', 'sanji', 'shanks', 'smoker', 'teach', 'usopp', 'vivi', 'whitebeard', 'yamato', 'zoro'];
+      var iconIndex = avatarNames.indexOf(baseName);
+      if (iconIndex < 0) iconIndex = 0;
+      
+      saveUserPatch({ profileIcon: iconIndex }).then(function () {
+        var profAva = pop.body.querySelector('.prof-ava img');
+        if (profAva) profAva.src = imgUrl;
+        pop.body.querySelectorAll('.ava-pick').forEach(function (x) { 
+          x.classList.toggle('is-on', Number(x.getAttribute('data-av')) === iconIndex); 
+        });
+        notifyUser();
+        toast('프로필 아이콘이 변경되었습니다.', 'ok');
+        closePanel();
+      }).catch(function (e) { toast(FB.errMsg(e), 'err'); });
+    });
+    
+    /* 기존 프로필 아이콘 선택 (그리드) */
     pop.body.querySelectorAll('.ava-pick').forEach(function (b) {
       b.addEventListener('click', function () {
         var i = Number(b.getAttribute('data-av'));
         saveUserPatch({ profileIcon: i }).then(function () {
           pop.body.querySelectorAll('.ava-pick').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+          var profAva = pop.body.querySelector('.prof-ava img');
+          if (profAva) profAva.src = b.querySelector('img').src;
           notifyUser();
           toast('프로필 아이콘이 변경되었습니다.', 'ok');
         }).catch(function (e) { toast(FB.errMsg(e), 'err'); });
