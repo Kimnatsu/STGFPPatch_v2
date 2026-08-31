@@ -151,6 +151,11 @@ body.fonticon-ok .gnb-font-icon svg{display:none}
 .ficon-bookmark::before {
   content: "\e98f";
 }
+.hd-notify{position:relative}
+.notify-dot{
+  position:absolute;top:5px;right:5px;width:9px;height:9px;border-radius:50%;
+  background:var(--red);border:2px solid var(--bg);box-sizing:content-box;
+}
 
 /* ---------- 데스크톱 내비 ---------- */
 .desk-nav{display:none;border-bottom:1px solid var(--line);background:var(--bg-2)}
@@ -465,6 +470,45 @@ select{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pop-item:hover{background:var(--surface-2);color:var(--text)}
 .pop-item svg{flex:none;color:var(--gold)}
 
+/* 알림 팝업 */
+.pop.pop--notifications{
+  width:min(390px,calc(100vw - 16px))!important;
+  border-radius:0 0 var(--r-lg) var(--r-lg);
+}
+.notify-popup{color:var(--text)}
+.notify-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:18px 16px;border-bottom:1px solid var(--line);background:var(--surface);
+}
+.notify-head>b{font-family:var(--font-d);font-size:18px;letter-spacing:.2px}
+.notify-head>b em{font-style:normal;color:var(--red);margin-left:3px}
+.notify-head-actions{display:flex;align-items:center;gap:11px}
+.notify-head-actions button{font-size:11.5px;font-weight:900;color:var(--text-2);white-space:nowrap}
+.notify-head-actions button:hover{color:var(--gold)}
+.notify-list{max-height:min(560px,calc(100vh - 160px));overflow-y:auto;padding:5px 0}
+.notify-row{
+  display:flex;align-items:flex-start;gap:11px;width:100%;position:relative;
+  padding:14px 16px;text-align:left;color:var(--text-2);transition:.18s;
+}
+.notify-row:hover,.notify-row.is-unread{background:var(--surface-2)}
+.notify-icon{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:34px;height:34px;border-radius:50%;color:var(--gold);background:color-mix(in srgb,var(--gold) 15%,transparent);
+}
+.notify-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.notify-icon--patch{color:#f2d66a;background:rgba(214,188,73,.18)}
+.notify-icon--fav{color:#ff7a91;background:rgba(232,72,79,.15)}
+.notify-icon--event{color:#7ab8ff;background:rgba(77,159,255,.16)}
+.notify-icon--comment{color:#9f8aff;background:rgba(159,138,255,.16)}
+.notify-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.notify-copy b{font-size:13px;line-height:1.45;color:var(--text);font-weight:800;display:block;overflow:hidden;text-overflow:ellipsis}
+.notify-copy small{font-size:11.5px;line-height:1.4;color:var(--text-2);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.notify-copy time{font-size:11px;color:var(--text-3)}
+.notify-unread-dot{width:6px;height:6px;flex:none;margin-top:7px;border-radius:50%;background:var(--red)}
+.notify-loading{padding:28px 16px;color:var(--text-3);font-size:13px;text-align:center}
+.notify-empty{padding:38px 16px}
+.notify-empty small{display:block;margin-top:6px}
+
 /* 프로필 메뉴 */
 .pop.pop--profile{
   width:min(340px,calc(100vw - 16px))!important;
@@ -564,6 +608,9 @@ body.body-lock{
 /* ---------- 토글/선택 ---------- */
 .tgl-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 4px;border-bottom:1px solid var(--line);font-weight:800;font-size:14px}
 .tgl-row:last-child{border-bottom:0}
+.tgl-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.tgl-copy b{font-size:14px}
+.tgl-copy small{font-size:11px;line-height:1.45;color:var(--text-3);font-weight:500}
 .tgl{width:50px;height:28px;border-radius:99px;background:var(--surface-3);border:1px solid var(--line-2);position:relative;transition:.25s;flex:none;padding:0}
 .tgl i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--text-3);transition:.25s var(--ease)}
 .tgl.on{background:color-mix(in srgb,var(--gold) 30%,var(--surface-3));border-color:var(--gold)}

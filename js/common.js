@@ -101,16 +101,18 @@ window.UI = (function () {
     if (!demoData()) {
       store.set(DEMO_KEY, {
         uid: 'demo-user', email: 'demo@fpp.kr', nickname: '데모 선원', profileIcon: 1,
-        settings: { patch: true, fav: true, event: true, comment: true },
+         settings: { patch: false, fav: false, event: false, comment: false },
         favChars: [1, 2, 3, 4, 5, 6], favSupports: [1, 2],
         counts: { posts: 3, comments: 12, likes: 27 }
       });
     }
     toast('데모 로그인으로 전환했습니다.', 'ok');
-    loadUserDoc().then(notifyUser);
+    loadUserDoc().then(function () { return loadNotifications(true); }).then(notifyUser);
   }
   function exitDemo() {
     store.set(DEMO_KEY, null);
+    _userDoc = null;
+    notificationState = { uid: null, items: [], loaded: true, loading: null };
     toast('데모 로그아웃 되었습니다.');
     notifyUser();
   }
@@ -148,6 +150,151 @@ window.UI = (function () {
       _userDoc = Object.assign(_userDoc || {}, patch);
       return _userDoc;
     });
+  }
+
+  /* ---------- 알림 ---------- */
+  var notificationState = { uid: null, items: [], loaded: false, loading: null };
+  var NOTIFY_DESCRIPTIONS = {
+    event: '새 이벤트 등록 시 알림이 울립니다.',
+    patch: '새 패치노트 등록 시 알림이 울립니다.',
+    fav: '즐겨찾기한 캐릭터/서폿 캐릭터 PvP 패치 등록 시 알림이 울립니다.',
+    comment: '내 게시글과 댓글에 댓글과 답글이 달릴 때 알림이 울립니다.'
+  };
+  function notificationEnabled(type) {
+    var settings = (userDoc() && userDoc().settings) || {};
+    return settings[type] === true;
+  }
+  function visibleNotifications() {
+    return notificationState.items.filter(function (n) { return notificationEnabled(n.type); });
+  }
+  function notifyTime(value) {
+    var ms = 0;
+    if (value && value.seconds != null) ms = Number(value.seconds) * 1000;
+    else if (typeof value === 'number') ms = value > 1e12 ? value : value * 1000;
+    else if (value) ms = Date.parse(String(value).replace(/\./g, '-').replace(' ', 'T')) || 0;
+    if (!ms) return '';
+    var diff = Math.max(0, Date.now() - ms);
+    if (diff < 60 * 1000) return '방금 전';
+    if (diff < 60 * 60 * 1000) return Math.floor(diff / (60 * 1000)) + '분 전';
+    if (diff < 24 * 60 * 60 * 1000) return Math.floor(diff / (60 * 60 * 1000)) + '시간 전';
+    if (diff < 7 * 24 * 60 * 60 * 1000) return Math.floor(diff / (24 * 60 * 60 * 1000)) + '일 전';
+    return fmtDate(new Date(ms).toISOString());
+  }
+  function updateNotificationBadge() {
+    var btn = $('btnNotify');
+    if (!btn) return;
+    var unread = visibleNotifications().filter(function (n) { return !n.read; }).length;
+    var dot = btn.querySelector('.notify-dot');
+    if (dot) {
+      dot.hidden = !unread;
+      dot.setAttribute('aria-label', unread ? '읽지 않은 알림 ' + unread + '개' : '');
+    }
+    btn.classList.toggle('has-notifications', unread > 0);
+  }
+  function loadNotifications(force) {
+    var u = currentUser();
+    if (!u) {
+      notificationState = { uid: null, items: [], loaded: true, loading: null };
+      updateNotificationBadge();
+      return Promise.resolve([]);
+    }
+    if (!force && notificationState.loaded && notificationState.uid === u.uid) return Promise.resolve(notificationState.items);
+    if (notificationState.loading && notificationState.uid === u.uid) return notificationState.loading;
+    notificationState.uid = u.uid;
+    if (u.demo) {
+      notificationState.items = store.get('demo_notifications', []);
+      notificationState.loaded = true;
+      updateNotificationBadge();
+      return Promise.resolve(notificationState.items);
+    }
+    notificationState.loading = FB.getNotifications(u.uid).then(function (items) {
+      notificationState.items = items || [];
+      notificationState.loaded = true;
+      notificationState.loading = null;
+      updateNotificationBadge();
+      return notificationState.items;
+    }).catch(function () {
+      notificationState.items = [];
+      notificationState.loaded = true;
+      notificationState.loading = null;
+      updateNotificationBadge();
+      return [];
+    });
+    return notificationState.loading;
+  }
+  function notificationHref(n) {
+    if (n.href) return n.href;
+    if (!n.targetId) return '';
+    if (n.type === 'patch') return 'Community.html#patch/view/' + encodeURIComponent(n.targetId);
+    if (n.type === 'event') return 'Community.html#event/view/' + encodeURIComponent(n.targetId);
+    if (n.type === 'comment') return (String(n.targetType).toLowerCase() === 'event' ? 'Community.html#event/view/' : 'Community.html#board/view/') + encodeURIComponent(n.targetId);
+    return 'Main.html#pvp';
+  }
+  function notificationIcon(type) {
+    var paths = {
+      patch: '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9.5 12h6M9.5 15.5h4"/>',
+      fav: '<path d="M12 20.4l-7.2-7A4.8 4.8 0 0 1 12 6.6a4.8 4.8 0 0 1 7.2 6.8z"/>',
+      event: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>',
+      comment: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>'
+    };
+    return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (paths[type] || paths.comment) + '</svg>';
+  }
+  function markNotificationRead(n) {
+    if (!n || n.read) return;
+    n.read = true;
+    updateNotificationBadge();
+    if (currentUser() && !currentUser().demo) FB.markNotificationsRead([n]).catch(function () { });
+  }
+  function renderNotificationPopup(pop) {
+    var items = visibleNotifications();
+    var unread = items.filter(function (n) { return !n.read; }).length;
+    var html = '<div class="notify-popup">' +
+      '<div class="notify-head"><b>알림 <em>' + unread + '</em></b>' +
+      '<div class="notify-head-actions"><button id="notifyReadAll" type="button">모두 읽음</button><button id="notifyAll" type="button">전체보기 <span aria-hidden="true">→</span></button></div></div>';
+    if (!items.length) {
+      html += '<div class="empty notify-empty"><p>새로운 알림이 없습니다.</p><small>알림 설정을 켜면 새 소식을 알려드려요.</small></div>';
+    } else {
+      html += '<div class="notify-list">' + items.map(function (n) {
+        return '<button class="notify-row' + (n.read ? '' : ' is-unread') + '" type="button" data-notify-id="' + esc(n.docId) + '">' +
+          '<span class="notify-icon notify-icon--' + esc(n.type) + '">' + notificationIcon(n.type) + '</span>' +
+          '<span class="notify-copy"><b>' + esc(n.title) + '</b>' +
+          (n.body ? '<small>' + esc(n.body) + '</small>' : '') +
+          '<time>' + esc(notifyTime(n.createdAt || n.date)) + '</time></span>' +
+          (n.read ? '' : '<i class="notify-unread-dot" aria-hidden="true"></i>') + '</button>';
+      }).join('') + '</div>';
+    }
+    html += '</div>';
+    pop.el.innerHTML = html;
+    var readAll = pop.el.querySelector('#notifyReadAll');
+    if (readAll) readAll.addEventListener('click', function () {
+      var unreadItems = items.filter(function (n) { return !n.read; });
+      unreadItems.forEach(function (n) { n.read = true; });
+      updateNotificationBadge();
+      if (currentUser() && !currentUser().demo) FB.markNotificationsRead(unreadItems).catch(function () { });
+      else if (currentUser() && currentUser().demo) store.set('demo_notifications', notificationState.items);
+      renderNotificationPopup(pop);
+    });
+    var allBtn = pop.el.querySelector('#notifyAll');
+    if (allBtn) allBtn.addEventListener('click', function () { toast('현재 받은 알림을 모두 표시하고 있습니다.'); });
+    pop.el.querySelectorAll('[data-notify-id]').forEach(function (row) {
+      row.addEventListener('click', function () {
+        var n = notificationState.items.filter(function (x) { return String(x.docId) === String(row.getAttribute('data-notify-id')); })[0];
+        if (!n) return;
+        markNotificationRead(n);
+        var href = notificationHref(n);
+        closePopups();
+        if (href) location.href = href;
+      });
+    });
+  }
+  function openNotifyPopup(anchor) {
+    var u = currentUser();
+    var pop = openPopup(anchor, '<div class="notify-popup"><div class="notify-loading">알림을 불러오는 중…</div></div>', '390px', 'pop--notifications');
+    if (!u) {
+      pop.el.innerHTML = '<div class="notify-popup"><div class="empty notify-empty"><p>로그인 후 알림을 확인할 수 있습니다.</p><a class="btn btn--gold btn--sm" href="Login.html">로그인</a></div></div>';
+      return;
+    }
+    loadNotifications(true).then(function () { renderNotificationPopup(pop); });
   }
   function onUser(cb) { _userCbs.push(cb); }
   function notifyUser() {
@@ -249,11 +396,15 @@ window.UI = (function () {
       '<div class="hd-right">' +
       '<button class="icon-btn" id="btnSet" aria-label="설정">' + IC.gear + '</button>' +
       '<button class="icon-btn" id="btnFav" aria-label="즐겨찾기">' + IC.bookmark + '</button>' +
+      '<button class="icon-btn hd-notify" id="btnNotify" aria-label="알림" aria-haspopup="dialog">' +
+      '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9z"/><path d="M10 21h4"/></svg><i class="notify-dot" hidden></i></button>' +
       '<div class="hd-auth" id="hdAuth"></div>' +
       '</div></div>';
     $('btnBurger').addEventListener('click', toggleDrawer);
     $('btnSet').addEventListener('click', function (e) { e.stopPropagation(); onSettingsClick($('btnSet')); });
     $('btnFav').addEventListener('click', function (e) { e.stopPropagation(); openFavPopup($('btnFav')); });
+    $('btnNotify').addEventListener('click', function (e) { e.stopPropagation(); openNotifyPopup($('btnNotify')); });
+    updateNotificationBadge();
   }
 
   function buildDeskNav() {
@@ -282,6 +433,7 @@ window.UI = (function () {
         '<button class="btn btn--gold btn--sm" data-auth="login">' + t('login') + '</button>' +
         '<button class="btn btn--ghost btn--sm hd-demo" id="btnDemo" title="데모 로그인 — Firebase에 저장되지 않습니다">데모</button>' +
         '</div>';
+      updateNotificationBadge();
       return;
     }
     var ud = userDoc() || {};
@@ -289,6 +441,7 @@ window.UI = (function () {
       (u.demo ? '<span class="demo-chip" title="데모 모드 — Firebase에 저장되지 않습니다">DEMO</span>' : '') +
       '<button class="hd-avatar" id="btnProfile" aria-label="프로필 메뉴"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="내 프로필"></button>';
     box.querySelector('#btnProfile').addEventListener('click', function (e) { e.stopPropagation(); openProfilePopup(box.querySelector('#btnProfile')); });
+    updateNotificationBadge();
   }
 
   function buildTabs() {
@@ -391,7 +544,7 @@ window.UI = (function () {
     var isCentered = el.classList.contains('pop--fav') || el.classList.contains('pop--myinfo');
     if (!isCentered) {
       var r = anchor.getBoundingClientRect();
-      var pw = width ? parseInt(width, 10) : 300;
+      var pw = width ? Math.min(parseInt(width, 10), Math.max(0, window.innerWidth - 16)) : 300;
       var left = Math.min(Math.max(8, r.right - pw), window.innerWidth - pw - 8);
       el.style.left = left + 'px';
       el.style.top = (r.bottom + 10) + 'px';
@@ -490,8 +643,7 @@ window.UI = (function () {
     if (!u) return;
     var ud = userDoc() || {};
     var c = ud.counts || {};
-    var noticeCount = ud.unreadNotifications != null ? ud.unreadNotifications :
-      (ud.notificationCount != null ? ud.notificationCount : 41);
+    var noticeCount = visibleNotifications().filter(function (n) { return !n.read; }).length;
     var pop = openPopup(anchor,
       '<div class="profile-menu">' +
       '<div class="profile-menu-head">' +
@@ -531,7 +683,7 @@ window.UI = (function () {
     });
     pop.el.querySelector('#pfNotice').addEventListener('click', function () {
       closePopups();
-      SET_ACTIONS.notify();
+      openNotifyPopup($('btnNotify'));
     });
     pop.el.querySelector('#pfMessages').addEventListener('click', function () {
       closePopups();
@@ -613,12 +765,17 @@ window.UI = (function () {
     },
     notify: function () {
       var s = (userDoc() && userDoc().settings) || {};
-      var rows = [['patch', '패치노트'], ['fav', '즐겨찾기'], ['event', '이벤트'], ['comment', '댓글']];
+      var rows = [
+        ['event', '이벤트', NOTIFY_DESCRIPTIONS.event],
+        ['patch', '패치노트', NOTIFY_DESCRIPTIONS.patch],
+        ['fav', '즐겨찾기', NOTIFY_DESCRIPTIONS.fav],
+        ['comment', '댓글', NOTIFY_DESCRIPTIONS.comment]
+      ];
       var m = openModal({
         title: '알림 설정',
         body: rows.map(function (r) {
-          var on = s[r[0]] !== false;
-          return '<div class="tgl-row"><span>' + r[1] + ' 알림</span>' +
+          var on = s[r[0]] === true;
+          return '<div class="tgl-row"><span class="tgl-copy"><b>' + r[1] + ' 알림</b><small>' + r[2] + '</small></span>' +
             '<button class="tgl' + (on ? ' on' : '') + '" data-k="' + r[0] + '" role="switch" aria-checked="' + on + '" aria-label="' + r[1] + ' 알림" type="button"><i></i></button></div>';
         }).join('')
       });
@@ -631,7 +788,8 @@ window.UI = (function () {
           var st = (userDoc() && userDoc().settings) || {};
           st[k] = on;
           saveUserPatch({ settings: st }).catch(function () { });
-          var label = rows.filter(function (r) { return r[0] === k; })[0][1];
+           var label = rows.filter(function (r) { return r[0] === k; })[0][1];
+           updateNotificationBadge();
           toast(label + ' 알림이 ' + (on ? '켜졌습니다.' : '꺼졌습니다.'), 'ok');
         });
       });
@@ -1124,11 +1282,13 @@ window.UI = (function () {
             FB.ensureUserDoc(u).then(function () { return loadUserDoc(); }).then(function () {
               loadFavs();
               loadCharCache();
+              loadNotifications(true);
               notifyUser();
             }).catch(function () { notifyUser(); });
           } else if (!isDemo()) {
             _userDoc = null;
             favCache = { chars: [], supports: [] };
+             notificationState = { uid: null, items: [], loaded: true, loading: null };
             notifyUser();
           } else {
             notifyUser();
@@ -1136,6 +1296,7 @@ window.UI = (function () {
         });
       } else if (isDemo()) {
         loadUserDoc();
+        loadNotifications(true);
         notifyUser();
       }
     });

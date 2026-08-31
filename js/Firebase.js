@@ -554,7 +554,7 @@ window.FB = (function () {
         nickname: user.displayName || '선원',
         profileIcon: 0,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        settings: { patch: true, fav: true, event: true, comment: true },
+         settings: { patch: false, fav: false, event: false, comment: false },
         favChars: [], favSupports: [],
         counts: { posts: 0, comments: 0, likes: 0 }
       }, extra || {});
@@ -577,6 +577,71 @@ window.FB = (function () {
   function bumpUserCommentCount(uid, delta) {
     if (!ready) return;
     col('users').doc(uid).update({ 'counts.comments': firebase.firestore.FieldValue.increment(delta) }).catch(function () { });
+  }
+
+  /* ---------- 알림 ---------- */
+  function normNotification(d, id, path) {
+    var rawType = String(pick(d, 'type', 'notificationType', 'category', 'kind') || '').toLowerCase();
+    var type = rawType === 'favorite' || rawType === 'favourite' || rawType === 'fav' ? 'fav' :
+      rawType === 'patch' || rawType === 'patchnote' ? 'patch' :
+      rawType === 'event' ? 'event' : 'comment';
+    var createdAt = pick(d, 'createdAt', 'timestamp', 'date', 'updatedAt') || null;
+    var ts = createdAt && createdAt.seconds ? createdAt.seconds :
+      (typeof createdAt === 'number' ? (createdAt > 1e12 ? Math.floor(createdAt / 1000) : createdAt) : 0);
+    return {
+      docId: id,
+      path: path || ('notifications/' + id),
+      type: type,
+      title: pick(d, 'title', 'message', 'text') || '새 알림이 있습니다.',
+      body: pick(d, 'body', 'description', 'content') || '',
+      date: dateKey(createdAt),
+      ts: ts,
+      createdAt: createdAt,
+      read: d.read === true || d.isRead === true,
+      href: pick(d, 'href', 'link', 'url') || '',
+      targetId: pick(d, 'targetId', 'postId', 'contentId') || '',
+      targetType: pick(d, 'targetType', 'contentType') || ''
+    };
+  }
+  function notificationSnapshot(s, pathPrefix) {
+    var out = [];
+    s.forEach(function (d) { out.push(normNotification(d.data(), d.id, pathPrefix ? pathPrefix + '/' + d.id : 'notifications/' + d.id)); });
+    return out.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0) || String(b.date).localeCompare(String(a.date)); });
+  }
+  function getNotifications(uid) {
+    if (!uid) return Promise.resolve([]);
+    if (!ready) return Promise.resolve([]);
+    var top = col('notifications');
+    return top.where('uid', '==', uid).get().then(function (s) {
+      if (s.size) return notificationSnapshot(s);
+      return top.where('userId', '==', uid).get().then(function (s2) {
+        if (s2.size) return notificationSnapshot(s2);
+        return top.where('recipientId', '==', uid).get().then(function (s3) {
+          if (s3.size) return notificationSnapshot(s3);
+          return col('users').doc(uid).collection('notifications').get().then(function (s4) {
+            return notificationSnapshot(s4, 'users/' + uid + '/notifications');
+          });
+        });
+      });
+    }).catch(function () {
+      return top.where('userId', '==', uid).get().then(function (s) {
+        if (s.size) return notificationSnapshot(s);
+        return top.where('recipientId', '==', uid).get().then(function (s2) {
+          if (s2.size) return notificationSnapshot(s2);
+          return col('users').doc(uid).collection('notifications').get().then(function (s3) {
+            return notificationSnapshot(s3, 'users/' + uid + '/notifications');
+          });
+        });
+      }).catch(function () { return []; });
+    });
+  }
+  function markNotificationsRead(items) {
+    if (!ready || !items || !items.length) return Promise.resolve();
+    var batch = db.batch();
+    items.forEach(function (n) {
+      if (n && n.path) batch.update(db.doc(n.path), { read: true, isRead: true });
+    });
+    return batch.commit();
   }
 
   /* ---------- 고객센터 문의 ---------- */
@@ -623,6 +688,7 @@ window.FB = (function () {
     getComments: getComments, addComment: addComment, deleteComment: deleteComment,
     getUserDoc: getUserDoc, ensureUserDoc: ensureUserDoc, updateUserDoc: updateUserDoc,
     getFavs: getFavs, bumpUserLikeCount: bumpUserLikeCount, bumpUserCommentCount: bumpUserCommentCount,
+    getNotifications: getNotifications, markNotificationsRead: markNotificationsRead,
     addInquiry: addInquiry, getMyInquiries: getMyInquiries
   };
 })();
