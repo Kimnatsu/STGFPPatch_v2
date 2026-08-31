@@ -495,7 +495,7 @@ window.UI = (function () {
     var pop = openPopup(anchor,
       '<div class="profile-menu">' +
       '<div class="profile-menu-head">' +
-      '<div class="profile-menu-user"><span class="prof-ava"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"></span>' +
+      '<div class="profile-menu-user"><button class="prof-ava" id="pfAvatar" type="button" aria-label="프로필 정보 열기"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"><span class="prof-ava-home" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.2L12 4l8.5 7.2"/><path d="M5.5 10.5V20h13v-9.5M9.5 20v-5h5v5"/></svg></span></button>' +
       '<div class="profile-menu-name"><div><b class="prof-nick">' + esc(ud.nickname || u.displayName || '선원') + '</b>' +
       '<button class="profile-copy" id="pfCopy" type="button" aria-label="닉네임 복사">' +
       '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div></div>' +
@@ -522,7 +522,8 @@ window.UI = (function () {
         toast('이 브라우저에서는 복사를 지원하지 않습니다.');
       }
     });
-    pop.el.querySelector('#pfMy').addEventListener('click', function () { closePopups(); openMyInfoPopup(); });
+    pop.el.querySelector('#pfAvatar').addEventListener('click', function () { closePopups(); openMyInfoPopup('profile'); });
+    pop.el.querySelector('#pfMy').addEventListener('click', function () { closePopups(); openMyInfoPopup('my-info'); });
     pop.el.querySelector('#pfOut').addEventListener('click', function () {
       closePopups();
       if (u.demo) { exitDemo(); return; }
@@ -707,7 +708,7 @@ window.UI = (function () {
   };
 
   /* ---------- 프로필 설정 ---------- */
-  function openMyInfoPopup() {
+  function openMyInfoPopup(initialPanel) {
     var u = currentUser();
     if (!u) return;
     var ud = userDoc() || {};
@@ -720,7 +721,7 @@ window.UI = (function () {
     var memberId = ud.memberNumber || ud.memberId || ud.uid || u.uid;
 
     var m = openModal({
-      title: '프로필 설정',
+      title: '정보 설정',
       cls: 'profile-settings-modal',
       body:
         '<div class="profile-settings-shell">' +
@@ -879,6 +880,7 @@ window.UI = (function () {
         toast(FB.errMsg(e), 'err');
       });
     });
+    selectPanel(initialPanel === 'my-info' ? 'my-info' : 'profile');
   }
 
   function openProfileImagePicker(currentIcon, onRegister) {

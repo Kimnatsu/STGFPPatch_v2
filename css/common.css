@@ -475,10 +475,16 @@ select{appearance:none;-webkit-appearance:none;cursor:pointer;
 .profile-menu-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
 .profile-menu-user{display:flex;align-items:center;gap:12px;min-width:0}
 .profile-menu .prof-ava{
-  width:58px;height:58px;border-radius:50%;overflow:hidden;flex:none;
-  border:3px solid var(--gold);background:var(--surface-2);box-shadow:0 4px 14px rgba(0,0,0,.36);
+  position:relative;width:58px;height:58px;padding:0;border:0;border-radius:50%;
+  overflow:hidden;flex:none;background:var(--surface-2);box-shadow:0 4px 14px rgba(0,0,0,.36);
 }
 .profile-menu .prof-ava img{width:100%;height:100%;object-fit:cover}
+.profile-menu .prof-ava-home{
+  position:absolute;right:0;bottom:0;width:20px;height:20px;
+  display:flex;align-items:center;justify-content:center;border:2px solid var(--surface);
+  border-radius:50%;background:#fff;color:#26313e;
+}
+.profile-menu .prof-ava-home svg{display:block}
 .profile-menu-name{min-width:0}
 .profile-menu-name > div{display:flex;align-items:center;gap:5px}
 .profile-menu .prof-nick{font-family:var(--font-d);font-size:18px;letter-spacing:.1px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -622,7 +628,7 @@ body.body-lock{
 .profile-cover{
   position:relative;height:230px;background:var(--surface-3);overflow:hidden;
 }
-.profile-cover img{width:100%;height:100%;object-fit:cover}
+.profile-cover img{width:100%;height:100%;object-fit:contain;object-position:center;background:var(--surface-3)}
 .profile-cover::after{
   content:"";position:absolute;inset:0;background:rgba(0,0,0,.42);
   pointer-events:none;
