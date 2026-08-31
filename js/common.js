@@ -501,9 +501,9 @@ window.UI = (function () {
       '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div></div>' +
       '</div><button class="profile-logout" id="pfOut" type="button">로그아웃</button></div>' +
       '<div class="profile-menu-stats">' +
-      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--post">C</span><span class="profile-stat-label">게시글 작성</span><b>' + (c.posts || 0) + '</b></div>' +
-      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--comment">P</span><span class="profile-stat-label">댓글 작성</span><b>' + (c.comments || 0) + '</b></div>' +
-      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--like">F</span><span class="profile-stat-label">좋아요 한 글</span><b>' + (c.likes || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--post" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.6-1L19.1 8.5a2.1 2.1 0 0 0-3-3L5.6 16.9 4 20z"/><path d="M14.5 7.5l2 2M4 20l3.5-.8"/></svg></span><span class="profile-stat-label">게시글 작성</span><b>' + (c.posts || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--comment" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 11.5a7.5 7.5 0 0 1-7.5 7.5 7.8 7.8 0 0 1-3.1-.7L4 20l1.7-4.2a7.4 7.4 0 0 1-1.2-4.3 7.5 7.5 0 0 1 15 0z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01"/></svg></span><span class="profile-stat-label">댓글 작성</span><b>' + (c.comments || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--like" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.8c0 5.2-8.8 10.2-8.8 10.2S3.2 14 3.2 8.8A4.6 4.6 0 0 1 12 6.2a4.6 4.6 0 0 1 8.8 2.6z"/></svg></span><span class="profile-stat-label">좋아요 한 글</span><b>' + (c.likes || 0) + '</b></div>' +
       '</div>' +
       '<div class="profile-menu-actions">' +
       '<button class="profile-menu-action" id="pfNotice" type="button">' +

@@ -468,51 +468,49 @@ select{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* 프로필 메뉴 */
 .pop.pop--profile{
   width:min(340px,calc(100vw - 16px))!important;
-  background:#292929;border-color:rgba(255,255,255,.12);border-radius:16px;color:#f1f1f1;
+  background:var(--surface);border-color:var(--line-2);border-radius:var(--r-md);color:var(--text);
 }
 .profile-menu{padding:22px 16px 14px}
-.profile-menu .demo-banner{font-size:10.5px;font-weight:800;color:#202020;background:#f4c94d;border-radius:6px;padding:6px 10px;margin-bottom:14px;letter-spacing:.2px}
+.profile-menu .demo-banner{font-size:10.5px;font-weight:800;color:var(--gold-ink);background:var(--gold);border-radius:6px;padding:6px 10px;margin-bottom:14px;letter-spacing:.2px}
 .profile-menu-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
 .profile-menu-user{display:flex;align-items:center;gap:12px;min-width:0}
 .profile-menu .prof-ava{
   width:58px;height:58px;border-radius:50%;overflow:hidden;flex:none;
-  border:3px solid #fff04c;background:#fff04c;box-shadow:0 4px 14px rgba(0,0,0,.36);
+  border:3px solid var(--gold);background:var(--surface-2);box-shadow:0 4px 14px rgba(0,0,0,.36);
 }
 .profile-menu .prof-ava img{width:100%;height:100%;object-fit:cover}
 .profile-menu-name{min-width:0}
 .profile-menu-name > div{display:flex;align-items:center;gap:5px}
-.profile-menu .prof-nick{font-family:var(--font-d);font-size:18px;letter-spacing:.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.profile-copy{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;color:#d2d2d2;border-radius:5px;flex:none}
-.profile-copy:hover{background:rgba(255,255,255,.1);color:#fff}
+.profile-menu .prof-nick{font-family:var(--font-d);font-size:18px;letter-spacing:.1px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile-copy{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;color:var(--text-3);border-radius:5px;flex:none}
+.profile-copy:hover{background:var(--surface-2);color:var(--text)}
 .profile-logout{
-  flex:none;padding:9px 13px;border-radius:11px;background:#303030;color:#ddd;
+  flex:none;padding:9px 13px;border-radius:11px;background:var(--surface-2);color:var(--text-2);
   font-size:12px;font-weight:900;transition:.2s;
 }
-.profile-logout:hover{background:#3a3a3a;color:#fff}
-.profile-menu-stats{overflow:hidden;border:1px solid rgba(255,255,255,.72);border-radius:18px}
+.profile-logout:hover{background:var(--surface-3);color:var(--text)}
+.profile-menu-stats{overflow:hidden;border:1px solid var(--line-2);border-radius:var(--r-lg)}
 .profile-stat-row{
   display:flex;align-items:center;gap:10px;min-height:47px;padding:7px 15px;
-  background:#2b2b2b;font-size:14px;font-weight:900;
+  background:var(--surface-2);font-size:14px;font-weight:900;
 }
-.profile-stat-row + .profile-stat-row{border-top:1px solid rgba(255,255,255,.055)}
-.profile-stat-row b{margin-left:auto;color:#f2f2f2;font-size:15px;font-weight:900}
+.profile-stat-row + .profile-stat-row{border-top:1px solid var(--line)}
+.profile-stat-row b{margin-left:auto;color:var(--gold);font-size:15px;font-weight:900}
 .profile-stat-label{white-space:nowrap}
 .profile-stat-icon{
-  display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;
-  border-radius:50%;color:#fff;font-size:10px;font-weight:900;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;
+  border-radius:0;background:none!important;color:var(--text);font-size:0;line-height:1;flex:none;
 }
-.profile-stat-icon--post{background:#f15c3c}
-.profile-stat-icon--comment{background:#f2763d}
-.profile-stat-icon--like{background:#397fe7}
+.profile-stat-icon svg{display:block;width:21px;height:21px}
 .profile-menu-actions{margin:13px 0 0}
 .profile-menu-action{
   display:flex;align-items:center;gap:13px;width:100%;min-height:48px;padding:10px 15px;
-  color:#eee;text-align:left;border-radius:9px;font-size:14px;font-weight:900;transition:.18s;
+  color:var(--text-2);text-align:left;border-radius:var(--r-sm);font-size:14px;font-weight:900;transition:.18s;
 }
-.profile-menu-action svg{flex:none;color:#e4e4e4}
-.profile-menu-action:hover{background:#333;color:#fff}
-.profile-menu-action em{margin-left:0;color:#f14b38;font-style:normal;font-size:13px}
-.profile-menu-divider{height:1px;margin:8px 0;background:rgba(255,255,255,.1)}
+.profile-menu-action svg{flex:none;color:var(--gold)}
+.profile-menu-action:hover{background:var(--surface-2);color:var(--text)}
+.profile-menu-action em{margin-left:0;color:var(--red);font-style:normal;font-size:13px}
+.profile-menu-divider{height:1px;margin:8px 0;background:var(--line)}
 
 /* 즐겨찾기 그리드 4×4 */
 .fav-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
