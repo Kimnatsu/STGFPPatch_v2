@@ -505,7 +505,7 @@ window.UI = (function () {
       '<button class="pop-item" id="pfOut" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h-8v16h8M10 12h11M18 8.5L21.5 12 18 15.5"/></svg><span>로그아웃</span></button>' +
       '</div>', '300px');
     pop.el.classList.add('pop--auth');
-    pop.el.querySelector('#pfMy').addEventListener('click', function () { closePopups(); openMyInfoPopup(pop.el); });
+    pop.el.querySelector('#pfMy').addEventListener('click', function () { closePopups(); openMyInfoPopup(); });
     pop.el.querySelector('#pfOut').addEventListener('click', function () {
       closePopups();
       if (u.demo) { exitDemo(); return; }
@@ -681,137 +681,161 @@ window.UI = (function () {
     }
   };
 
-  /* ---------- 내정보 팝업 (설정 팝업 스타일) ---------- */
-  function openMyInfoPopup(anchor) {
+  /* ---------- 프로필 설정 ---------- */
+  function openMyInfoPopup() {
     var u = currentUser();
     if (!u) return;
     var ud = userDoc() || {};
-    var pop = openPopup(anchor,
-      '<div class="pop-head"><b>내 정보</b>' + (u.demo ? ' <span class="demo-chip demo-chip--sm">DEMO</span>' : '') + '</div>' +
-      '<div class="pop-body">' +
-      '<div class="profile-card">' +
-      '<div class="prof-top"><button class="prof-ava prof-ava-clickable" id="myInfoProfileTrigger" type="button" aria-label="프로필 아이콘 변경"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"></button>' +
-      '<b class="prof-nick">' + esc(ud.nickname || u.displayName || '선원') + '</b></div>' +
-      '<div class="prof-stats">' +
-      '<div><b>' + ((ud.counts && ud.counts.posts) || 0) + '</b><small>게시글</small></div>' +
-      '<div><b>' + ((ud.counts && ud.counts.comments) || 0) + '</b><small>댓글</small></div>' +
-      '<div><b>' + ((ud.counts && ud.counts.likes) || 0) + '</b><small>좋아요</small></div></div>' +
-      '</div>' +
-      '<div class="mi-sec"><span class="mi-lb">닉네임</span>' +
-      '<div class="mi-row"><b id="miNick">' + esc(ud.nickname || u.displayName || '선원') + '</b>' +
-      '<button class="btn btn--ghost btn--sm" id="miNickBtn" type="button">변경</button></div></div>' +
-      '<div class="mi-sec"><span class="mi-lb">로그인 이메일</span>' +
-      '<div class="mi-row mi-mail">' + esc(u.email || '이메일 없음') + '</div></div>' +
-      '<button class="btn btn--danger btn--block" id="miDel" type="button" style="margin-top:8px">탈퇴하기</button>' +
-      '</div>' +
-      '<div class="profile-slide-panel" id="profileSlidePanel">' +
-      '<div class="panel-header"><b>프로필 아이콘 선택</b><button class="icon-btn panel-close" id="panelCloseBtn" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>' +
-      '<div class="panel-body" id="avatarListContainer"></div>' +
-      '</div>', '320px', 'pop--myinfo');
-    
-    /* 프로필 아이콘은 레포지토리의 img/avatars 에셋으로만 구성한다. */
-    var avatarContainer = pop.el.querySelector('#avatarListContainer');
-    
-    function renderAvatarList() {
-      avatarContainer.innerHTML = PROFILE_ICONS.map(function (imgUrl, i) {
-        var filename = PROFILE_ICON_FILES[i].replace(/\.png$/i, '');
-        return '<button class="avatar-item' + (Number(ud.profileIcon || 0) === i ? ' is-selected' : '') + '" type="button" data-index="' + i + '" aria-label="' + esc(filename) + '">' +
-          '<img src="' + esc(imgUrl) + '" alt="' + esc(filename) + '"></button>';
-      }).join('');
+    var initialIcon = Number(ud.profileIcon);
+    if (isNaN(initialIcon)) initialIcon = 0;
+    var initialNick = ud.nickname || u.displayName || '선원';
+    var draftIcon = initialIcon;
+
+    var m = openModal({
+      title: '프로필 설정',
+      cls: 'profile-settings-modal',
+      body:
+        '<div class="profile-settings-shell">' +
+        '<aside class="profile-settings-nav">' +
+        '<button class="profile-nav-item is-on" type="button">기본 정보</button>' +
+        '</aside>' +
+        '<section class="profile-settings-content">' +
+        '<div class="profile-settings-grid">' +
+        '<div class="profile-preview-card">' +
+        '<div class="profile-cover"><img id="profileSettingCover" src="' + esc(avatarOf(draftIcon)) + '" alt=""></div>' +
+        '<div class="profile-card-info">' +
+        '<button class="profile-card-avatar" id="profileSettingAvatarBtn" type="button" aria-label="프로필 이미지 등록">' +
+        '<img id="profileSettingAvatar" src="' + esc(avatarOf(draftIcon)) + '" alt="프로필 이미지"></button>' +
+        '<b class="profile-card-name" id="profileSettingName">' + esc(initialNick) + '</b>' +
+        '<div class="profile-card-stats">' +
+        '<div><b>' + ((ud.counts && ud.counts.posts) || 0) + '</b><small>게시글</small></div>' +
+        '<div><b>' + ((ud.counts && ud.counts.comments) || 0) + '</b><small>댓글</small></div>' +
+        '<div><b>' + ((ud.counts && ud.counts.likes) || 0) + '</b><small>좋아요</small></div>' +
+        '</div></div></div>' +
+        '<div class="profile-settings-fields">' +
+        (u.demo ? '<div class="profile-demo-note">데모 모드 — 저장 내용은 이 브라우저에만 보관됩니다.</div>' : '') +
+        '<div class="profile-field">' +
+        '<label>프로필 이미지 <span class="field-help" title="레포지토리에 포함된 프로필 아이콘을 선택합니다.">?</span></label>' +
+        '<button class="profile-image-register" id="profileImageRegister" type="button">' +
+        '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="M3 16l4.5-4.5 3.5 3 2.5-2.5L21 17" stroke-linecap="round" stroke-linejoin="round"/></svg> 이미지 등록</button>' +
+        '</div>' +
+        '<div class="profile-field">' +
+        '<label for="profileNickname">닉네임 <span class="field-help" tabindex="0" aria-describedby="nicknameHelp">?</span>' +
+        '<span class="field-tooltip" id="nicknameHelp" role="tooltip">• 한글, 영어, 숫자만 사용할 수 있어요.<br>• 20자까지 입력할 수 있어요.<br>• 72시간마다 한 번만 변경할 수 있어요.</span></label>' +
+        '<div class="profile-input-wrap"><input id="profileNickname" maxlength="20" value="' + esc(initialNick) + '" autocomplete="nickname"><button id="profileNicknameClear" type="button" aria-label="닉네임 지우기">×</button></div>' +
+        '</div>' +
+        '<div class="profile-field profile-email-field"><label>로그인 이메일</label><div class="profile-readonly">' + esc(u.email || '이메일 없음') + '</div></div>' +
+        '<button class="profile-delete-link" id="profileDelete" type="button">회원 탈퇴</button>' +
+        '</div></div></section></div>' +
+        '<div class="profile-settings-footer">' +
+        '<button class="btn btn--ghost" id="profileClose" type="button">닫기</button>' +
+        '<button class="btn btn--gold" id="profileSave" type="button" disabled>저장</button>' +
+        '</div>'
+    });
+
+    var nickInput = m.body.querySelector('#profileNickname');
+    var saveBtn = m.body.querySelector('#profileSave');
+    var profileName = m.body.querySelector('#profileSettingName');
+    var coverImg = m.body.querySelector('#profileSettingCover');
+    var avatarImg = m.body.querySelector('#profileSettingAvatar');
+
+    function currentNick() { return nickInput.value.trim(); }
+    function isDirty() { return draftIcon !== initialIcon || currentNick() !== initialNick; }
+    function syncDraft() {
+      profileName.textContent = currentNick() || '선원';
+      saveBtn.disabled = !currentNick() || !isDirty();
     }
-    renderAvatarList();
-    
-    /* 프로필 이미지 클릭 시 슬라이드 패널 열기 */
-    var profileTrigger = pop.el.querySelector('#myInfoProfileTrigger');
-    var slidePanel = pop.el.querySelector('#profileSlidePanel');
-    var panelCloseBtn = pop.el.querySelector('#panelCloseBtn');
-    
-    function openPanel() {
-      slidePanel.classList.add('is-open');
+    function updateDraftIcon(index) {
+      draftIcon = index;
+      var src = avatarOf(index);
+      coverImg.src = src;
+      avatarImg.src = src;
+      syncDraft();
     }
-    
-    function closePanel() {
-      slidePanel.classList.remove('is-open');
-    }
-    
-    if (profileTrigger) {
-      profileTrigger.addEventListener('click', openPanel);
-    }
-    
-    if (panelCloseBtn) {
-      panelCloseBtn.addEventListener('click', closePanel);
-    }
-    
-    /* 아바타 선택 시 프로필 변경 */
-    avatarContainer.addEventListener('click', function(e) {
-      var btn = e.target.closest('.avatar-item');
-      if (!btn) return;
-      var iconIndex = Number(btn.getAttribute('data-index'));
-      var imgUrl = PROFILE_ICONS[iconIndex];
-      if (!imgUrl || isNaN(iconIndex)) return;
-      
-      saveUserPatch({ profileIcon: iconIndex }).then(function () {
-        var profAva = pop.el.querySelector('.prof-ava img');
-        if (profAva) profAva.src = imgUrl;
-        avatarContainer.querySelectorAll('.avatar-item').forEach(function (x) {
-          x.classList.toggle('is-selected', Number(x.getAttribute('data-index')) === iconIndex);
-        });
+
+    m.body.querySelector('#profileClose').addEventListener('click', m.close);
+    nickInput.addEventListener('input', syncDraft);
+    m.body.querySelector('#profileNicknameClear').addEventListener('click', function () {
+      nickInput.value = '';
+      nickInput.focus();
+      syncDraft();
+    });
+    m.body.querySelector('#profileSave').addEventListener('click', function () {
+      var nickname = currentNick();
+      if (!nickname || !isDirty()) return;
+      saveBtn.disabled = true;
+      saveUserPatch({ profileIcon: draftIcon, nickname: nickname }).then(function () {
         notifyUser();
-        toast('프로필 아이콘이 변경되었습니다.', 'ok');
-        closePanel();
-      }).catch(function (e) { toast(FB.errMsg(e), 'err'); });
+        m.close();
+        toast('프로필이 저장되었습니다.', 'ok');
+      }).catch(function (e) {
+        saveBtn.disabled = false;
+        toast(FB.errMsg(e), 'err');
+      });
     });
-    
-    /* 닉네임 변경 */
-    pop.body.querySelector('#miNickBtn').addEventListener('click', function () {
-      var cur = pop.body.querySelector('#miNick');
-      if (cur.querySelector('input')) return;
-      var old = cur.textContent;
-      cur.innerHTML = '<input id="miNickIn" maxlength="16" value="' + esc(old) + '" style="max-width:160px">';
-      var save = function () {
-        var inp = pop.body.querySelector('#miNickIn');
-        if (!inp) return;
-        var v = inp.value.trim();
-        if (!v) { cur.textContent = old; return; }
-        saveUserPatch({ nickname: v }).then(function () {
-          cur.textContent = v;
-          notifyUser();
-          toast('닉네임이 변경되었습니다.', 'ok');
-        }).catch(function (e) { cur.textContent = old; toast(FB.errMsg(e), 'err'); });
-      };
-      var inp = pop.body.querySelector('#miNickIn');
-      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') save(); });
-      inp.addEventListener('blur', save);
-      inp.focus();
+
+    m.body.querySelector('#profileImageRegister').addEventListener('click', function () {
+      openProfileImagePicker(draftIcon, function (index) { updateDraftIcon(index); });
     });
-    
-    /* 탈퇴하기 */
-    pop.body.querySelector('#miDel').addEventListener('click', function () {
-      closePopups();
-      if (u.demo) {
-        toast('데모 계정은 탈퇴 대신 로그아웃됩니다.');
-        exitDemo();
-        return;
-      }
+    m.body.querySelector('#profileSettingAvatarBtn').addEventListener('click', function () {
+      openProfileImagePicker(draftIcon, function (index) { updateDraftIcon(index); });
+    });
+    m.body.querySelector('#profileDelete').addEventListener('click', function () {
       var cf = openModal({
         title: '탈퇴 확인',
         body: '<p style="font-size:14px;line-height:1.7">정말 탈퇴하시겠습니까?<br><b style="color:var(--red)">계정과 Firebase 사용자 데이터가 삭제되며 복구할 수 없습니다.</b></p>' +
-          '<div style="display:flex;gap:8px;margin-top:16px">' +
-          '<button class="btn btn--ghost btn--block" id="delNo" type="button">취소</button>' +
+          '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn--ghost btn--block" id="delNo" type="button">취소</button>' +
           '<button class="btn btn--danger btn--block" id="delYes" type="button">탈퇴하기</button></div>'
       });
       cf.body.querySelector('#delNo').addEventListener('click', cf.close);
       cf.body.querySelector('#delYes').addEventListener('click', function () {
+        if (u.demo) {
+          cf.close(); m.close(); exitDemo(); return;
+        }
         var user = FB.auth().currentUser;
         if (!user) { cf.close(); return; }
         user.delete().then(function () {
-          cf.close();
+          cf.close(); m.close();
           toast('탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
         }).catch(function (e) {
           cf.close();
           toast(FB.errMsg(e) + ' — 보안 정책상 최근 로그인 후 다시 시도해 주세요.', 'err');
         });
       });
+    });
+  }
+
+  function openProfileImagePicker(currentIcon, onRegister) {
+    var pickedIcon = currentIcon;
+    var picker = openModal({
+      title: '프로필 이미지 등록',
+      cls: 'profile-image-modal',
+      body:
+        '<div class="avatar-picker-preview"><img id="avatarPickerPreview" src="' + esc(avatarOf(pickedIcon)) + '" alt="선택한 프로필 이미지"></div>' +
+        '<div class="avatar-picker-list"><div class="avatar-picker-grid">' +
+        PROFILE_ICONS.map(function (src, i) {
+          var name = PROFILE_ICON_FILES[i].replace(/\.png$/i, '');
+          return '<button class="avatar-picker-item' + (i === pickedIcon ? ' is-selected' : '') + '" type="button" data-avatar-index="' + i + '" aria-label="' + esc(name) + '">' +
+            '<img src="' + esc(src) + '" alt="' + esc(name) + '"></button>';
+        }).join('') +
+        '</div></div>' +
+        '<div class="avatar-picker-footer"><button class="btn btn--ghost" id="avatarPickerCancel" type="button">취소</button>' +
+        '<button class="btn btn--gold" id="avatarPickerRegister" type="button">등록</button></div>'
+    });
+    var preview = picker.body.querySelector('#avatarPickerPreview');
+    picker.body.querySelectorAll('.avatar-picker-item').forEach(function (button) {
+      button.addEventListener('click', function () {
+        pickedIcon = Number(button.getAttribute('data-avatar-index'));
+        preview.src = avatarOf(pickedIcon);
+        picker.body.querySelectorAll('.avatar-picker-item').forEach(function (item) {
+          item.classList.toggle('is-selected', item === button);
+        });
+      });
+    });
+    picker.body.querySelector('#avatarPickerCancel').addEventListener('click', picker.close);
+    picker.body.querySelector('#avatarPickerRegister').addEventListener('click', function () {
+      onRegister(pickedIcon);
+      picker.close();
     });
   }
 
