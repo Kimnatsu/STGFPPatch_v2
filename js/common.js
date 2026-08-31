@@ -490,26 +490,51 @@ window.UI = (function () {
     if (!u) return;
     var ud = userDoc() || {};
     var c = ud.counts || {};
+    var noticeCount = ud.unreadNotifications != null ? ud.unreadNotifications :
+      (ud.notificationCount != null ? ud.notificationCount : 41);
     var pop = openPopup(anchor,
-      '<div class="profile-card">' +
-      (u.demo ? '<div class="demo-banner">데모 모드 — 변경 사항은 이 브라우저에만 저장됩니다.</div>' : '') +
-      '<div class="prof-top"><span class="prof-ava"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"></span>' +
-      '<b class="prof-nick">' + esc(ud.nickname || u.displayName || '선원') + '</b></div>' +
-      '<div class="prof-stats">' +
-      '<div><b>' + (c.posts || 0) + '</b><small>게시글</small></div>' +
-      '<div><b>' + (c.comments || 0) + '</b><small>댓글</small></div>' +
-      '<div><b>' + (c.likes || 0) + '</b><small>좋아요</small></div></div>' +
+      '<div class="profile-menu">' +
+      '<div class="profile-menu-head">' +
+      '<div class="profile-menu-user"><span class="prof-ava"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"></span>' +
+      '<div class="profile-menu-name"><div><b class="prof-nick">' + esc(ud.nickname || u.displayName || '선원') + '</b>' +
+      '<button class="profile-copy" id="pfCopy" type="button" aria-label="닉네임 복사">' +
+      '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div></div>' +
+      '</div><button class="profile-logout" id="pfOut" type="button">로그아웃</button></div>' +
+      '<div class="profile-menu-stats">' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--post">C</span><span class="profile-stat-label">게시글 작성</span><b>' + (c.posts || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--comment">P</span><span class="profile-stat-label">댓글 작성</span><b>' + (c.comments || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--like">F</span><span class="profile-stat-label">좋아요 한 글</span><b>' + (c.likes || 0) + '</b></div>' +
       '</div>' +
-      '<div class="pop-body">' +
-      '<button class="pop-item" id="pfMy" type="button">' + IC.user + '<span>내 정보</span></button>' +
-      '<button class="pop-item" id="pfOut" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h-8v16h8M10 12h11M18 8.5L21.5 12 18 15.5"/></svg><span>로그아웃</span></button>' +
-      '</div>', '300px');
-    pop.el.classList.add('pop--auth');
+      '<div class="profile-menu-actions">' +
+      '<button class="profile-menu-action" id="pfNotice" type="button">' +
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9z"/><path d="M10 21h4"/></svg><span>알림</span><em>' + esc(noticeCount) + '</em></button>' +
+      '<div class="profile-menu-divider"></div>' +
+      '<button class="profile-menu-action" id="pfMy" type="button">' + IC.user + '<span>내 정보</span></button>' +
+      '<button class="profile-menu-action" id="pfMessages" type="button">' +
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v12H9l-5 3.5V5z"/><path d="M8 10h8M8 13h5" stroke-linecap="round"/></svg><span>쪽지</span></button>' +
+      '</div>', '340px');
+    pop.el.classList.add('pop--profile');
+    pop.el.querySelector('#pfCopy').addEventListener('click', function () {
+      var nickname = ud.nickname || u.displayName || '선원';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(nickname).then(function () { toast('닉네임을 복사했습니다.', 'ok'); }).catch(function () { toast('닉네임 복사에 실패했습니다.', 'err'); });
+      } else {
+        toast('이 브라우저에서는 복사를 지원하지 않습니다.');
+      }
+    });
     pop.el.querySelector('#pfMy').addEventListener('click', function () { closePopups(); openMyInfoPopup(); });
     pop.el.querySelector('#pfOut').addEventListener('click', function () {
       closePopups();
       if (u.demo) { exitDemo(); return; }
       if (FB.ready) FB.auth().signOut().then(function () { toast('로그아웃 되었습니다.'); });
+    });
+    pop.el.querySelector('#pfNotice').addEventListener('click', function () {
+      closePopups();
+      SET_ACTIONS.notify();
+    });
+    pop.el.querySelector('#pfMessages').addEventListener('click', function () {
+      closePopups();
+      toast('쪽지 기능은 준비 중입니다.');
     });
   }
 
