@@ -437,3 +437,47 @@
 .tip-row{animation:tipIn .32s var(--ease) both}
 @keyframes tipIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 .tip-write{margin-top:12px}
+
+/* ===== Scroll to Top Button (캐릭터 페이지 전용) ===== */
+.scroll-top-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 90px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--gold-ink);
+  border: none;
+  box-shadow: 0 4px 14px rgba(245, 185, 66, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  transition: transform 0.2s var(--ease), opacity 0.2s var(--ease), box-shadow 0.2s;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+}
+.scroll-top-btn.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.scroll-top-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(245, 185, 66, 0.45);
+}
+.scroll-top-btn svg {
+  stroke: currentColor;
+}
+/* 모바일에서도 동일하게 우측 하단 */
+@media (max-width: 768px) {
+  .scroll-top-btn {
+    right: 16px;
+    bottom: 80px;
+    width: 42px;
+    height: 42px;
+  }
+}

@@ -1006,6 +1006,35 @@
       var vc = $('view-characters');
       if (vc && !vc.hidden) renderChars();
     });
+
+    /* ===== Scroll to Top Button (캐릭터 페이지 전용) ===== */
+    var scrollTopBtn = $('scrollTopBtn');
+    if (scrollTopBtn) {
+      var scrollTimeout = null;
+      window.addEventListener('scroll', function () {
+        if (scrollTimeout) return;
+        scrollTimeout = setTimeout(function () {
+          scrollTimeout = null;
+          var viewChars = $('view-characters');
+          if (viewChars && !viewChars.hidden) {
+            if (window.scrollY > 300) {
+              scrollTopBtn.classList.add('show');
+              scrollTopBtn.removeAttribute('hidden');
+            } else {
+              scrollTopBtn.classList.remove('show');
+              scrollTopBtn.setAttribute('hidden', '');
+            }
+          } else {
+            scrollTopBtn.classList.remove('show');
+            scrollTopBtn.setAttribute('hidden', '');
+          }
+        }, 100);
+      }, { passive: true });
+
+      scrollTopBtn.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
