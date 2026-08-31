@@ -469,7 +469,7 @@ select{appearance:none;-webkit-appearance:none;cursor:pointer;
 .profile-card{padding:18px 16px 14px;background:linear-gradient(160deg,var(--surface-2),var(--surface));border-bottom:1px solid var(--line)}
 .demo-banner{font-size:10.5px;font-weight:800;color:var(--gold-ink);background:var(--gold);border-radius:6px;padding:6px 10px;margin-bottom:12px;letter-spacing:.2px}
 .prof-top{display:flex;flex-direction:column;align-items:center;gap:9px}
-.prof-ava{width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.prof-ava{width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);box-shadow:0 6px 20px rgba(0,0,0,.4);padding:0;flex:none}
 .prof-ava img{width:100%;height:100%;object-fit:cover}
 .prof-nick{font-family:var(--font-d);font-size:19px;letter-spacing:.4px}
 .prof-stats{display:flex;margin-top:14px;border-top:1px solid var(--line)}
@@ -557,11 +557,52 @@ body.body-lock{
 .mi-lb{display:block;font-size:11.5px;font-weight:900;color:var(--text-3);letter-spacing:.4px;margin-bottom:8px}
 .mi-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14.5px;font-weight:800}
 .mi-mail{font-weight:700;color:var(--text-2);font-size:13.5px;word-break:break-all}
-.ava-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
-.ava-pick{width:100%;aspect-ratio:1;border-radius:14px;overflow:hidden;border:2px solid var(--line-2);padding:0;cursor:pointer;transition:.2s}
-.ava-pick img{width:100%;height:100%;object-fit:cover}
-.ava-pick:hover{transform:scale(1.06)}
-.ava-pick.is-on{border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 30%,transparent)}
+
+/* 내 정보 팝업은 앵커가 아닌 뷰포트 정중앙에 고정 */
+.pop.pop--myinfo{
+  left:50%!important;right:auto!important;top:50%!important;
+  width:min(360px,calc(100vw - 32px))!important;
+  max-height:min(640px,calc(100vh - 32px))!important;
+  position:fixed!important;margin:0!important;overflow:visible;
+  transform:translate(-50%,-50%) scale(.96)!important;
+}
+.pop.pop--myinfo.show{transform:translate(-50%,-50%) scale(1)!important}
+.pop.pop--myinfo .pop-body{
+  max-height:min(560px,calc(100vh - 96px));overflow-y:auto;position:relative;
+}
+
+/* 프로필 아이콘 패널 — 넓은 화면에서는 팝업 오른쪽에 인접해 슬라이드 */
+.profile-slide-panel{
+  position:absolute;top:0;right:calc(-100% - 12px);bottom:0;
+  width:320px;max-width:calc(100vw - 24px);
+  background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r-md);
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  transform:translateX(108%);transition:transform .3s var(--ease);
+  z-index:10;display:flex;flex-direction:column;overflow:hidden;
+}
+.profile-slide-panel.is-open{transform:translateX(0)}
+.panel-header{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:14px 16px;border-bottom:1px solid var(--line);
+  font-family:var(--font-d);font-size:16px;letter-spacing:.3px;flex:none;
+}
+.panel-close{width:32px;height:32px;border-radius:50%;background:var(--surface-2)}
+.panel-close:hover{background:var(--surface-3)}
+.panel-body{
+  flex:1;overflow-y:auto;padding:16px;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-content:start;gap:10px;
+}
+.avatar-item{
+  width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;
+  border:2px solid transparent;padding:0;background:var(--surface-2);
+  transition:border-color .2s,transform .2s,box-shadow .2s;
+}
+.avatar-item:hover{border-color:var(--gold);transform:scale(1.04)}
+.avatar-item.is-selected{
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 30%,transparent);
+}
+.avatar-item img{width:100%;height:100%;object-fit:cover}
 
 /* ---------- 토스트 ---------- */
 #toastRoot{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:130;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:max-content;max-width:92vw}
@@ -675,76 +716,17 @@ main,.app-footer{animation:pageRise .3s var(--ease) both}
   }
   .pop.pop--myinfo.show{transform:translate(-50%,-50%) scale(1)!important}
   .pop.pop--myinfo .pop-body{
-    max-height:calc(100% - 48px);
+    max-height:min(560px,calc(100vh - 96px));
     overflow-y:auto;
     position:relative;
   }
   
-  /* 프로필 슬라이드 패널 */
+  /* 작은 화면에서는 패널을 팝업 위로 펼쳐 화면 밖으로 밀리지 않게 한다. */
   .profile-slide-panel{
-    position:absolute;
-    top:0;
-    right:-100%;
-    width:100%;
-    height:100%;
-    background:var(--surface);
-    border-radius:inherit;
-    box-shadow:var(--shadow);
-    transition:right 0.3s var(--ease);
-    z-index:10;
-    display:flex;
-    flex-direction:column;
+    right:0;width:100%;max-width:none;
+    transform:translateX(108%);
   }
-  .profile-slide-panel.is-open{
-    right:0;
-  }
-  .panel-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:16px;
-    border-bottom:1px solid var(--line);
-    font-size:16px;
-    font-weight:700;
-  }
-  .panel-close{
-    width:32px;
-    height:32px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:50%;
-    background:var(--surface-2);
-    color:var(--text);
-  }
-  .panel-close:hover{
-    background:var(--surface-3);
-  }
-  .panel-body{
-    flex:1;
-    overflow-y:auto;
-    padding:16px;
-  }
-  .avatar-item{
-    width:60px;
-    height:60px;
-    border-radius:12px;
-    overflow:hidden;
-    border:2px solid transparent;
-    padding:0;
-    margin:4px;
-    transition:border-color 0.2s, transform 0.2s;
-    background:var(--surface-2);
-  }
-  .avatar-item:hover{
-    border-color:var(--gold);
-    transform:scale(1.05);
-  }
-  .avatar-item img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-  }
+  .profile-slide-panel.is-open{transform:translateX(0)}
   .prof-ava-clickable{
     cursor:pointer;
     transition:transform 0.2s;
@@ -752,34 +734,6 @@ main,.app-footer{animation:pageRise .3s var(--ease) both}
   .prof-ava-clickable:hover{
     transform:scale(1.08);
   }
-  .ava-grid{
-    display:grid;
-    grid-template-columns:repeat(5, 1fr);
-    gap:8px;
-    margin-top:8px;
-  }
-  .ava-pick{
-    width:48px;
-    height:48px;
-    border-radius:10px;
-    overflow:hidden;
-    border:2px solid transparent;
-    padding:0;
-    background:var(--surface-2);
-    transition:border-color 0.2s, transform 0.2s;
-  }
-  .ava-pick.is-on{
-    border-color:var(--gold);
-  }
-  .ava-pick:hover{
-    transform:scale(1.05);
-  }
-  .ava-pick img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-  }
-
   /* auth/프로필: 헤더 바로 아래, 화면 우측 */
   .pop.pop--auth{
     left:auto!important;

@@ -39,20 +39,24 @@ window.UI = (function () {
     set: function (k, v) { try { localStorage.setItem('fpp_' + k, JSON.stringify(v)); } catch (e) { } }
   };
 
-  /* ---------- 아바타 ---------- */
-  function avaSVG(hue) {
-    return 'image/svg+xml;utf8,' + encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
-      '<rect width="64" height="64" rx="16" fill="hsl(' + hue + ',45%,26%)"/>' +
-      '<circle cx="32" cy="24" r="10" fill="hsl(' + hue + ',62%,74%)"/>' +
-      '<path d="M12 58c2-13 11-19 20-19s18 6 20 19z" fill="hsl(' + hue + ',62%,74%)"/>' +
-      '<path d="M20 15l6 4-6 3zM44 12l-5 5 6 2z" fill="hsl(' + hue + ',80%,60%)" opacity=".8"/></svg>');
-  }
-  var AVATARS = [210, 42, 4, 168, 262, 122, 196, 330].map(function (h) { return 'data:' + avaSVG(h); });
-  var PLACEHOLDER_IMG = AVATARS[0];
+  /* ---------- 프로필 아이콘 ---------- */
+  /* 선택 가능한 아이콘은 레포지토리의 실제 에셋만 사용한다. */
+  var PROFILE_ICON_FILES = [
+    'ace.png', 'akainu.png', 'bigmom.png', 'bonney.png', 'brook.png',
+    'buggy.png', 'carrot.png', 'chopper.png', 'crocodile.png', 'dendenmushi.png',
+    'doflamingo.png', 'dragon.png', 'franky.png', 'garp.png', 'hancock.png',
+    'jinbe.png', 'kaido.png', 'katakuri.png', 'kid.png', 'kizaru.png',
+    'koby.png', 'kuma.png', 'law.png', 'luffy.png', 'mihawk.png',
+    'nami.png', 'nika.png', 'robin.png', 'roger.png', 'sabo.png',
+    'sanji.png', 'shanks.png', 'smoker.png', 'teach.png', 'usopp.png',
+    'vivi.png', 'whitebeard.png', 'yamato.png', 'zoro.png'
+  ];
+  var PROFILE_ICONS = PROFILE_ICON_FILES.map(function (filename) { return 'img/avatars/' + filename; });
+  var AVATARS = PROFILE_ICONS; /* 기존 호출부 호환용 별칭 */
+  var PLACEHOLDER_IMG = PROFILE_ICONS[0];
   function avatarOf(icon) {
     var i = parseInt(icon, 10);
-    return AVATARS[isNaN(i) ? 0 : Math.abs(i) % AVATARS.length];
+    return PROFILE_ICONS[isNaN(i) ? 0 : Math.abs(i) % PROFILE_ICONS.length];
   }
 
   /* ---------- i18n ---------- */
@@ -375,15 +379,15 @@ window.UI = (function () {
   function onDocClickPop(e) {
     if (!e.target.closest || !e.target.closest('.pop')) closePopups();
   }
-  function openPopup(anchor, html, width) {
+  function openPopup(anchor, html, width, extraClass) {
     closePopups();
     var el = document.createElement('div');
-    el.className = 'pop';
+    el.className = 'pop' + (extraClass ? ' ' + extraClass : '');
     if (width) el.style.width = width;
     el.innerHTML = html;
     $('popupRoot').appendChild(el);
     
-    /* pop--fav, pop--myinfo 는 CSS 에서 위치·애니메이션 처리 */
+    /* 중앙 고정 팝업은 앵커 위치 계산을 건너뛴다. */
     var isCentered = el.classList.contains('pop--fav') || el.classList.contains('pop--myinfo');
     if (!isCentered) {
       var r = anchor.getBoundingClientRect();
@@ -677,84 +681,6 @@ window.UI = (function () {
     }
   };
 
-  /* ---------- 내 정보 ---------- */
-  function openMyInfo() {
-    var u = currentUser();
-    if (!u) return;
-    var ud = userDoc() || {};
-    var m = openModal({
-      title: '내 정보',
-      body:
-      '<div class="mi-sec"><span class="mi-lb">프로필 아이콘</span>' +
-      '<div class="ava-grid">' + AVATARS.map(function (a, i) {
-        return '<button class="ava-pick' + (Number(ud.profileIcon || 0) === i ? ' is-on' : '') + '" data-av="' + i + '" type="button" aria-label="프로필 아이콘 ' + (i + 1) + '"><img src="' + a + '" alt=""></button>';
-      }).join('') + '</div></div>' +
-      '<div class="mi-sec"><span class="mi-lb">닉네임</span>' +
-      '<div class="mi-row"><b id="miNick">' + esc(ud.nickname || u.displayName || '선원') + '</b>' +
-      '<button class="btn btn--ghost btn--sm" id="miNickBtn" type="button">변경</button></div></div>' +
-      '<div class="mi-sec"><span class="mi-lb">로그인 이메일</span>' +
-      '<div class="mi-row mi-mail">' + esc(u.email || '이메일 없음') + '</div></div>' +
-      '<button class="btn btn--danger btn--block" id="miDel" type="button" style="margin-top:8px">탈퇴하기</button>'
-    });
-    m.body.querySelectorAll('.ava-pick').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var i = Number(b.getAttribute('data-av'));
-        saveUserPatch({ profileIcon: i }).then(function () {
-          m.body.querySelectorAll('.ava-pick').forEach(function (x) { x.classList.toggle('is-on', x === b); });
-          notifyUser();
-          toast('프로필 아이콘이 변경되었습니다.', 'ok');
-        }).catch(function (e) { toast(FB.errMsg(e), 'err'); });
-      });
-    });
-    m.body.querySelector('#miNickBtn').addEventListener('click', function () {
-      var cur = m.body.querySelector('#miNick');
-      if (cur.querySelector('input')) return;
-      var old = cur.textContent;
-      cur.innerHTML = '<input id="miNickIn" maxlength="16" value="' + esc(old) + '" style="max-width:160px">';
-      var save = function () {
-        var inp = m.body.querySelector('#miNickIn');
-        if (!inp) return;
-        var v = inp.value.trim();
-        if (!v) { cur.textContent = old; return; }
-        saveUserPatch({ nickname: v }).then(function () {
-          cur.textContent = v;
-          notifyUser();
-          toast('닉네임이 변경되었습니다.', 'ok');
-        }).catch(function (e) { cur.textContent = old; toast(FB.errMsg(e), 'err'); });
-      };
-      var inp = m.body.querySelector('#miNickIn');
-      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') save(); });
-      inp.addEventListener('blur', save);
-      inp.focus();
-    });
-    m.body.querySelector('#miDel').addEventListener('click', function () {
-      if (u.demo) {
-        toast('데모 계정은 탈퇴 대신 로그아웃됩니다.');
-        m.close(); exitDemo();
-        return;
-      }
-      var cf = openModal({
-        title: '탈퇴 확인',
-        body: '<p style="font-size:14px;line-height:1.7">정말 탈퇴하시겠습니까?<br><b style="color:var(--red)">계정과 Firebase 사용자 데이터가 삭제되며 복구할 수 없습니다.</b></p>' +
-          '<div style="display:flex;gap:8px;margin-top:16px">' +
-          '<button class="btn btn--ghost btn--block" id="delNo" type="button">취소</button>' +
-          '<button class="btn btn--danger btn--block" id="delYes" type="button">탈퇴하기</button></div>'
-      });
-      cf.body.querySelector('#delNo').addEventListener('click', cf.close);
-      cf.body.querySelector('#delYes').addEventListener('click', function () {
-        var user = FB.auth().currentUser;
-        if (!user) { cf.close(); m.close(); return; }
-        user.delete().then(function () {
-          cf.close(); m.close();
-          toast('탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
-        }).catch(function (e) {
-          cf.close();
-          toast(FB.errMsg(e) + ' — 보안 정책상 최근 로그인 후 다시 시도해 주세요.', 'err');
-        });
-      });
-    });
-  }
-
   /* ---------- 내정보 팝업 (설정 팝업 스타일) ---------- */
   function openMyInfoPopup(anchor) {
     var u = currentUser();
@@ -764,17 +690,13 @@ window.UI = (function () {
       '<div class="pop-head"><b>내 정보</b>' + (u.demo ? ' <span class="demo-chip demo-chip--sm">DEMO</span>' : '') + '</div>' +
       '<div class="pop-body">' +
       '<div class="profile-card">' +
-      '<div class="prof-top"><span class="prof-ava prof-ava-clickable" id="myInfoProfileTrigger"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"></span>' +
+      '<div class="prof-top"><button class="prof-ava prof-ava-clickable" id="myInfoProfileTrigger" type="button" aria-label="프로필 아이콘 변경"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"></button>' +
       '<b class="prof-nick">' + esc(ud.nickname || u.displayName || '선원') + '</b></div>' +
       '<div class="prof-stats">' +
       '<div><b>' + ((ud.counts && ud.counts.posts) || 0) + '</b><small>게시글</small></div>' +
       '<div><b>' + ((ud.counts && ud.counts.comments) || 0) + '</b><small>댓글</small></div>' +
       '<div><b>' + ((ud.counts && ud.counts.likes) || 0) + '</b><small>좋아요</small></div></div>' +
       '</div>' +
-      '<div class="mi-sec"><span class="mi-lb">프로필 아이콘</span>' +
-      '<div class="ava-grid">' + AVATARS.map(function (a, i) {
-        return '<button class="ava-pick' + (Number(ud.profileIcon || 0) === i ? ' is-on' : '') + '" data-av="' + i + '" type="button" aria-label="프로필 아이콘 ' + (i + 1) + '"><img src="' + a + '" alt=""></button>';
-      }).join('') + '</div></div>' +
       '<div class="mi-sec"><span class="mi-lb">닉네임</span>' +
       '<div class="mi-row"><b id="miNick">' + esc(ud.nickname || u.displayName || '선원') + '</b>' +
       '<button class="btn btn--ghost btn--sm" id="miNickBtn" type="button">변경</button></div></div>' +
@@ -785,29 +707,24 @@ window.UI = (function () {
       '<div class="profile-slide-panel" id="profileSlidePanel">' +
       '<div class="panel-header"><b>프로필 아이콘 선택</b><button class="icon-btn panel-close" id="panelCloseBtn" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>' +
       '<div class="panel-body" id="avatarListContainer"></div>' +
-      '</div>', '320px');
-    pop.el.classList.add('pop--myinfo');
+      '</div>', '320px', 'pop--myinfo');
     
-    /* 아바타 목록 로드 (실제 이미지 파일) */
-    var avatarContainer = pop.body.querySelector('#avatarListContainer');
-    FB.getAvatarList ? FB.getAvatarList().then(function(list) {
-      if (!list || list.length === 0) list = ['ace.png', 'luffy.png', 'zoro.png', 'sanji.png', 'nami.png'];
-      renderAvatarList(list);
-    }).catch(function() {
-      renderAvatarList(['ace.png', 'luffy.png', 'zoro.png', 'sanji.png', 'nami.png', 'chopper.png', 'robin.png', 'franky.png', 'brook.png', 'jinbe.png']);
-    }) : renderAvatarList(['ace.png', 'luffy.png', 'zoro.png', 'sanji.png', 'nami.png', 'chopper.png', 'robin.png', 'franky.png', 'brook.png', 'jinbe.png']);
+    /* 프로필 아이콘은 레포지토리의 img/avatars 에셋으로만 구성한다. */
+    var avatarContainer = pop.el.querySelector('#avatarListContainer');
     
-    function renderAvatarList(avatarFiles) {
-      avatarContainer.innerHTML = avatarFiles.map(function(filename) {
-        var imgUrl = 'img/avatars/' + filename;
-        return '<button class="avatar-item" type="button" data-img="' + esc(imgUrl) + '"><img src="' + esc(imgUrl) + '" alt="' + esc(filename) + '"></button>';
+    function renderAvatarList() {
+      avatarContainer.innerHTML = PROFILE_ICONS.map(function (imgUrl, i) {
+        var filename = PROFILE_ICON_FILES[i].replace(/\.png$/i, '');
+        return '<button class="avatar-item' + (Number(ud.profileIcon || 0) === i ? ' is-selected' : '') + '" type="button" data-index="' + i + '" aria-label="' + esc(filename) + '">' +
+          '<img src="' + esc(imgUrl) + '" alt="' + esc(filename) + '"></button>';
       }).join('');
     }
+    renderAvatarList();
     
     /* 프로필 이미지 클릭 시 슬라이드 패널 열기 */
-    var profileTrigger = pop.body.querySelector('#myInfoProfileTrigger');
-    var slidePanel = pop.body.querySelector('#profileSlidePanel');
-    var panelCloseBtn = pop.body.querySelector('#panelCloseBtn');
+    var profileTrigger = pop.el.querySelector('#myInfoProfileTrigger');
+    var slidePanel = pop.el.querySelector('#profileSlidePanel');
+    var panelCloseBtn = pop.el.querySelector('#panelCloseBtn');
     
     function openPanel() {
       slidePanel.classList.add('is-open');
@@ -829,37 +746,20 @@ window.UI = (function () {
     avatarContainer.addEventListener('click', function(e) {
       var btn = e.target.closest('.avatar-item');
       if (!btn) return;
-      var imgUrl = btn.getAttribute('data-img');
-      var filename = imgUrl.split('/').pop();
-      var baseName = filename.replace('.png', '');
-      var avatarNames = ['ace', 'akainu', 'bigmom', 'bonney', 'brook', 'buggy', 'carrot', 'chopper', 'crocodile', 'dendenmushi', 'doflamingo', 'dragon', 'franky', 'garp', 'hancock', 'jinbe', 'kaido', 'katakuri', 'kid', 'kizaru', 'koby', 'kuma', 'law', 'luffy', 'mihawk', 'nami', 'nika', 'robin', 'roger', 'sabo', 'sanji', 'shanks', 'smoker', 'teach', 'usopp', 'vivi', 'whitebeard', 'yamato', 'zoro'];
-      var iconIndex = avatarNames.indexOf(baseName);
-      if (iconIndex < 0) iconIndex = 0;
+      var iconIndex = Number(btn.getAttribute('data-index'));
+      var imgUrl = PROFILE_ICONS[iconIndex];
+      if (!imgUrl || isNaN(iconIndex)) return;
       
       saveUserPatch({ profileIcon: iconIndex }).then(function () {
-        var profAva = pop.body.querySelector('.prof-ava img');
+        var profAva = pop.el.querySelector('.prof-ava img');
         if (profAva) profAva.src = imgUrl;
-        pop.body.querySelectorAll('.ava-pick').forEach(function (x) { 
-          x.classList.toggle('is-on', Number(x.getAttribute('data-av')) === iconIndex); 
+        avatarContainer.querySelectorAll('.avatar-item').forEach(function (x) {
+          x.classList.toggle('is-selected', Number(x.getAttribute('data-index')) === iconIndex);
         });
         notifyUser();
         toast('프로필 아이콘이 변경되었습니다.', 'ok');
         closePanel();
       }).catch(function (e) { toast(FB.errMsg(e), 'err'); });
-    });
-    
-    /* 기존 프로필 아이콘 선택 (그리드) */
-    pop.body.querySelectorAll('.ava-pick').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var i = Number(b.getAttribute('data-av'));
-        saveUserPatch({ profileIcon: i }).then(function () {
-          pop.body.querySelectorAll('.ava-pick').forEach(function (x) { x.classList.toggle('is-on', x === b); });
-          var profAva = pop.body.querySelector('.prof-ava img');
-          if (profAva) profAva.src = b.querySelector('img').src;
-          notifyUser();
-          toast('프로필 아이콘이 변경되었습니다.', 'ok');
-        }).catch(function (e) { toast(FB.errMsg(e), 'err'); });
-      });
     });
     
     /* 닉네임 변경 */
