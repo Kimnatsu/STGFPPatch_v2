@@ -150,8 +150,8 @@
   font-family:var(--font-d);font-size:11px;line-height:1;padding:3.5px 7px;border-radius:6px;
   box-shadow:0 2px 6px rgba(0,0,0,.4);
 }
-.char-grade-badge.grade-SS,.cp-rel-grade.grade-SS{background:var(--gold);color:var(--gold-ink)}
-.char-grade-badge.grade-S,.cp-rel-grade.grade-S{background:var(--gold-2);color:var(--gold-ink)}
+.char-grade-badge.grade-SS,.cp-rel-grade.grade-SS{background:#FDE68A;color:#5b3a1e}
+.char-grade-badge.grade-S,.cp-rel-grade.grade-S{background:#FDBA74;color:#5b3a1e}
 .char-grade-badge.grade-A,.cp-rel-grade.grade-A{background:#ce93ff;color:#5b1e8f}
 .char-grade-badge.grade-B,.cp-rel-grade.grade-B{background:#90caf9;color:#0d47a1}
 .char-grade-badge.grade-C,.cp-rel-grade.grade-C{background:#a5d6a7;color:#1b5e20}
