@@ -626,16 +626,16 @@ body.body-lock{
   background:var(--surface-2);box-shadow:var(--shadow);
 }
 .profile-cover{
-  position:relative;height:230px;background:var(--surface-3);overflow:hidden;
+  position:relative;z-index:0;height:230px;background:var(--surface-3);overflow:hidden;
 }
 .profile-cover img{width:100%;height:100%;object-fit:contain;object-position:center;background:var(--surface-3)}
 .profile-cover::after{
   content:"";position:absolute;inset:0;background:rgba(0,0,0,.42);
   pointer-events:none;
 }
-.profile-card-info{padding:0 16px 18px;text-align:center}
+.profile-card-info{position:relative;z-index:1;padding:0 16px 18px;text-align:center}
 .profile-card-avatar{
-  width:88px;height:88px;margin:-44px auto 10px;padding:0;
+  position:relative;z-index:2;width:88px;height:88px;margin:-44px auto 10px;padding:0;
   overflow:hidden;border-radius:50%;
   background:var(--surface-2);box-shadow:0 6px 20px rgba(0,0,0,.4);
 }
