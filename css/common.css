@@ -21,7 +21,7 @@
   --line:rgba(86,169,230,.14);--line-2:rgba(86,169,230,.28);
   --line-n:#3d434b;
   --text:#e9f1f9;--text-2:#a9bfd3;--text-3:#7089a3;
-  --gold:#f5b942;--gold-2:#ffd479;--gold-ink:#3a2a05;
+  --gold:#4D9FFF;--gold-2:#7ab8ff;--gold-ink:#0a1626;
   --red:#e8484f;--green:#3ecf8e;--blue:#4D9FFF;
   --shadow:0 10px 30px -12px rgba(0,0,0,.55);
   color-scheme:dark;
@@ -32,7 +32,7 @@
   --line:rgba(23,64,110,.12);--line-2:rgba(23,64,110,.22);
   --line-n:#d4d8dd;
   --text:#14273c;--text-2:#3f5871;--text-3:#7a90a6;
-  --gold:#e39b12;--gold-2:#c77f00;--gold-ink:#fff8ea;
+  --gold:#0969DA;--gold-2:#0550ae;--gold-ink:#ffffff;
   --red:#d63c44;--green:#1fa871;--blue:#0969DA;
   --shadow:0 10px 28px -14px rgba(23,64,110,.28);
   color-scheme:light;
@@ -109,7 +109,7 @@ html[data-theme="dark"] .logo-img-dark{display:block}
 }
 .icon-btn:hover{
   background: var(--surface-2, #172940);
-  color: var(--gold, #f5b942);
+  color: var(--gold);
   border-color: var(--line, #29425e);
 }
 .hd-demo{font-size:11.5px;font-weight:900;letter-spacing:.6px;border:1px dashed var(--line-2);color:var(--gold);min-height:34px}
@@ -259,7 +259,7 @@ body.fonticon-ok .gnb-font-icon svg{display:none}
   display:inline-block;position:relative;padding-bottom:7px;
 }
 .banner-tag-txt::after{content:"";position:absolute;left:2px;bottom:0;width:52px;height:4px;background:var(--gold);transform:skewX(-18deg)}
-.banner-tag-sub{display:block;color:#ffd479;font-size:13px;font-weight:900;letter-spacing:1.5px;margin-top:7px;text-shadow:0 2px 6px rgba(0,0,0,.85)}
+.banner-tag-sub{display:block;color:var(--gold-2);font-size:13px;font-weight:900;letter-spacing:1.5px;margin-top:7px;text-shadow:0 2px 6px rgba(0,0,0,.85)}
 .banner-dots{position:absolute;right:16px;bottom:14px;z-index:4;display:flex;gap:6px}
 .bdot{width:9px;height:9px;border-radius:99px;background:rgba(255,255,255,.4);transition:.25s;padding:0}
 .bdot.on{background:var(--gold);width:22px}
@@ -533,7 +533,7 @@ body.body-lock{
 .pick--icon{padding:10px}
 .pick--icon .icon-prev{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff}
 .icon-navy{background:linear-gradient(150deg,#0d2440,#1d4a74)}
-.icon-gold{background:linear-gradient(150deg,#b97f12,#f5b942)}
+.icon-gold{background:linear-gradient(150deg,var(--gold-2),var(--gold))}
 .icon-red{background:linear-gradient(150deg,#7e1d22,#e8484f)}
 .icon-teal{background:linear-gradient(150deg,#0c4a44,#21b5a5)}
 .pick-note{font-size:12px;color:var(--text-3);margin-top:12px;line-height:1.6}
