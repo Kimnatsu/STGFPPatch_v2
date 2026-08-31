@@ -666,10 +666,11 @@ main,.app-footer{animation:pageRise .3s var(--ease) both}
     left:50%!important;
     right:auto!important;
     top:50%!important;
-    width:min(360px,calc(100vw - 24px))!important;
-    max-height:min(520px, calc(100vh - 32px))!important;
+    width:min(480px,calc(100vw - 24px))!important;
+    max-height:min(600px, calc(100vh - 32px))!important;
     transform:translate(-50%,-50%) scale(.95)!important;
-    position:relative;
+    position:fixed!important;
+    margin:0!important;
     overflow:visible;
   }
   .pop.pop--myinfo.show{transform:translate(-50%,-50%) scale(1)!important}

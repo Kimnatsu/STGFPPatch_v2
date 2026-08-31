@@ -1,3 +1,1 @@
-(css/common.css, js/common.js) are source code files, and there are no build artifacts, dependencies, or temporary files in the changes provided.
-
-Therefore, no entries need to be added to .gitignore, and since the current .gitignore is empty, the output remains empty.
+(css/common.css)
