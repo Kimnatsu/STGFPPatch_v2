@@ -202,7 +202,8 @@ window.FB = (function () {
           date: dateKey(pick(d, 'date', 'createdAt', 'updatedAt')),
           ts: d.createdAt && d.createdAt.seconds ? d.createdAt.seconds : 0,
           content: pick(d, 'content', 'text', 'body') || '',
-          likeCount: pick(d, 'likeCount') || 0
+          likeCount: pick(d, 'likeCount') || 0,
+          viewCount: pick(d, 'viewCount', 'views', 'view', 'hitCount', 'hits') || 0
         };
       }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
     });
@@ -258,7 +259,8 @@ window.FB = (function () {
           endDate: pick(d, 'endDate', 'end') ? dateKey(pick(d, 'endDate', 'end')) : '',
           status: status,
           likeCount: pick(d, 'likeCount') || 0,
-          commentCount: pick(d, 'commentCount') || 0
+          commentCount: pick(d, 'commentCount') || 0,
+          viewCount: pick(d, 'viewCount', 'views', 'view', 'hitCount', 'hits') || 0
         };
       }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
     });
@@ -280,10 +282,12 @@ window.FB = (function () {
           category: pick(d, 'prefix', 'category') || '자유',
           content: pick(d, 'text', 'content', 'body') || '',
           images: d.images || [],
+          authorId: pick(d, 'authorId', 'uid', 'userId') || '',
           uid: pick(d, 'uid') || '',
           likedBy: d.likedBy || [],
           likeCount: pick(d, 'likeCount') || 0,
-          commentCount: pick(d, 'commentCount') || 0
+          commentCount: pick(d, 'commentCount') || 0,
+          viewCount: pick(d, 'viewCount', 'views', 'view', 'hitCount', 'hits') || 0
         };
       });
       return remote.concat(localBoards())
@@ -305,12 +309,14 @@ window.FB = (function () {
       category: item.category || '자유',
       prefix: item.category || '자유',
       uid: user.uid,
+      authorId: user.uid,
       author: (ud && ud.nickname) || '선원',
       nickname: (ud && ud.nickname) || '선원',
       date: now.toISOString().slice(0, 10),
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       likeCount: 0,
-      commentCount: 0
+      commentCount: 0,
+      viewCount: 0
     };
     return col('boards').add(base).then(function (ref) {
       return { remote: true, docId: ref.id };
@@ -327,10 +333,12 @@ window.FB = (function () {
         category: item.category || '자유',
         content: item.content,
         images: [],
+        authorId: user.uid,
         uid: user.uid,
         likedBy: [],
         likeCount: 0,
-        commentCount: 0
+        commentCount: 0,
+        viewCount: 0
       });
       try { localStorage.setItem('fpp_local_boards', JSON.stringify(lb)); } catch (e) { }
       return { remote: false, docId: lb[0].docId };

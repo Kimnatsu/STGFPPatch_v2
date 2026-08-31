@@ -10,6 +10,13 @@
   var S = { patches: [], events: [], boards: [], banners: [], loaded: false };
   var likedCache = {};
 
+  function viewMeta(count) {
+    var value = count == null ? 0 : count;
+    return '<span class="view-count" aria-label="조회수 ' + UI.esc(value) + '">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.2-5 9.5-5 9.5 5 9.5 5-3.2 5-9.5 5-9.5-5-9.5-5z"/><circle cx="12" cy="12" r="2.3"/></svg>' +
+      '<span>' + UI.esc(value) + '</span></span>';
+  }
+
   function loadAll() {
     if (S.loaded) return Promise.resolve();
     if (!FB.ready) return Promise.reject(new Error('Firebase SDK 없음'));
@@ -24,7 +31,8 @@
     return '<li class="lst-row" data-view="' + UI.esc(o.id) + '" tabindex="0" role="button" aria-label="' + UI.esc(o.title) + '">' +
       '<div class="lst-main"><div class="lst-l1">' + o.badgeHTML +
       '<span class="lst-title">' + UI.esc(o.title) + '</span></div>' +
-      '<div class="lst-l2"><span>' + UI.esc(o.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(o.date)) + '</span></div></div>' +
+      '<div class="lst-l2"><span>' + UI.esc(o.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(o.date)) + '</span>' +
+      (o.viewCount != null ? '<span>·</span>' + viewMeta(o.viewCount) : '') + '</div></div>' +
       (UI.isNew(o.date || o.ts) ? '<span class="lst-new">NEW</span>' : '') + '</li>';
   }
   function cardHTML(o) {
@@ -32,7 +40,8 @@
     return '<article class="card" data-view="' + UI.esc(o.id) + '" tabindex="0" role="button" aria-label="' + UI.esc(o.title) + '">' +
       '<div class="card-img">' + o.badgeHTML + img + '</div>' +
       '<div class="card-body"><h3 class="card-title">' + UI.esc(o.title) + '</h3>' +
-      '<div class="card-meta"><span>' + UI.esc(o.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(o.date)) + '</span></div>' +
+      '<div class="card-meta"><span>' + UI.esc(o.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(o.date)) + '</span>' +
+      (o.viewCount != null ? '<span>·</span>' + viewMeta(o.viewCount) : '') + '</div>' +
       '<div class="card-foot"><span>' + UI.IC.heart + ' ' + (o.likeCount || 0) + '</span>' +
       (o.commentCount != null ? '<span>' + UI.IC.chat + ' ' + o.commentCount + '</span>' : '') +
       (o.period ? '<span class="ev-period" style="margin-left:auto">' + o.period + '</span>' : '') + '</div></div></article>';
@@ -52,7 +61,7 @@
     if (!S.patches.length) UI.empty(pl, { title: '등록된 패치노트가 없습니다.' });
     else {
       pl.innerHTML = '<ul class="lst">' + S.patches.slice(0, 5).map(function (p) {
-        return listRow({ id: p.docId, badgeHTML: '<span class="badge badge--patch">패치노트</span>', title: p.title, author: p.author, date: p.date, ts: p.ts });
+        return listRow({ id: p.docId, badgeHTML: '<span class="badge badge--patch">패치노트</span>', title: p.title, author: p.author, date: p.date, ts: p.ts, viewCount: p.viewCount });
       }).join('') + '</ul>';
       bindView(pl, 'patch');
     }
@@ -60,7 +69,7 @@
     if (!S.boards.length) UI.empty(bl, { title: '게시글이 없습니다.' });
     else {
       bl.innerHTML = '<ul class="lst">' + S.boards.slice(0, 5).map(function (b) {
-        return listRow({ id: b.docId, badgeHTML: catBadge(b.category), title: b.title, author: b.author, date: b.date, ts: b.ts });
+        return listRow({ id: b.docId, badgeHTML: catBadge(b.category), title: b.title, author: b.author, date: b.date, ts: b.ts, viewCount: b.viewCount });
       }).join('') + '</ul>';
       bindView(bl, 'board');
     }
@@ -68,7 +77,7 @@
     if (!S.events.length) UI.empty(evBox, { title: '진행 중인 이벤트가 없습니다.', desc: '새로운 이벤트가 시작되면 이곳에 표시됩니다.' });
     else {
       evBox.innerHTML = '<ul class="lst">' + S.events.slice(0, 5).map(function (e) {
-        return listRow({ id: e.docId, badgeHTML: e.status === 'ing' ? '<span class="badge badge--ing">진행중</span>' : '<span class="badge badge--end">종료됨</span>', title: e.title, author: e.author, date: e.date, ts: e.ts });
+        return listRow({ id: e.docId, badgeHTML: e.status === 'ing' ? '<span class="badge badge--ing">진행중</span>' : '<span class="badge badge--end">종료됨</span>', title: e.title, author: e.author, date: e.date, ts: e.ts, viewCount: e.viewCount });
       }).join('') + '</ul>';
       bindView(evBox, 'event');
     }
@@ -127,7 +136,7 @@
       return '<div class="pn-row" data-view="' + UI.esc(p.docId) + '" tabindex="0" role="button" aria-label="' + UI.esc(p.title) + '">' +
         '<div class="pn-date"><b>' + UI.esc(d[2] || '') + '</b><small>' + UI.esc((d[0] || '').slice(2) + '.' + (d[1] || '')) + '</small></div>' +
         '<div class="pn-main"><div class="pn-title">' + UI.esc(p.title) + '</div>' +
-        '<div class="pn-meta"><span>' + UI.esc(p.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(p.date)) + '</span>' +
+        '<div class="pn-meta"><span>' + UI.esc(p.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(p.date)) + '</span><span>·</span>' + viewMeta(p.viewCount) +
         (UI.isNew(p.date) ? '<span class="lst-new">NEW</span>' : '') + '</div></div>' +
         '<span class="pn-arrow">›</span></div>';
     }).join('') + '</div>' + pageNavHTML(patchPage, totalPages);
@@ -183,16 +192,16 @@
     if (!p) { UI.empty(el, { title: '패치노트를 찾을 수 없습니다.', btnText: '목록으로', btnHref: 'Community.html#patch' }); return; }
     el.innerHTML =
       '<button class="detail-back" type="button" data-back="patch">' + UI.IC.back + ' 패치노트 목록</button>' +
-      '<article class="detail"><div class="detail-head">' +
+      '<article class="detail"><div class="detail-head"><div class="detail-head-main">' +
       '<span class="badge badge--patch">패치노트</span>' +
-      '<h2 class="detail-title">' + UI.esc(p.title) + '</h2>' +
-      '<div class="detail-meta"><span>' + UI.esc(p.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(p.date)) + '</span></div></div>' +
+      '<h2 class="detail-title">' + UI.esc(p.title) + '</h2></div>' +
+      '<div class="detail-meta"><span>' + UI.esc(p.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(p.date)) + '</span><span>·</span>' + viewMeta(p.viewCount) + '</div></div>' +
       '<div class="detail-body">' + UI.renderContent(p.content) + '</div>' +
       actionRow('patch', p.docId, p.title) + '</article>' +
       '<div class="box detail-list-box"><div class="box-head"><h2 class="box-title">패치노트</h2>' +
       '<button class="box-go" type="button" data-back="patch">목록으로</button></div>' +
       '<div class="box-body"><ul class="lst">' + S.patches.slice(0, 6).map(function (x) {
-        return listRow({ id: x.docId, badgeHTML: '<span class="badge badge--patch">패치노트</span>', title: x.title, author: x.author, date: x.date });
+        return listRow({ id: x.docId, badgeHTML: '<span class="badge badge--patch">패치노트</span>', title: x.title, author: x.author, date: x.date, viewCount: x.viewCount });
       }).join('') + '</ul></div></div>';
     bindDetail(el, p, 'patch');
     bindView(el, 'patch');
@@ -340,11 +349,11 @@
     var pageList = list.slice((boardPage - 1) * BOARD_PAGE_SIZE, boardPage * BOARD_PAGE_SIZE);
     if (B.view === 'card') {
       el.innerHTML = '<div class="cards cards--board">' + pageList.map(function (b) {
-        return cardHTML({ id: b.docId, badgeHTML: catBadge(b.category), title: b.title, author: b.author, date: b.date, image: b.images && b.images[0], likeCount: b.likeCount, commentCount: b.commentCount });
+        return cardHTML({ id: b.docId, badgeHTML: catBadge(b.category), title: b.title, author: b.author, date: b.date, image: b.images && b.images[0], likeCount: b.likeCount, commentCount: b.commentCount, viewCount: b.viewCount });
       }).join('') + '</div>' + pageNavHTML(boardPage, totalPages);
     } else {
       el.innerHTML = '<div class="pn-list"><ul class="lst">' + pageList.map(function (b) {
-        return listRow({ id: b.docId, badgeHTML: catBadge(b.category), title: b.title, author: b.author, date: b.date, ts: b.ts });
+        return listRow({ id: b.docId, badgeHTML: catBadge(b.category), title: b.title, author: b.author, date: b.date, ts: b.ts, viewCount: b.viewCount });
       }).join('') + '</ul></div>' + pageNavHTML(boardPage, totalPages);
     }
     bindView(el, 'board');
@@ -366,20 +375,25 @@
     
     /* 작성자 확인 — 편집/삭제 버튼 표시 여부 결정 */
     var u = UI.currentUser();
-    var isOwner = u && (b.authorId === u.uid || b.author === u.displayName);
+    var isOwner = u && (b.authorId === u.uid || b.uid === u.uid || b.author === u.displayName);
     var editDeleteHTML = isOwner ? 
-      '<div class="detail-actions-head">' +
-        '<button class="btn btn--ghost btn--sm" type="button" data-edit="' + UI.esc(b.docId) + '">' + UI.IC.edit + ' 수정</button>' +
-        '<button class="btn btn--ghost btn--sm" type="button" data-del="' + UI.esc(b.docId) + '">' + UI.IC.trash + ' 삭제</button>' +
+      '<div class="detail-menu">' +
+        '<button class="detail-menu-toggle" type="button" aria-label="게시글 메뉴" aria-expanded="false" aria-controls="board-menu-' + UI.esc(b.docId) + '">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>' +
+        '</button>' +
+        '<div class="detail-menu-popover" id="board-menu-' + UI.esc(b.docId) + '" hidden>' +
+          '<button class="detail-menu-item" type="button" data-edit="' + UI.esc(b.docId) + '">' + UI.IC.edit + '<span>수정</span></button>' +
+          '<button class="detail-menu-item detail-menu-item--danger" type="button" data-del="' + UI.esc(b.docId) + '">' + UI.IC.trash + '<span>삭제</span></button>' +
+        '</div>' +
       '</div>' : '';
     
     var bodyImages = (b.images || []).map(function (src) { return '<img src="' + UI.esc(src) + '" alt="" loading="lazy">'; }).join('');
     el.innerHTML =
       '<button class="detail-back" type="button" data-back="board">' + UI.IC.back + ' 게시판 목록</button>' +
-      '<article class="detail"><div class="detail-head">' + catBadge(b.category) +
+      '<article class="detail"><div class="detail-head"><div class="detail-head-main">' + catBadge(b.category) +
       '<h2 class="detail-title">' + UI.esc(b.title) + '</h2>' +
-      editDeleteHTML +
-      '<div class="detail-meta"><span>' + UI.esc(b.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(b.date)) + '</span>' +
+      editDeleteHTML + '</div>' +
+      '<div class="detail-meta"><span>' + UI.esc(b.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(b.date)) + '</span><span>·</span>' + viewMeta(b.viewCount) +
       (b.commentCount ? '<span>·</span><span>댓글 ' + b.commentCount + '</span>' : '') + '</div></div>' +
       '<div class="detail-body">' + UI.renderContent(b.content || b.text) + bodyImages + '</div>' +
       actionRow('board', b.docId, b.title) + '</article>' +
@@ -387,7 +401,7 @@
       '<div class="box detail-list-box"><div class="box-head"><h2 class="box-title">게시판</h2>' +
       '<button class="box-go" type="button" data-back="board">목록으로</button></div>' +
       '<div class="box-body"><ul class="lst">' + boardListFiltered().slice(0, 6).map(function (x) {
-        return listRow({ id: x.docId, badgeHTML: catBadge(x.category), title: x.title, author: x.author, date: x.date });
+        return listRow({ id: x.docId, badgeHTML: catBadge(x.category), title: x.title, author: x.author, date: x.date, viewCount: x.viewCount });
       }).join('') + '</ul></div></div>';
     bindDetail(el, b, 'board');
     bindView(el, 'board');
@@ -395,6 +409,15 @@
     
     /* 편집/삭제 버튼 이벤트 바인딩 */
     if (isOwner) {
+      var menu = el.querySelector('.detail-menu');
+      var menuToggle = menu.querySelector('.detail-menu-toggle');
+      var menuPanel = menu.querySelector('.detail-menu-popover');
+      menuToggle.addEventListener('click', function (event) {
+        event.stopPropagation();
+        var open = menuPanel.hidden;
+        menuPanel.hidden = !open;
+        menuToggle.setAttribute('aria-expanded', String(open));
+      });
       el.querySelector('[data-edit]').addEventListener('click', function () {
         showEditForm(b);
       });
@@ -495,13 +518,13 @@
         return cardHTML({
           id: e.docId,
           badgeHTML: e.status === 'ing' ? '<span class="badge badge--ing">진행중</span>' : '<span class="badge badge--end">종료됨</span>',
-          title: e.title, author: e.author, date: e.date, image: e.image, likeCount: e.likeCount, commentCount: e.commentCount,
+          title: e.title, author: e.author, date: e.date, image: e.image, likeCount: e.likeCount, commentCount: e.commentCount, viewCount: e.viewCount,
           period: evPeriod(e)
         });
       }).join('') + '</div>' + pageNavHTML(eventPage, totalPages);
     } else {
       el.innerHTML = '<div class="pn-list"><ul class="lst">' + pageList.map(function (e) {
-        return listRow({ id: e.docId, badgeHTML: e.status === 'ing' ? '<span class="badge badge--ing">진행중</span>' : '<span class="badge badge--end">종료됨</span>', title: e.title, author: e.author, date: e.date, ts: e.ts });
+        return listRow({ id: e.docId, badgeHTML: e.status === 'ing' ? '<span class="badge badge--ing">진행중</span>' : '<span class="badge badge--end">종료됨</span>', title: e.title, author: e.author, date: e.date, ts: e.ts, viewCount: e.viewCount });
       }).join('') + '</ul></div>' + pageNavHTML(eventPage, totalPages);
     }
     bindView(el, 'event');
@@ -520,10 +543,10 @@
     if (!e) { UI.empty(el, { title: '이벤트를 찾을 수 없습니다.', btnText: '이벤트 목록으로', btnHref: 'Community.html#event' }); return; }
     el.innerHTML =
       '<button class="detail-back" type="button" data-back="event">' + UI.IC.back + ' 이벤트 목록</button>' +
-      '<article class="detail"><div class="detail-head">' +
+      '<article class="detail"><div class="detail-head"><div class="detail-head-main">' +
       (e.status === 'ing' ? '<span class="badge badge--ing">진행중</span>' : '<span class="badge badge--end">종료됨</span>') +
-      '<h2 class="detail-title">' + UI.esc(e.title) + '</h2>' +
-      '<div class="detail-meta"><span>' + UI.esc(e.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(e.date)) + '</span>' +
+      '<h2 class="detail-title">' + UI.esc(e.title) + '</h2></div>' +
+      '<div class="detail-meta"><span>' + UI.esc(e.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(e.date)) + '</span><span>·</span>' + viewMeta(e.viewCount) +
       (evPeriod(e) ? '<span>·</span><span class="ev-period"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" stroke-linecap="round"/></svg>' + evPeriod(e) + '</span>' : '') +
       '</div></div>' +
       '<div class="detail-body">' + (e.image ? '<img src="' + UI.esc(e.image) + '" alt="" style="width:100%;border-radius:10px;margin-bottom:14px">' : '') +
@@ -533,7 +556,7 @@
       '<div class="box detail-list-box"><div class="box-head"><h2 class="box-title">이벤트</h2>' +
       '<button class="box-go" type="button" data-back="event">목록으로</button></div>' +
       '<div class="box-body"><ul class="lst">' + eventListFiltered().slice(0, 6).map(function (x) {
-        return listRow({ id: x.docId, badgeHTML: x.status === 'ing' ? '<span class="badge badge--ing">진행중</span>' : '<span class="badge badge--end">종료됨</span>', title: x.title, author: x.author, date: x.date });
+        return listRow({ id: x.docId, badgeHTML: x.status === 'ing' ? '<span class="badge badge--ing">진행중</span>' : '<span class="badge badge--end">종료됨</span>', title: x.title, author: x.author, date: x.date, viewCount: x.viewCount });
       }).join('') + '</ul></div></div>';
     bindDetail(el, e, 'event');
     bindView(el, 'event');
@@ -628,10 +651,12 @@
             category: m.body.querySelector('#wmCat').value,
             content: content,
             images: [],
+            authorId: u.uid,
             uid: u.uid,
             likedBy: [],
             likeCount: 0,
-            commentCount: 0
+            commentCount: 0,
+            viewCount: 0
           };
           /* 원격 저장에 성공했으면 새로고침 시 서버 목록에 포함됨 — 로컬 중복 방지 */
           if (res.remote) {
