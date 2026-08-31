@@ -715,6 +715,9 @@ window.UI = (function () {
     if (isNaN(initialIcon)) initialIcon = 0;
     var initialNick = ud.nickname || u.displayName || '선원';
     var draftIcon = initialIcon;
+    var isGoogle = (u.providerData || []).some(function (p) { return p.providerId === 'google.com'; });
+    var authMethod = isGoogle ? '구글' : '이메일';
+    var memberId = ud.memberNumber || ud.memberId || ud.uid || u.uid;
 
     var m = openModal({
       title: '프로필 설정',
@@ -722,15 +725,17 @@ window.UI = (function () {
       body:
         '<div class="profile-settings-shell">' +
         '<aside class="profile-settings-nav">' +
-        '<button class="profile-nav-item is-on" type="button">기본 정보</button>' +
+        '<button class="profile-nav-item is-on" type="button" data-profile-panel="profile" aria-selected="true">프로필 정보</button>' +
+        '<button class="profile-nav-item" type="button" data-profile-panel="my-info" aria-selected="false">내 정보</button>' +
         '</aside>' +
         '<section class="profile-settings-content">' +
+        '<div class="profile-panel" id="profileInfoPanel">' +
         '<div class="profile-settings-grid">' +
         '<div class="profile-preview-card">' +
         '<div class="profile-cover"><img id="profileSettingCover" src="' + esc(avatarOf(draftIcon)) + '" alt=""></div>' +
         '<div class="profile-card-info">' +
-        '<button class="profile-card-avatar" id="profileSettingAvatarBtn" type="button" aria-label="프로필 이미지 등록">' +
-        '<img id="profileSettingAvatar" src="' + esc(avatarOf(draftIcon)) + '" alt="프로필 이미지"></button>' +
+        '<div class="profile-card-avatar">' +
+        '<img id="profileSettingAvatar" src="' + esc(avatarOf(draftIcon)) + '" alt="프로필 이미지"></div>' +
         '<b class="profile-card-name" id="profileSettingName">' + esc(initialNick) + '</b>' +
         '<div class="profile-card-stats">' +
         '<div><b>' + ((ud.counts && ud.counts.posts) || 0) + '</b><small>게시글</small></div>' +
@@ -749,9 +754,18 @@ window.UI = (function () {
         '<span class="field-tooltip" id="nicknameHelp" role="tooltip">• 한글, 영어, 숫자만 사용할 수 있어요.<br>• 20자까지 입력할 수 있어요.<br>• 72시간마다 한 번만 변경할 수 있어요.</span></label>' +
         '<div class="profile-input-wrap"><input id="profileNickname" maxlength="20" value="' + esc(initialNick) + '" autocomplete="nickname"><button id="profileNicknameClear" type="button" aria-label="닉네임 지우기">×</button></div>' +
         '</div>' +
-        '<div class="profile-field profile-email-field"><label>로그인 이메일</label><div class="profile-readonly">' + esc(u.email || '이메일 없음') + '</div></div>' +
-        '<button class="profile-delete-link" id="profileDelete" type="button">회원 탈퇴</button>' +
-        '</div></div></section></div>' +
+        '</div></div></div>' +
+        '<div class="profile-panel my-info-panel" id="myInfoPanel" hidden>' +
+        '<div class="my-info-card">' +
+        '<h4>기본정보</h4>' +
+        '<div class="my-info-row"><span>로그인 방식</span><b>' + authMethod + '</b></div>' +
+        '<div class="my-info-row"><span>아이디</span><b class="my-info-value">' + esc(u.email || '이메일 없음') + '</b></div>' +
+        '<div class="my-info-row"><span>비밀번호</span><button class="my-info-action" id="myInfoPassword" type="button">변경</button></div>' +
+        '<div class="my-info-row"><span>회원번호</span><b class="my-info-value my-info-member-id" title="' + esc(memberId) + '">' + esc(memberId) + '</b></div>' +
+        '</div>' +
+        '<div class="my-info-delete-wrap"><button class="my-info-delete" id="myInfoDelete" type="button">회원탈퇴 <span aria-hidden="true">›</span></button></div>' +
+        '</div>' +
+        '</section></div>' +
         '<div class="profile-settings-footer">' +
         '<button class="btn btn--ghost" id="profileClose" type="button">닫기</button>' +
         '<button class="btn btn--gold" id="profileSave" type="button" disabled>저장</button>' +
@@ -763,6 +777,8 @@ window.UI = (function () {
     var profileName = m.body.querySelector('#profileSettingName');
     var coverImg = m.body.querySelector('#profileSettingCover');
     var avatarImg = m.body.querySelector('#profileSettingAvatar');
+    var profilePanel = m.body.querySelector('#profileInfoPanel');
+    var myInfoPanel = m.body.querySelector('#myInfoPanel');
 
     function currentNick() { return nickInput.value.trim(); }
     function isDirty() { return draftIcon !== initialIcon || currentNick() !== initialNick; }
@@ -777,8 +793,45 @@ window.UI = (function () {
       avatarImg.src = src;
       syncDraft();
     }
+    function selectPanel(panel) {
+      var showProfile = panel === 'profile';
+      profilePanel.hidden = !showProfile;
+      myInfoPanel.hidden = showProfile;
+      m.body.querySelectorAll('.profile-nav-item').forEach(function (item) {
+        var active = item.getAttribute('data-profile-panel') === panel;
+        item.classList.toggle('is-on', active);
+        item.setAttribute('aria-selected', String(active));
+      });
+      saveBtn.hidden = !showProfile;
+    }
+    function confirmAccountDelete() {
+      var cf = openModal({
+        title: '탈퇴 확인',
+        body: '<p style="font-size:14px;line-height:1.7">정말 탈퇴하시겠습니까?<br><b style="color:var(--red)">계정과 Firebase 사용자 데이터가 삭제되며 복구할 수 없습니다.</b></p>' +
+          '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn--ghost btn--block" id="delNo" type="button">취소</button>' +
+          '<button class="btn btn--danger btn--block" id="delYes" type="button">탈퇴하기</button></div>'
+      });
+      cf.body.querySelector('#delNo').addEventListener('click', cf.close);
+      cf.body.querySelector('#delYes').addEventListener('click', function () {
+        if (u.demo) {
+          cf.close(); m.close(); exitDemo(); return;
+        }
+        var user = FB.auth().currentUser;
+        if (!user) { cf.close(); return; }
+        user.delete().then(function () {
+          cf.close(); m.close();
+          toast('탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
+        }).catch(function (e) {
+          cf.close();
+          toast(FB.errMsg(e) + ' — 보안 정책상 최근 로그인 후 다시 시도해 주세요.', 'err');
+        });
+      });
+    }
 
     m.body.querySelector('#profileClose').addEventListener('click', m.close);
+    m.body.querySelectorAll('.profile-nav-item').forEach(function (item) {
+      item.addEventListener('click', function () { selectPanel(item.getAttribute('data-profile-panel')); });
+    });
     nickInput.addEventListener('input', syncDraft);
     m.body.querySelector('#profileNicknameClear').addEventListener('click', function () {
       nickInput.value = '';
@@ -802,30 +855,28 @@ window.UI = (function () {
     m.body.querySelector('#profileImageRegister').addEventListener('click', function () {
       openProfileImagePicker(draftIcon, function (index) { updateDraftIcon(index); });
     });
-    m.body.querySelector('#profileSettingAvatarBtn').addEventListener('click', function () {
-      openProfileImagePicker(draftIcon, function (index) { updateDraftIcon(index); });
-    });
-    m.body.querySelector('#profileDelete').addEventListener('click', function () {
-      var cf = openModal({
-        title: '탈퇴 확인',
-        body: '<p style="font-size:14px;line-height:1.7">정말 탈퇴하시겠습니까?<br><b style="color:var(--red)">계정과 Firebase 사용자 데이터가 삭제되며 복구할 수 없습니다.</b></p>' +
-          '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn--ghost btn--block" id="delNo" type="button">취소</button>' +
-          '<button class="btn btn--danger btn--block" id="delYes" type="button">탈퇴하기</button></div>'
-      });
-      cf.body.querySelector('#delNo').addEventListener('click', cf.close);
-      cf.body.querySelector('#delYes').addEventListener('click', function () {
-        if (u.demo) {
-          cf.close(); m.close(); exitDemo(); return;
-        }
-        var user = FB.auth().currentUser;
-        if (!user) { cf.close(); return; }
-        user.delete().then(function () {
-          cf.close(); m.close();
-          toast('탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
-        }).catch(function (e) {
-          cf.close();
-          toast(FB.errMsg(e) + ' — 보안 정책상 최근 로그인 후 다시 시도해 주세요.', 'err');
-        });
+    m.body.querySelector('#myInfoDelete').addEventListener('click', confirmAccountDelete);
+    m.body.querySelector('#myInfoPassword').addEventListener('click', function () {
+      if (u.demo) {
+        toast('데모 모드에서는 비밀번호를 변경할 수 없습니다.');
+        return;
+      }
+      if (isGoogle) {
+        toast('구글 계정의 비밀번호는 Google 계정에서 변경해 주세요.');
+        return;
+      }
+      if (!u.email) {
+        toast('비밀번호를 변경할 이메일 정보가 없습니다.', 'err');
+        return;
+      }
+      if (!FB.ready) {
+        toast('Firebase가 준비 중입니다. 잠시 후 다시 시도해 주세요.', 'err');
+        return;
+      }
+      FB.auth().sendPasswordResetEmail(u.email).then(function () {
+        toast('비밀번호 변경 메일을 보냈습니다. 메일함을 확인해 주세요.', 'ok');
+      }).catch(function (e) {
+        toast(FB.errMsg(e), 'err');
       });
     });
   }

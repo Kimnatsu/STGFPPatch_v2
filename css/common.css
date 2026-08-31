@@ -620,17 +620,19 @@ body.body-lock{
   background:var(--surface-2);box-shadow:var(--shadow);
 }
 .profile-cover{
-  height:230px;background:var(--surface-3);overflow:hidden;
+  position:relative;height:230px;background:var(--surface-3);overflow:hidden;
 }
 .profile-cover img{width:100%;height:100%;object-fit:cover}
+.profile-cover::after{
+  content:"";position:absolute;inset:0;background:rgba(0,0,0,.42);
+  pointer-events:none;
+}
 .profile-card-info{padding:0 16px 18px;text-align:center}
 .profile-card-avatar{
-  display:block;width:88px;height:88px;margin:-44px auto 10px;padding:0;
-  overflow:hidden;border:4px solid var(--gold);border-radius:50%;
+  width:88px;height:88px;margin:-44px auto 10px;padding:0;
+  overflow:hidden;border-radius:50%;
   background:var(--surface-2);box-shadow:0 6px 20px rgba(0,0,0,.4);
-  cursor:pointer;transition:transform .2s var(--ease);
 }
-.profile-card-avatar:hover{transform:scale(1.06)}
 .profile-card-avatar img{width:100%;height:100%;object-fit:cover}
 .profile-card-name{display:block;font-family:var(--font-d);font-size:19px;letter-spacing:.3px}
 .profile-card-stats{display:flex;margin-top:16px;border-top:1px solid var(--line)}
@@ -685,15 +687,43 @@ body.body-lock{
   border-radius:var(--r-sm);background:var(--surface-2);
   color:var(--text-2);font-size:13px;word-break:break-all;
 }
-.profile-delete-link{
-  margin-top:7px;padding:3px 0;color:var(--red);font-size:12px;font-weight:800;
-}
-.profile-delete-link:hover{text-decoration:underline}
 .profile-settings-footer{
   display:flex;justify-content:center;gap:8px;padding:16px 20px;
   border-top:1px solid var(--line);background:var(--surface-2);flex:none;
 }
 .profile-settings-footer .btn{min-width:128px}
+
+/* 내 정보 탭 */
+.my-info-panel{max-width:650px}
+.my-info-card{
+  padding:22px 24px;border:1px solid var(--line);border-radius:var(--r-lg);
+  background:var(--surface-2);box-shadow:var(--shadow);
+}
+.my-info-card h4{
+  margin:0 0 8px;font-family:var(--font-d);font-size:18px;letter-spacing:.2px;
+}
+.my-info-row{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  min-height:58px;border-top:1px solid var(--line);font-size:13.5px;font-weight:800;
+}
+.my-info-row > span{color:var(--text-2);flex:none}
+.my-info-row > b{
+  min-width:0;color:var(--text);font-size:13.5px;text-align:right;
+}
+.my-info-value{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.my-info-member-id{max-width:65%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px!important}
+.my-info-action{
+  padding:5px 10px;border:1px solid var(--line-2);border-radius:var(--r-sm);
+  color:var(--gold);font-size:12px;font-weight:900;
+}
+.my-info-action:hover{background:var(--surface-3);border-color:var(--gold)}
+.my-info-delete-wrap{display:flex;justify-content:flex-end;margin-top:15px}
+.my-info-delete{
+  display:inline-flex;align-items:center;gap:7px;padding:4px 0;
+  color:var(--red);font-size:12px;font-weight:900;
+}
+.my-info-delete:hover{text-decoration:underline}
+.my-info-delete span{font-size:18px;line-height:12px}
 
 /* 프로필 이미지 등록 모달 */
 .profile-image-modal{
@@ -745,6 +775,7 @@ body.body-lock{
   .profile-settings-grid{grid-template-columns:1fr;gap:24px;max-width:none}
   .profile-preview-card{width:min(300px,100%);margin:0 auto}
   .profile-cover{height:210px}
+  .my-info-card{padding:18px 16px}
   .profile-settings-footer{padding:12px 16px}
   .profile-settings-footer .btn,.avatar-picker-footer .btn{min-width:0;flex:1}
   .avatar-picker-preview{min-height:150px;padding:18px}
