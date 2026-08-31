@@ -270,13 +270,16 @@ body.fonticon-ok .gnb-font-icon svg{display:none}
   font-size:10.5px;font-weight:900;letter-spacing:.4px;line-height:1;
   padding:5px 9px;border-radius:var(--r-sm);
 }
-.badge--patch{background:color-mix(in srgb,var(--gold) 16%,transparent);color:var(--gold);border:1px solid color-mix(in srgb,var(--gold) 42%,transparent)}
+/* 패치노트 - 노란색 */
+.badge--patch{background:rgba(214, 188, 73, 0.18);color:#f2d66a;border:1px solid rgba(214, 188, 73, 0.45)}
+/* 게시판 - 자유 (파랑 유지), 정보 (초록 유지), 질문 (보라 유지), 자랑 (주황 유지) */
 .badge--free{background:color-mix(in srgb,var(--blue) 15%,transparent);color:var(--blue);border:1px solid color-mix(in srgb,var(--blue) 40%,transparent)}
 .badge--info{background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--green);border:1px solid color-mix(in srgb,var(--green) 40%,transparent)}
 .badge--q{background:color-mix(in srgb,#b48ce8 15%,transparent);color:#c6a5f2;border:1px solid color-mix(in srgb,#b48ce8 42%,transparent)}
 .badge--brag{background:color-mix(in srgb,#e8956b 15%,transparent);color:#f2b18c;border:1px solid color-mix(in srgb,#e8956b 42%,transparent)}
-.badge--ing{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green);border:1px solid color-mix(in srgb,var(--green) 42%,transparent)}
-.badge--end{background:var(--surface-2);color:var(--text-3);border:1px solid var(--line)}
+/* 이벤트 - 진행중/종료됨 (노란색 계열) */
+.badge--ing{background:rgba(214, 188, 73, 0.18);color:#f2d66a;border:1px solid rgba(214, 188, 73, 0.45)}
+.badge--end{background:rgba(214, 188, 73, 0.12);color:#c9b366;border:1px solid rgba(214, 188, 73, 0.35)}
 /* PvP 타입 뱃지 — 뚜렷한 틴트 + 20px 라운드 + 심볼 */
 .badge--buff,.badge--nerf,.badge--fix{
   display:inline-flex;justify-content:center;align-items:center;
