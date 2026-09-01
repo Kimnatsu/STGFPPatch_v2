@@ -1,11 +1,33 @@
 /* ============================================================
    FPP v2 — common.css (디자인 시스템)
    ============================================================ */
-@import url("./fpp-font-icon-v2-subset.css");
+@import url("./fppatch-font-icon.embedded.css");
+
+@font-face{
+  font-family:'Spoqa Han Sans Neo';
+  src:url('../fonts/SpoqaHanSansNeo-Regular.woff2') format('woff2');
+  font-weight:400;
+  font-style:normal;
+  font-display:swap;
+}
+@font-face{
+  font-family:'Spoqa Han Sans Neo';
+  src:url('../fonts/SpoqaHanSansNeo-Medium.woff2') format('woff2');
+  font-weight:500;
+  font-style:normal;
+  font-display:swap;
+}
+@font-face{
+  font-family:'Spoqa Han Sans Neo';
+  src:url('../fonts/SpoqaHanSansNeo-Bold.woff2') format('woff2');
+  font-weight:700;
+  font-style:normal;
+  font-display:swap;
+}
 
 :root{
-  --font-d:'Black Han Sans','Noto Sans KR',sans-serif;
-  --font-b:'Noto Sans KR',sans-serif;
+  --font-d:'Spoqa Han Sans Neo',sans-serif;
+  --font-b:'Spoqa Han Sans Neo',sans-serif;
   --ease:cubic-bezier(.22,.9,.3,1);
   --header-h:60px;
   --r-sm:8px;--r-md:12px;--r-lg:16px;
