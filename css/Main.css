@@ -34,6 +34,10 @@
 .box--board{min-height:300px}
 @media (min-width:768px){.box--board{min-height:380px}}
 
+/* 홈 목록 조회수 메타 */
+.view-count{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.view-count .ic-v2{font-size:14px;line-height:1;flex:none}
+
 /* ===== 홈 PvP 오브 ===== */
 .pvp-orbs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px 12px;justify-items:center;align-content:start}
 @media (max-width:767px){.pvp-orbs .orb:nth-child(n+9){display:none}} /* SM/XS: 4×2 = 최대 8개 */
@@ -157,9 +161,13 @@
 .char-grade-badge.grade-C,.cp-rel-grade.grade-C{background:#a5d6a7;color:#1b5e20}
 /* 즐겨찾기 별 — 우측 상단 모서리, 패딩 없음 */
 .char-fav-btn{
-  position:absolute;top:0;right:0;z-index:3;width:28px;height:28px;border-radius:0 0 0 50%;border:none;cursor:pointer;
-  font-size:13px;line-height:1;display:flex;align-items:flex-start;justify-content:flex-end;padding:5px 6px 0 0;
+  position:absolute;top:0;right:0;z-index:3;width:34px;height:34px;border-radius:0 0 0 50%;border:none;cursor:pointer;
+  font-size:13px;line-height:1;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 5px 0 0;
   color:#dfe8f2;background:rgba(6,16,28,.55);text-shadow:0 1px 3px rgba(0,0,0,.6);transition:.2s;
+}
+.char-fav-btn > .ic-v2{
+  width:25px;height:25px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:25px;line-height:1;
 }
 .char-fav-btn:hover{transform:scale(1.14);color:var(--gold)}
 .char-fav-btn.active{color:var(--gold);background:rgba(6,16,28,.72)}
@@ -211,6 +219,7 @@
   font-size:12.5px;font-weight:800;color:var(--text-2);
   border:1px solid var(--line-2);border-radius:99px;padding:7px 14px;transition:.2s;background:var(--surface);
 }
+.cp-fav > .ic-v2{font-size:18px;line-height:1;flex:none}
 .cp-fav:hover{border-color:var(--gold);color:var(--gold)}
 .cp-fav.on{border-color:var(--gold);color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,transparent)}
 .cp-tabs{flex:none;display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 10px}
@@ -287,6 +296,7 @@
 .pvp-toolbar{display:flex;justify-content:flex-end;margin-top:18px}
 .pvp-date{position:relative}
 .pvp-date-btn{gap:7px}
+.pvp-date-btn > .ic-v2{font-size:15px;line-height:1;flex:none}
 .pvp-date-btn.is-open{border-color:var(--gold);color:var(--gold)}
 .pvp-date-list{
   position:absolute;top:calc(100% + 8px);right:0;z-index:30;width:230px;

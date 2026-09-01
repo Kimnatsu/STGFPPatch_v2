@@ -32,7 +32,7 @@
       '<div class="lst-main"><div class="lst-l1">' + o.badgeHTML +
       '<span class="lst-title">' + UI.esc(o.title) + '</span></div>' +
       '<div class="lst-l2"><span>' + UI.esc(o.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(o.date)) + '</span>' +
-      (o.viewCount != null ? '<span>·</span>' + viewMeta(o.viewCount) : '') + '</div></div>' +
+      '<span>·</span>' + viewMeta(o.viewCount) + '</div></div>' +
       (UI.isNew(o.date || o.ts) ? '<span class="lst-new">NEW</span>' : '') + '</li>';
   }
   function cardHTML(o) {

@@ -92,11 +92,18 @@
   }
 
   /* ================= 목록 행 (홈 공용) ================= */
+  function viewMeta(count) {
+    var value = count == null ? 0 : count;
+    return '<span class="view-count" aria-label="조회수 ' + UI.esc(value) + '">' +
+      '<i class="ic-v2-community-number-of-view-line" aria-hidden="true"></i>' +
+      '<span>' + UI.esc(value) + '</span></span>';
+  }
   function rowHTML(o) {
     return '<li class="lst-row" data-go="' + UI.esc(o.page) + '" tabindex="0" role="button" aria-label="' + UI.esc(o.title) + '">' +
       '<div class="lst-main"><div class="lst-l1">' + o.badge +
       '<span class="lst-title">' + UI.esc(o.title) + '</span></div>' +
-      '<div class="lst-l2"><span>' + UI.esc(o.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(o.date)) + '</span></div></div>' +
+      '<div class="lst-l2"><span>' + UI.esc(o.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(o.date)) + '</span>' +
+      (o.viewCount != null ? '<span>·</span>' + viewMeta(o.viewCount) : '') + '</div></div>' +
       (UI.isNew(o.date || o.ts) ? '<span class="lst-new">NEW</span>' : '') + '</li>';
   }
   function bindRows(root) {
@@ -142,7 +149,7 @@
     else {
       var n = (noEv && window.matchMedia('(min-width:768px)').matches) ? 12 : 5;
       pl.innerHTML = '<ul class="lst">' + S.patches.slice(0, n).map(function (p) {
-        return rowHTML({ page: 'Community.html#patch/view/' + p.docId, badge: '<span class="badge badge--patch">패치노트</span>', title: p.title, author: p.author, date: p.date, ts: p.ts });
+        return rowHTML({ page: 'Community.html#patch/view/' + p.docId, badge: '<span class="badge badge--patch">패치노트</span>', title: p.title, author: p.author, date: p.date, ts: p.ts, viewCount: p.viewCount });
       }).join('') + '</ul>';
       bindRows(pl);
     }
@@ -213,7 +220,7 @@
     else {
       var CAT_CLS = { '자유': 'badge--free', '정보': 'badge--info', '질문': 'badge--q', '자랑': 'badge--brag' };
       bl.innerHTML = '<ul class="lst">' + S.boards.slice(0, 5).map(function (b) {
-        return rowHTML({ page: 'Community.html#board/view/' + b.docId, badge: '<span class="badge ' + (CAT_CLS[b.category] || 'badge--free') + '">' + UI.esc(b.category) + '</span>', title: b.title, author: b.author, date: b.date, ts: b.ts });
+        return rowHTML({ page: 'Community.html#board/view/' + b.docId, badge: '<span class="badge ' + (CAT_CLS[b.category] || 'badge--free') + '">' + UI.esc(b.category) + '</span>', title: b.title, author: b.author, date: b.date, ts: b.ts, viewCount: b.viewCount });
       }).join('') + '</ul>';
       bindRows(bl);
     }
@@ -319,7 +326,7 @@
           (bt && typeIconSrc(bt) ? '<img class="char-type-icon" src="' + typeIconSrc(bt) + '" alt="' + UI.esc(bt) + '" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
           '</div>' : '') +
         (c.grade ? '<span class="char-grade-badge grade-' + UI.esc(c.grade) + '">' + UI.esc(c.grade) + '</span>' : '') +
-        '<button class="char-fav-btn' + (favOn ? ' active' : '') + '" data-fav="' + UI.esc(String(c.id)) + '" aria-pressed="' + favOn + '" aria-label="즐겨찾기" type="button"><i class="ic-v2-community-star-line" aria-hidden="true"></i></button>' +
+        '<button class="char-fav-btn' + (favOn ? ' active' : '') + '" data-fav="' + UI.esc(String(c.id)) + '" aria-pressed="' + favOn + '" aria-label="즐겨찾기" type="button"><i class="' + (favOn ? 'ic-v2-community-star-fill' : 'ic-v2-community-star-line') + '" aria-hidden="true"></i></button>' +
         '</div><div class="char-card-name">' + UI.esc(c.name) + '</div></article>';
     }).join('');
 
@@ -339,6 +346,8 @@
         UI.toggleFav(kind, key).then(function () {
           b.classList.toggle('active', willBeOn);
           b.setAttribute('aria-pressed', String(willBeOn));
+          var favIcon = b.querySelector('i');
+          if (favIcon) favIcon.className = willBeOn ? 'ic-v2-community-star-fill' : 'ic-v2-community-star-line';
           if (F.fav) renderChars();
         });
       });
@@ -373,7 +382,7 @@
       '<div class="cp-side">' +
       '<h3 class="cp-name" id="cpName"></h3>' +
       '<div class="cp-meta" id="cpMeta"></div>' +
-      '<button class="cp-fav" id="cpFav" type="button"><span id="cpFavTx">☆ 즐겨찾기 추가</span></button></div>' +
+      '<button class="cp-fav" id="cpFav" type="button"><i id="cpFavIcon" class="ic-v2-community-star-line" aria-hidden="true"></i><span id="cpFavTx">즐겨찾기 추가</span></button></div>' +
       '</div>' +
       '<div class="cp-tabs" id="cpTabs" role="tablist">' +
       '<button class="cp-tab is-on" data-cpt="skills" type="button" role="tab">스킬</button>' +
@@ -721,7 +730,9 @@
     var on = UI.isFav(kind, CP.c.id);
     var btn = $('cpFav');
     btn.classList.toggle('on', on);
-    $('cpFavTx').textContent = on ? '★ 즐겨찾기 해제' : '☆ 즐겨찾기 추가';
+    var icon = $('cpFavIcon');
+    if (icon) icon.className = on ? 'ic-v2-community-star-fill' : 'ic-v2-community-star-line';
+    $('cpFavTx').textContent = on ? '즐겨찾기 해제' : '즐겨찾기 추가';
   }
   function openCharPanel(c, supportOverride) {
     ensureCharPanel();
