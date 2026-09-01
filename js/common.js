@@ -850,9 +850,18 @@ window.UI = (function () {
       });
     },
     appIcon: function () {
-      var savedIcon = userDoc() && userDoc().settings && userDoc().settings.appIcon;
+      var doc = userDoc();
+      var userSettings = (doc && doc.settings) || {};
+      var savedIcon = userSettings.appIcon;
+      var hasUnsupportedIcon = savedIcon != null && savedIcon !== 'logo-dark' && savedIcon !== 'logo-light';
       var cur = savedIcon === 'logo-dark' || savedIcon === 'logo-light' ? savedIcon :
         (document.documentElement.getAttribute('data-theme') === 'light' ? 'logo-light' : 'logo-dark');
+      if (hasUnsupportedIcon) {
+        var cleanSettings = Object.assign({}, userSettings);
+        delete cleanSettings.appIcon;
+        if (doc) doc.settings = cleanSettings;
+        saveUserPatch({ settings: cleanSettings }).catch(function () { });
+      }
       var icons = [
         ['logo-dark', '다크 로고', 'img/logo-dark.png'],
         ['logo-light', '라이트 로고', 'img/logo-light.png']

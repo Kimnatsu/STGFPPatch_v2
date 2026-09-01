@@ -653,13 +653,27 @@ window.UI = (function () {
       });
     },
     appIcon: function () {
-      var cur = (userDoc() && userDoc().settings && userDoc().settings.appIcon) || 'navy';
-      var icons = [['navy', '네이비'], ['gold', '골드'], ['red', '크림슨'], ['teal', '틸']];
+      var doc = userDoc();
+      var userSettings = (doc && doc.settings) || {};
+      var savedIcon = userSettings.appIcon;
+      var hasUnsupportedIcon = savedIcon != null && savedIcon !== 'logo-dark' && savedIcon !== 'logo-light';
+      var cur = savedIcon === 'logo-dark' || savedIcon === 'logo-light' ? savedIcon :
+        (document.documentElement.getAttribute('data-theme') === 'light' ? 'logo-light' : 'logo-dark');
+      if (hasUnsupportedIcon) {
+        var cleanSettings = Object.assign({}, userSettings);
+        delete cleanSettings.appIcon;
+        if (doc) doc.settings = cleanSettings;
+        saveUserPatch({ settings: cleanSettings }).catch(function () { });
+      }
+      var icons = [
+        ['logo-dark', '다크 로고', 'img/logo-dark.png'],
+        ['logo-light', '라이트 로고', 'img/logo-light.png']
+      ];
       var m = openModal({
         title: '앱 아이콘 변경',
         body: '<div class="pick-grid">' + icons.map(function (ic) {
           return '<button class="pick pick--icon' + (cur === ic[0] ? ' is-on' : '') + '" data-ic="' + ic[0] + '" type="button">' +
-            '<span class="icon-prev icon-' + ic[0] + '"><svg viewBox="0 0 64 64" width="30" height="30"><path d="M32 10c-9 0-16 7-16 15 0 6 3 10 8 12v7l5-2 3 3 3-3 5 2v-7c5-2 8-6 8-12 0-8-7-15-16-15z" fill="currentColor"/></svg></span>' + ic[1] + '</button>';
+            '<span class="icon-prev icon-' + ic[0] + '"><img src="' + esc(ic[2]) + '" alt="" aria-hidden="true"></span><span>' + ic[1] + '</span></button>';
         }).join('') + '</div>' +
         '<p class="pick-note">선택한 앱 아이콘은 바탕화면 바로가기 생성 시 적용됩니다.</p>' +
         '<button class="btn btn--gold btn--block" id="mkShortcut" type="button" style="margin-top:12px">바탕화면 바로가기 만들기</button>'
