@@ -1,12 +1,7 @@
 /* ============================================================
    FPP v2 — common.css (디자인 시스템)
    ============================================================ */
-@font-face{
-  font-family:'stds-font-icon-v2';
-  font-style:normal;font-weight:400;font-display:block;
-  src:url("https://d2x8kymwjom7h7.cloudfront.net/live/application_no/STATIC/common/stds-font-icon-v2/stds-font-icon.woff2") format("woff2"),
-      url("https://d2x8kymwjom7h7.cloudfront.net/live/application_no/STATIC/common/stds-font-icon-v2/stds-font-icon.ttf") format("truetype");
-}
+@import url("./stds-font-icon-v2-subset.css");
 
 :root{
   --font-d:'Black Han Sans','Noto Sans KR',sans-serif;
