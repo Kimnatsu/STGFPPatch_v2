@@ -201,20 +201,24 @@ body.fonticon-ok .gnb-font-icon svg{display:none}
   display:none;position:fixed;left:0;right:0;bottom:0;z-index:70;
   background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(14px);
   border-top:1px solid var(--line);
-  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  height:60px;padding:0 4px;
   grid-template-columns:repeat(4,1fr);
 }
 @media (max-width:767px){.bottom-tabs{display:grid}}
 .bottom-tabs.cols5{grid-template-columns:repeat(5,1fr)}
 .btab{
-  display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;min-height:56px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 2px;min-height:0;
   color:var(--text-3);font-size:10.5px;font-weight:800;transition:.2s;border-radius:var(--r-sm);
 }
-.btab svg{width:21px;height:21px;transition:transform .25s var(--ease)}
-.btab span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2}
+.btab svg,.btab-icon{width:21px;height:21px;transition:transform .25s var(--ease)}
+.btab-icon{display:inline-flex;align-items:center;justify-content:center;font-size:21px;line-height:1}
+.btab-icon--fill{display:none}
+.btab > span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2}
 .btab.active{color:var(--gold)}
-.btab.active svg{transform:translateY(-2px) scale(1.12)}
-.btab:active svg{transform:scale(.9)}
+.btab.active .btab-icon--line{display:none}
+.btab.active .btab-icon--fill{display:inline-flex}
+.btab.active svg,.btab.active .btab-icon{transform:translateY(-2px) scale(1.12)}
+.btab:active svg,.btab:active .btab-icon{transform:scale(.9)}
 
 /* ---------- 드로어 ---------- */
 .drawer-backdrop{position:fixed;inset:0;z-index:80;background:rgba(2,8,16,.6);backdrop-filter:blur(2px)}
