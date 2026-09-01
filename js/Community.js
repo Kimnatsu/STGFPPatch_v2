@@ -136,8 +136,8 @@
       return '<div class="pn-row" data-view="' + UI.esc(p.docId) + '" tabindex="0" role="button" aria-label="' + UI.esc(p.title) + '">' +
         '<div class="pn-date"><b>' + UI.esc(d[2] || '') + '</b><small>' + UI.esc((d[0] || '').slice(2) + '.' + (d[1] || '')) + '</small></div>' +
         '<div class="pn-main"><div class="pn-title">' + UI.esc(p.title) + '</div>' +
-        '<div class="pn-meta"><span>' + UI.esc(p.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(p.date)) + '</span><span>·</span>' + viewMeta(p.viewCount) +
-        (UI.isNew(p.date) ? '<span class="lst-new">NEW</span>' : '') + '</div></div>' +
+        '<div class="pn-meta"><span>' + UI.esc(p.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(p.date)) + '</span><span>·</span>' + viewMeta(p.viewCount) + '</div></div>' +
+        (UI.isNew(p.date) ? '<span class="lst-new">NEW</span>' : '') +
         '<span class="pn-arrow">›</span></div>';
     }).join('') + '</div>' + pageNavHTML(patchPage, totalPages);
     bindView(el, 'patch');
