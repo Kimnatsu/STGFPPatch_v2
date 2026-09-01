@@ -618,7 +618,7 @@ window.UI = (function () {
   function onSettingsClick(anchor) {
     var items = [
       ['notice', '공지사항', '<span class="menu-icon ic-v2-object-notice-line" aria-hidden="true"></span>'],
-      ['notify', '알림 설정', '<span class="menu-icon ic-v2-navigation-alarm-fill" aria-hidden="true"></span>'],
+      ['notify', '알림 설정', '<span class="menu-icon ic-v2-navigation-alarm-line" aria-hidden="true"></span>'],
       ['theme', '테마 변경', '<span class="menu-icon ic-v2-control-theme-device-fill" aria-hidden="true"></span>'],
       ['appIcon', '앱 아이콘 변경', '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 13.5l2.2 2.2L15.5 11" stroke-linecap="round" stroke-linejoin="round"/></svg>'],
       ['lang', '언어 변경', '<span class="menu-icon ic-v2-navigation-language-line" aria-hidden="true"></span>']
@@ -653,17 +653,17 @@ window.UI = (function () {
       '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div></div>' +
       '</div><button class="profile-logout" id="pfOut" type="button">로그아웃</button></div>' +
       '<div class="profile-menu-stats">' +
-      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--post" aria-hidden="true"><span class="ic-v2-navigation-studio-test-line"></span></span><span class="profile-stat-label">게시글 작성</span><b>' + (c.posts || 0) + '</b></div>' +
-      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--comment" aria-hidden="true"><span class="ic-v2-navigation-community-line"></span></span><span class="profile-stat-label">댓글 작성</span><b>' + (c.comments || 0) + '</b></div>' +
-      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--like" aria-hidden="true"><span class="ic-v2-community-like-line"></span></span><span class="profile-stat-label">좋아요 한 글</span><b>' + (c.likes || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--post" aria-hidden="true"><span class="menu-icon ic-v2-community-write-line"></span></span><span class="profile-stat-label">게시글 작성</span><b>' + (c.posts || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--comment" aria-hidden="true"><span class="menu-icon ic-v2-community-reply-line"></span></span><span class="profile-stat-label">댓글 작성</span><b>' + (c.comments || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--like" aria-hidden="true"><span class="menu-icon ic-v2-community-like-line"></span></span><span class="profile-stat-label">좋아요 한 글</span><b>' + (c.likes || 0) + '</b></div>' +
       '</div>' +
       '<div class="profile-menu-actions">' +
       '<button class="profile-menu-action" id="pfNotice" type="button">' +
-      '<span class="ic-v2-navigation-alarm-line" aria-hidden="true"></span><span>알림</span><em>' + esc(noticeCount) + '</em></button>' +
+      '<span class="menu-icon ic-v2-navigation-alarm-line" aria-hidden="true"></span><span>알림</span><em>' + esc(noticeCount) + '</em></button>' +
       '<div class="profile-menu-divider"></div>' +
       '<button class="profile-menu-action" id="pfMy" type="button"><span class="menu-icon ic-v2-navigation-profile-line" aria-hidden="true"></span><span>내 정보</span></button>' +
       '<button class="profile-menu-action" id="pfMessages" type="button">' +
-      '<span class="ic-v2-navigation-message-line" aria-hidden="true"></span><span>쪽지</span></button>' +
+      '<span class="menu-icon ic-v2-navigation-message-line" aria-hidden="true"></span><span>쪽지</span></button>' +
       '</div>', '340px');
     pop.el.classList.add('pop--profile');
     pop.el.querySelector('#pfCopy').addEventListener('click', function () {

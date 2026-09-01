@@ -553,11 +553,14 @@ select{appearance:none;-webkit-appearance:none;cursor:pointer;
 .profile-stat-row b{margin-left:auto;color:var(--gold);font-size:15px;font-weight:900}
 .profile-stat-label{white-space:nowrap}
 .profile-stat-icon{
-  display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;
+  display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
   border-radius:0;background:none!important;color:var(--text);font-size:0;line-height:1;flex:none;
 }
-.profile-stat-icon svg{display:block;width:21px;height:21px}
-.profile-stat-icon .ic-v2{font-size:21px;line-height:1}
+.profile-stat-icon svg{display:block;width:20px;height:20px}
+.profile-stat-icon > .menu-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;font-size:20px;line-height:1;flex:none;
+}
 .profile-menu-actions{margin:13px 0 0}
 .profile-menu-action{
   display:flex;align-items:center;gap:13px;width:100%;min-height:48px;padding:10px 15px;
