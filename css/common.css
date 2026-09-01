@@ -149,6 +149,10 @@ html[data-theme="dark"] .logo-img-dark{display:block}
   display:inline-flex;align-items:center;justify-content:center;
   width:23.75px;height:24px;font-size:23.75px;
 }
+.hd-right > .icon-btn > .top-menu-icon--line{display:inline-flex}
+.hd-right > .icon-btn > .top-menu-icon--fill{display:none}
+.hd-right > .icon-btn.is-selected > .top-menu-icon--line{display:none}
+.hd-right > .icon-btn.is-selected > .top-menu-icon--fill{display:inline-flex}
 .hd-settings > .top-menu-icon{
   width:34px;height:34px;border-radius:50%;
   background:var(--surface-2);color:var(--text-2);
