@@ -394,7 +394,7 @@ window.UI = (function () {
       '<img class="logo-img-dark" src="img/logo-dark.png" alt="FPP 로고" />' +
       '</a>' +
       '<div class="hd-right">' +
-      '<button class="icon-btn" id="btnSet" aria-label="설정"><span class="top-menu-icon ic-v2-navigation-setting-fill" aria-hidden="true"></span></button>' +
+      '<button class="icon-btn hd-settings" id="btnSet" aria-label="설정"><span class="top-menu-icon ic-v2-navigation-setting-fill" aria-hidden="true"></span></button>' +
       '<button class="icon-btn" id="btnFav" aria-label="즐겨찾기">' + IC.bookmark + '</button>' +
       '<button class="icon-btn hd-notify" id="btnNotify" aria-label="알림" aria-haspopup="dialog">' +
       '<span class="top-menu-icon ic-v2-navigation-alarm-fill" aria-hidden="true"></span><i class="notify-dot" hidden></i></button>' +
@@ -624,7 +624,7 @@ window.UI = (function () {
       ['lang', '언어 변경', '<span class="menu-icon ic-v2-navigation-language-line" aria-hidden="true"></span>']
     ];
     var pop = openPopup(anchor,
-      '<div class="pop-head"><b>설정</b></div>' +
+      '<div class="pop-head"><span class="top-menu-icon ic-v2-navigation-setting-fill" aria-hidden="true"></span><b>설정</b></div>' +
       '<div class="pop-body">' + items.map(function (it) {
         return '<button class="pop-item" data-act="' + it[0] + '" type="button">' + it[2] + '<span>' + it[1] + '</span></button>';
       }).join('') + '</div>', '260px');
@@ -661,7 +661,7 @@ window.UI = (function () {
       '<button class="profile-menu-action" id="pfNotice" type="button">' +
       '<span class="menu-icon ic-v2-navigation-alarm-line" aria-hidden="true"></span><span>알림</span><em>' + esc(noticeCount) + '</em></button>' +
       '<div class="profile-menu-divider"></div>' +
-      '<button class="profile-menu-action" id="pfMy" type="button"><span class="menu-icon ic-v2-navigation-profile-line" aria-hidden="true"></span><span>내 정보</span></button>' +
+      '<button class="profile-menu-action" id="pfMy" type="button"><span class="top-menu-icon ic-v2-navigation-profile-fill" aria-hidden="true"></span><span>내 정보</span></button>' +
       '<button class="profile-menu-action" id="pfMessages" type="button">' +
       '<span class="menu-icon ic-v2-navigation-message-line" aria-hidden="true"></span><span>쪽지</span></button>' +
       '</div>', '340px');
