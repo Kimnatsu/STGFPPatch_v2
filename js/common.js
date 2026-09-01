@@ -367,43 +367,53 @@ window.UI = (function () {
     { key: 'home', page: 'Main.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-navigation-home-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-navigation-home-fill" aria-hidden="true"></span>' },
     { key: 'characters', page: 'Main.html', hash: '#characters', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3.4"/><path d="M2.8 19.5c.9-3.6 3.2-5.4 6.2-5.4s5.3 1.8 6.2 5.4" stroke-linecap="round"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.4c2.9-.4 5 1.2 5.8 4.3" stroke-linecap="round"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-community-group-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-community-group-fill" aria-hidden="true"></span>' },
     { key: 'pvp', page: 'Main.html', hash: '#pvp', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 19l4.5-4.5M14.5 4.5l-9 9 3 3 9-9zM13 6l5 5M17.5 3.5l3 3"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-navigation-store-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-navigation-store-fill" aria-hidden="true"></span>' },
-    { key: 'community', page: 'Community.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v12h-9l-4.5 3.5V17H4z"/><path d="M8 9.5h8M8 12.5h5" stroke-linecap="round"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-navigation-board-timeline-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-navigation-board-timeline-fill" aria-hidden="true"></span>' },
+    { key: 'community', page: 'Community.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v12h-9l-4.5 3.5V17H4z"/><path d="M8 9.5h8M8 12.5h5" stroke-linecap="round"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-community-board-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-community-board-fill" aria-hidden="true"></span>' },
     { key: 'cs', page: 'CustomerService.html', hash: '', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 12a7 7 0 0 1 14 0v3.5a2 2 0 0 1-2 2h-1.5V13H19" stroke-linejoin="round"/><path d="M5 12v5.5a2 2 0 0 0 2 2H8.5V13H5" stroke-linejoin="round"/><path d="M12 21c2 0 3.5-1 4-2.5" stroke-linecap="round"/></svg>' }
   ];
   /* 커뮤니티 전용 메뉴 (§27) */
   var COMM_NAV = [
-    { key: 'comhome', page: 'Community.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v11h-8l-4 3.5V16H4z"/><path d="M8.5 9h7M8.5 12h4.5" stroke-linecap="round"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-navigation-board-timeline-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-navigation-board-timeline-fill" aria-hidden="true"></span>', tabLabel: { ko: '홈', en: 'Home' } },
-    { key: 'patch', page: 'Community.html', hash: '#patch', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9.5 12h6M9.5 15.5h4" stroke-linecap="round"/></svg>', tabLabel: { ko: '패치노트', en: 'Patches' } },
+    { key: 'comhome', page: 'Community.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v11h-8l-4 3.5V16H4z"/><path d="M8.5 9h7M8.5 12h4.5" stroke-linecap="round"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-community-board-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-community-board-fill" aria-hidden="true"></span>', tabLabel: { ko: '홈', en: 'Home' } },
+    { key: 'patch', page: 'Community.html', hash: '#patch', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9.5 12h6M9.5 15.5h4" stroke-linecap="round"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-community-board-all-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-community-board-all-fill" aria-hidden="true"></span>', tabLabel: { ko: '패치노트', en: 'Patches' } },
     { key: 'board', page: 'Community.html', hash: '#board', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>', tabLabel: { ko: '게시판', en: 'Board' } },
-    { key: 'event', page: 'Community.html', hash: '#event', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="4" y="9.5" width="16" height="4"/><path d="M5.5 13.5v6.5h13v-6.5M12 9.5v10.5"/><path d="M12 9.5S7.8 9.7 6.8 7.5C6 5.8 7.2 4.4 8.8 4.6c2.1.3 3.2 4.9 3.2 4.9zM12 9.5s4.2.2 5.2-2c.8-1.7-.4-3.1-2-2.9-2.1.3-3.2 4.9-3.2 4.9z"/></svg>', tabLabel: { ko: '이벤트', en: 'Events' } },
-    { key: 'mainhome', page: 'Main.html', hash: '#home', exit: true, icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5h4A1.5 1.5 0 0 1 20 5v14a1.5 1.5 0 0 1-1.5 1.5h-4"/><path d="M10 16.5L5.5 12 10 7.5"/><path d="M5.5 12H15"/></svg>', tabLabel: { ko: '메인 홈', en: 'Main' } }
+    { key: 'event', page: 'Community.html', hash: '#event', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="4" y="9.5" width="16" height="4"/><path d="M5.5 13.5v6.5h13v-6.5M12 9.5v10.5"/><path d="M12 9.5S7.8 9.7 6.8 7.5C6 5.8 7.2 4.4 8.8 4.6c2.1.3 3.2 4.9 3.2 4.9zM12 9.5s4.2.2 5.2-2c.8-1.7-.4-3.1-2-2.9-2.1.3-3.2 4.9-3.2 4.9z"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-navigation-community-event-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-navigation-community-event-fill" aria-hidden="true"></span>', tabLabel: { ko: '이벤트', en: 'Events' } },
+    { key: 'mainhome', page: 'Main.html', hash: '#home', exit: true, icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5h4A1.5 1.5 0 0 1 20 5v14a1.5 1.5 0 0 1-1.5 1.5h-4"/><path d="M10 16.5L5.5 12 10 7.5"/><path d="M5.5 12H15"/></svg>', tabIcon: '<span class="btab-icon ic-v2-navigation-login-line" aria-hidden="true"></span>', tabLabel: { ko: '메인 홈', en: 'Main' } }
   ];
   function navForPage() {
     return (document.body && document.body.getAttribute('data-page') === 'community') ? COMM_NAV : NAV;
   }
   var activeNav = 'home';
 
+  function toggleHeaderPopup(anchor, opener) {
+    if (anchor.classList.contains('is-selected')) {
+      closePopups();
+    } else {
+      opener(anchor);
+    }
+  }
+
   function buildHeader() {
     var hd = $('appHeader');
     if (!hd) return;
     hd.innerHTML =
       '<div class="hd-in">' +
-      '<button class="hd-burger icon-btn" id="btnBurger" aria-label="전체 메뉴 열기">' + IC.burger + '</button>' +
+      '<button class="hd-burger icon-btn" id="btnBurger" aria-label="전체 메뉴 열기" aria-expanded="false"><span class="top-menu-icon ic-v2-navigation-menu-line" aria-hidden="true"></span></button>' +
       '<a class="logo" href="Main.html#home" aria-label="FPP 홈으로">' +
       '<img class="logo-img" src="img/logo-light.png" alt="FPP 로고" />' +
       '<img class="logo-img-dark" src="img/logo-dark.png" alt="FPP 로고" />' +
       '</a>' +
       '<div class="hd-right">' +
-      '<button class="icon-btn hd-settings" id="btnSet" aria-label="설정"><span class="top-menu-icon ic-v2-navigation-setting-fill" aria-hidden="true"></span></button>' +
-      '<button class="icon-btn" id="btnFav" aria-label="즐겨찾기">' + IC.bookmark + '</button>' +
-      '<button class="icon-btn hd-notify" id="btnNotify" aria-label="알림" aria-haspopup="dialog">' +
-      '<span class="top-menu-icon ic-v2-navigation-alarm-fill" aria-hidden="true"></span><i class="notify-dot" hidden></i></button>' +
+      '<button class="icon-btn hd-settings" id="btnSet" aria-label="설정" aria-haspopup="dialog" aria-expanded="false">' +
+      '<span class="top-menu-icon top-menu-icon--line ic-v2-navigation-setting-line" aria-hidden="true"></span><span class="top-menu-icon top-menu-icon--fill ic-v2-navigation-setting-fill" aria-hidden="true"></span></button>' +
+      '<button class="icon-btn" id="btnFav" aria-label="즐겨찾기" aria-haspopup="dialog" aria-expanded="false">' +
+      '<span class="top-menu-icon top-menu-icon--line ic-v2-community-favorite-line" aria-hidden="true"></span><span class="top-menu-icon top-menu-icon--fill ic-v2-community-favorite-fill" aria-hidden="true"></span></button>' +
+      '<button class="icon-btn hd-notify" id="btnNotify" aria-label="알림" aria-haspopup="dialog" aria-expanded="false">' +
+      '<span class="top-menu-icon top-menu-icon--line ic-v2-navigation-alarm-line" aria-hidden="true"></span><span class="top-menu-icon top-menu-icon--fill ic-v2-navigation-alarm-fill" aria-hidden="true"></span><i class="notify-dot" hidden></i></button>' +
       '<div class="hd-auth" id="hdAuth"></div>' +
       '</div></div>';
     $('btnBurger').addEventListener('click', toggleDrawer);
-    $('btnSet').addEventListener('click', function (e) { e.stopPropagation(); onSettingsClick($('btnSet')); });
-    $('btnFav').addEventListener('click', function (e) { e.stopPropagation(); openFavPopup($('btnFav')); });
-    $('btnNotify').addEventListener('click', function (e) { e.stopPropagation(); openNotifyPopup($('btnNotify')); });
+    $('btnSet').addEventListener('click', function (e) { e.stopPropagation(); toggleHeaderPopup($('btnSet'), onSettingsClick); });
+    $('btnFav').addEventListener('click', function (e) { e.stopPropagation(); toggleHeaderPopup($('btnFav'), openFavPopup); });
+    $('btnNotify').addEventListener('click', function (e) { e.stopPropagation(); toggleHeaderPopup($('btnNotify'), openNotifyPopup); });
     updateNotificationBadge();
   }
 
@@ -463,18 +473,18 @@ window.UI = (function () {
     
     // 메인 홈 메뉴 항목
     var mainHomeItems = [
-      { key: 'home', page: 'Main.html', hash: '#home', icon: NAV[0].icon, label: t('home') },
-      { key: 'characters', page: 'Main.html', hash: '#characters', icon: NAV[1].icon, label: t('characters') },
-      { key: 'pvp', page: 'Main.html', hash: '#pvp', icon: NAV[2].icon, label: t('pvp') },
+      { key: 'home', page: 'Main.html', hash: '#home', icon: NAV[0].tabIcon || NAV[0].icon, label: t('home') },
+      { key: 'characters', page: 'Main.html', hash: '#characters', icon: NAV[1].tabIcon || NAV[1].icon, label: t('characters') },
+      { key: 'pvp', page: 'Main.html', hash: '#pvp', icon: NAV[2].tabIcon || NAV[2].icon, label: t('pvp') },
       { key: 'cs', page: 'CustomerService.html', hash: '', icon: NAV[4].icon, label: t('cs') }
     ];
     
     // 커뮤니티 홈 메뉴 항목
     var commHomeItems = [
-      { key: 'comhome', page: 'Community.html', hash: '#home', icon: COMM_NAV[0].icon, label: '커뮤니티 홈' },
-      { key: 'patch', page: 'Community.html', hash: '#patch', icon: COMM_NAV[1].icon, label: '패치노트' },
-      { key: 'board', page: 'Community.html', hash: '#board', icon: COMM_NAV[2].icon, label: '게시판' },
-      { key: 'event', page: 'Community.html', hash: '#event', icon: COMM_NAV[3].icon, label: '이벤트' }
+      { key: 'comhome', page: 'Community.html', hash: '#home', icon: COMM_NAV[0].tabIcon || COMM_NAV[0].icon, label: '커뮤니티 홈' },
+      { key: 'patch', page: 'Community.html', hash: '#patch', icon: COMM_NAV[1].tabIcon || COMM_NAV[1].icon, label: '패치노트' },
+      { key: 'board', page: 'Community.html', hash: '#board', icon: COMM_NAV[2].tabIcon || COMM_NAV[2].icon, label: '게시판' },
+      { key: 'event', page: 'Community.html', hash: '#event', icon: COMM_NAV[3].tabIcon || COMM_NAV[3].icon, label: '이벤트' }
     ];
     
     dw.innerHTML =
@@ -513,6 +523,11 @@ window.UI = (function () {
     var open = dw.classList.toggle('open');
     if (bd) bd.hidden = !open;
     dw.setAttribute('aria-hidden', String(!open));
+    var burger = $('btnBurger');
+    if (burger) {
+      burger.classList.toggle('is-selected', open);
+      burger.setAttribute('aria-expanded', String(open));
+    }
   }
   function setActiveNav(key) {
     activeNav = key;
@@ -524,9 +539,15 @@ window.UI = (function () {
   }
 
   /* ---------- 팝업 ---------- */
+  var activePopupAnchor = null;
   function closePopups() {
     var root = $('popupRoot');
     if (root) root.innerHTML = '';
+    if (activePopupAnchor) {
+      activePopupAnchor.classList.remove('is-selected');
+      activePopupAnchor.setAttribute('aria-expanded', 'false');
+      activePopupAnchor = null;
+    }
     document.removeEventListener('click', onDocClickPop);
   }
   function onDocClickPop(e) {
@@ -539,6 +560,11 @@ window.UI = (function () {
     if (width) el.style.width = width;
     el.innerHTML = html;
     $('popupRoot').appendChild(el);
+    if (anchor && anchor.classList) {
+      activePopupAnchor = anchor;
+      anchor.classList.add('is-selected');
+      anchor.setAttribute('aria-expanded', 'true');
+    }
     
     /* 중앙 고정 팝업은 앵커 위치 계산을 건너뛴다. */
     var isCentered = el.classList.contains('pop--fav') || el.classList.contains('pop--myinfo');
