@@ -394,10 +394,10 @@ window.UI = (function () {
       '<img class="logo-img-dark" src="img/logo-dark.png" alt="FPP 로고" />' +
       '</a>' +
       '<div class="hd-right">' +
-      '<button class="icon-btn" id="btnSet" aria-label="설정"><span class="ic-v2-navigation-setting-fill" aria-hidden="true"></span></button>' +
+      '<button class="icon-btn" id="btnSet" aria-label="설정"><span class="top-menu-icon ic-v2-navigation-setting-fill" aria-hidden="true"></span></button>' +
       '<button class="icon-btn" id="btnFav" aria-label="즐겨찾기">' + IC.bookmark + '</button>' +
       '<button class="icon-btn hd-notify" id="btnNotify" aria-label="알림" aria-haspopup="dialog">' +
-      '<span class="ic-v2-navigation-alarm-fill" aria-hidden="true"></span><i class="notify-dot" hidden></i></button>' +
+      '<span class="top-menu-icon ic-v2-navigation-alarm-fill" aria-hidden="true"></span><i class="notify-dot" hidden></i></button>' +
       '<div class="hd-auth" id="hdAuth"></div>' +
       '</div></div>';
     $('btnBurger').addEventListener('click', toggleDrawer);
@@ -617,11 +617,11 @@ window.UI = (function () {
 
   function onSettingsClick(anchor) {
     var items = [
-      ['notice', '공지사항', '<span class="ic-v2-object-notice-line" aria-hidden="true"></span>'],
-      ['notify', '알림 설정', '<span class="ic-v2-navigation-alarm-fill" aria-hidden="true"></span>'],
-      ['theme', '테마 변경', '<span class="ic-v2-control-theme-device-fill" aria-hidden="true"></span>'],
+      ['notice', '공지사항', '<span class="menu-icon ic-v2-object-notice-line" aria-hidden="true"></span>'],
+      ['notify', '알림 설정', '<span class="menu-icon ic-v2-navigation-alarm-fill" aria-hidden="true"></span>'],
+      ['theme', '테마 변경', '<span class="menu-icon ic-v2-control-theme-device-fill" aria-hidden="true"></span>'],
       ['appIcon', '앱 아이콘 변경', '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 13.5l2.2 2.2L15.5 11" stroke-linecap="round" stroke-linejoin="round"/></svg>'],
-      ['lang', '언어 변경', '<span class="ic-v2-navigation-language-line" aria-hidden="true"></span>']
+      ['lang', '언어 변경', '<span class="menu-icon ic-v2-navigation-language-line" aria-hidden="true"></span>']
     ];
     var pop = openPopup(anchor,
       '<div class="pop-head"><b>설정</b></div>' +
@@ -661,7 +661,7 @@ window.UI = (function () {
       '<button class="profile-menu-action" id="pfNotice" type="button">' +
       '<span class="ic-v2-navigation-alarm-line" aria-hidden="true"></span><span>알림</span><em>' + esc(noticeCount) + '</em></button>' +
       '<div class="profile-menu-divider"></div>' +
-      '<button class="profile-menu-action" id="pfMy" type="button"><span class="ic-v2-navigation-profile-line" aria-hidden="true"></span><span>내 정보</span></button>' +
+      '<button class="profile-menu-action" id="pfMy" type="button"><span class="menu-icon ic-v2-navigation-profile-line" aria-hidden="true"></span><span>내 정보</span></button>' +
       '<button class="profile-menu-action" id="pfMessages" type="button">' +
       '<span class="ic-v2-navigation-message-line" aria-hidden="true"></span><span>쪽지</span></button>' +
       '</div>', '340px');

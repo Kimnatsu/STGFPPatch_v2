@@ -108,6 +108,7 @@ html[data-theme="dark"] .logo-img-dark{display:block}
   border-color: var(--line, #29425e);
 }
 .icon-btn > .ic-v2{font-size:21px}
+.hd-right > .icon-btn > .top-menu-icon,
 .hd-right > .icon-btn > .ic-v2{
   display:inline-flex;align-items:center;justify-content:center;
   width:23.75px;height:24px;font-size:23.75px;
@@ -562,8 +563,8 @@ select{appearance:none;-webkit-appearance:none;cursor:pointer;
   display:flex;align-items:center;gap:13px;width:100%;min-height:48px;padding:10px 15px;
   color:var(--text-2);text-align:left;border-radius:var(--r-sm);font-size:14px;font-weight:900;transition:.18s;
 }
-.pop--settings .pop-item > svg,.pop--settings .pop-item > .ic-v2,
-.profile-menu-action > svg,.profile-menu-action > .ic-v2{
+.pop--settings .pop-item > svg,.pop--settings .pop-item > .menu-icon,.pop--settings .pop-item > .ic-v2,
+.profile-menu-action > svg,.profile-menu-action > .menu-icon,.profile-menu-action > .ic-v2{
   display:inline-flex;align-items:center;justify-content:center;
   flex:none;width:20px;height:20px;color:var(--gold);font-size:20px;
 }
