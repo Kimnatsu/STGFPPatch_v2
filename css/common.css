@@ -1,7 +1,7 @@
 /* ============================================================
    FPP v2 — common.css (디자인 시스템)
    ============================================================ */
-@import url("./stds-font-icon-v2-subset.css");
+@import url("./fpp-font-icon-v2-subset.css");
 
 :root{
   --font-d:'Black Han Sans','Noto Sans KR',sans-serif;
