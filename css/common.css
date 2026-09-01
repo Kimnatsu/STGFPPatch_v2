@@ -690,11 +690,11 @@ body.body-lock{
 .pick:hover{transform:translateY(-3px);border-color:var(--text-3)}
 .pick.is-on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent);color:var(--gold);box-shadow:0 6px 18px rgba(245,185,66,.18)}
 .pick--icon{padding:10px}
-.pick--icon .icon-prev{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff}
-.icon-navy{background:linear-gradient(150deg,#0d2440,#1d4a74)}
-.icon-gold{background:linear-gradient(150deg,var(--gold-2),var(--gold))}
-.icon-red{background:linear-gradient(150deg,#7e1d22,#e8484f)}
-.icon-teal{background:linear-gradient(150deg,#0c4a44,#21b5a5)}
+.pick--icon .icon-prev{
+  width:56px;height:56px;border-radius:14px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;background:var(--surface-3);
+}
+.pick--icon .icon-prev img{width:100%;height:100%;object-fit:cover}
 .pick-note{font-size:12px;color:var(--text-3);margin-top:12px;line-height:1.6}
 
 /* ---------- 테마/언어 설정 선택 모달 ---------- */
@@ -791,7 +791,7 @@ body.body-lock{
 .modal--app-icon .pick--icon .icon-prev{
   position:absolute;left:18px;width:32px;height:32px;border-radius:10px;
 }
-.modal--app-icon .pick--icon .icon-prev svg{width:20px;height:20px}
+.modal--app-icon .pick--icon .icon-prev img{width:100%;height:100%;object-fit:cover}
 .modal--app-icon .pick-note{
   margin:12px 4px 0;color:var(--text-3);
 }
