@@ -403,11 +403,11 @@ window.UI = (function () {
       '</a>' +
       '<div class="hd-right">' +
       '<button class="icon-btn hd-settings" id="btnSet" aria-label="설정" aria-haspopup="dialog" aria-expanded="false">' +
-      '<span class="top-menu-icon top-menu-icon--line ic-v2-navigation-setting-line" aria-hidden="true"></span><span class="top-menu-icon top-menu-icon--fill ic-v2-navigation-setting-fill" aria-hidden="true"></span></button>' +
+      '<span class="top-menu-icon top-menu-icon--fill ic-v2-navigation-setting-fill" aria-hidden="true"></span></button>' +
       '<button class="icon-btn" id="btnFav" aria-label="즐겨찾기" aria-haspopup="dialog" aria-expanded="false">' +
-      '<span class="top-menu-icon top-menu-icon--line ic-v2-community-favorite-line" aria-hidden="true"></span><span class="top-menu-icon top-menu-icon--fill ic-v2-community-favorite-fill" aria-hidden="true"></span></button>' +
+      '<span class="top-menu-icon top-menu-icon--fill ic-v2-community-favorite-fill" aria-hidden="true"></span></button>' +
       '<button class="icon-btn hd-notify" id="btnNotify" aria-label="알림" aria-haspopup="dialog" aria-expanded="false">' +
-      '<span class="top-menu-icon top-menu-icon--line ic-v2-navigation-alarm-line" aria-hidden="true"></span><span class="top-menu-icon top-menu-icon--fill ic-v2-navigation-alarm-fill" aria-hidden="true"></span><i class="notify-dot" hidden></i></button>' +
+      '<span class="top-menu-icon top-menu-icon--fill ic-v2-navigation-alarm-fill" aria-hidden="true"></span><i class="notify-dot" hidden></i></button>' +
       '<div class="hd-auth" id="hdAuth"></div>' +
       '</div></div>';
     $('btnBurger').addEventListener('click', toggleDrawer);
