@@ -319,7 +319,7 @@
           (bt && typeIconSrc(bt) ? '<img class="char-type-icon" src="' + typeIconSrc(bt) + '" alt="' + UI.esc(bt) + '" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
           '</div>' : '') +
         (c.grade ? '<span class="char-grade-badge grade-' + UI.esc(c.grade) + '">' + UI.esc(c.grade) + '</span>' : '') +
-        '<button class="char-fav-btn' + (favOn ? ' active' : '') + '" data-fav="' + UI.esc(String(c.id)) + '" aria-pressed="' + favOn + '" aria-label="즐겨찾기" type="button">' + (favOn ? '★' : '☆') + '</button>' +
+        '<button class="char-fav-btn' + (favOn ? ' active' : '') + '" data-fav="' + UI.esc(String(c.id)) + '" aria-pressed="' + favOn + '" aria-label="즐겨찾기" type="button"><i class="ic-v2-community-star-line" aria-hidden="true"></i></button>' +
         '</div><div class="char-card-name">' + UI.esc(c.name) + '</div></article>';
     }).join('');
 
@@ -338,7 +338,6 @@
         var willBeOn = !UI.isFav(kind, key);
         UI.toggleFav(kind, key).then(function () {
           b.classList.toggle('active', willBeOn);
-          b.textContent = willBeOn ? '★' : '☆';
           b.setAttribute('aria-pressed', String(willBeOn));
           if (F.fav) renderChars();
         });

@@ -72,7 +72,7 @@
 
 /* 조회수 메타 */
 .view-count{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
-.view-count svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px}
+.view-count .ic-v2{font-size:14px;line-height:1;flex:none}
 
 /* 상세 헤더 — 제목 행과 메타 행을 분리 */
 .detail-head{display:block}

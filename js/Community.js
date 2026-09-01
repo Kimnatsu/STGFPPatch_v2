@@ -13,7 +13,7 @@
   function viewMeta(count) {
     var value = count == null ? 0 : count;
     return '<span class="view-count" aria-label="조회수 ' + UI.esc(value) + '">' +
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.2-5 9.5-5 9.5 5 9.5 5-3.2 5-9.5 5-9.5-5-9.5-5z"/><circle cx="12" cy="12" r="2.3"/></svg>' +
+      '<i class="ic-v2-community-number-of-view-line" aria-hidden="true"></i>' +
       '<span>' + UI.esc(value) + '</span></span>';
   }
 
