@@ -696,6 +696,43 @@ body.body-lock{
 .icon-teal{background:linear-gradient(150deg,#0c4a44,#21b5a5)}
 .pick-note{font-size:12px;color:var(--text-3);margin-top:12px;line-height:1.6}
 
+/* ---------- 테마/언어 설정 선택 모달 ---------- */
+.modal-back--settings-choice{padding:0}
+.modal--settings-choice{
+  width:min(310px,100%);max-height:min(86vh,410px);
+  background:#292929;border:0;border-radius:22px;
+  box-shadow:0 24px 70px rgba(0,0,0,.58);color:#f2f2f2;
+}
+.modal--settings-choice .modal-head{
+  min-height:55px;padding:15px 20px 8px;border-bottom:0;
+}
+.modal--settings-choice .modal-head h3{
+  color:#f2f2f2;font-size:16px;font-weight:900;letter-spacing:0;
+}
+.modal--settings-choice .modal-x{
+  width:28px;height:28px;border-radius:50%;color:#d7d7d7;
+}
+.modal--settings-choice .modal-x svg{width:22px;height:22px}
+.modal--settings-choice .modal-x:hover{background:transparent;color:#d7d7d7}
+.modal--settings-choice .modal-body{
+  padding:0 20px 16px;overflow:auto;
+}
+.setting-choice-list{display:flex;flex-direction:column;gap:8px}
+.setting-choice{
+  position:relative;width:100%;min-height:48px;padding:0 18px;
+  display:flex;align-items:center;justify-content:center;
+  border:0;border-radius:99px;background:#343434;color:#d2d2d2;
+  font-size:14px;font-weight:700;line-height:1;transition:.18s;
+}
+.setting-choice:hover{background:#3b3b3b;transform:none}
+.setting-choice.is-on{background:#f0f0f0;color:#333}
+.setting-choice.is-on:hover{background:#f0f0f0}
+.setting-choice-icon{
+  position:absolute;left:26px;top:50%;width:24px;height:24px;
+  display:inline-flex;align-items:center;justify-content:center;
+  transform:translateY(-50%);font-size:22px;line-height:1;
+}
+
 /* 공지 */
 .ntc-row{display:block;width:100%;text-align:left;padding:13px 6px;border-bottom:1px solid var(--line);cursor:pointer;transition:.2s;min-height:52px}
 .ntc-row:last-child{border-bottom:0}

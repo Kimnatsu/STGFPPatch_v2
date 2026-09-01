@@ -86,7 +86,7 @@
 .cf-fav{flex:none}
 .cf-fav.is-on{background:color-mix(in srgb,var(--gold) 16%,transparent);border-color:var(--gold);color:var(--gold)}
 .cf-search{position:relative;flex:0 1 210px;min-width:140px}
-.cf-search svg,.cf-search .ic-v2{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:16px}
+.cf-search > svg,.cf-search > [class^="ic-v2"],.cf-search > [class*=" ic-v2"]{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:16px;line-height:1;pointer-events:none;z-index:1}
 .cf-search input{padding-left:36px;min-height:44px;height:44px;width:100%}
 /* 모바일: 2줄 — 1열 필터, 2열 액션 */
 @media (max-width:767px){

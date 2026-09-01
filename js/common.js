@@ -62,7 +62,10 @@ window.UI = (function () {
   /* ---------- i18n ---------- */
   var I18N = {
     ko: { home: '홈', characters: '캐릭터', pvp: 'PvP 패치', community: '커뮤니티', cs: '고객센터', login: '로그인', signup: '회원가입' },
-    en: { home: 'Home', characters: 'Characters', pvp: 'PvP Patch', community: 'Community', cs: 'Support', login: 'Login', signup: 'Sign up' }
+    en: { home: 'Home', characters: 'Characters', pvp: 'PvP Patch', community: 'Community', cs: 'Support', login: 'Login', signup: 'Sign up' },
+    ja: { home: 'ホーム', characters: 'キャラクター', pvp: 'PvPパッチ', community: 'コミュニティ', cs: 'サポート', login: 'ログイン', signup: 'アカウント登録' },
+    'zh-CN': { home: '主页', characters: '角色', pvp: 'PvP 补丁', community: '社区', cs: '客服中心', login: '登录', signup: '注册' },
+    'zh-TW': { home: '首頁', characters: '角色', pvp: 'PvP 更新', community: '社群', cs: '客服中心', login: '登入', signup: '註冊' }
   };
   var LANG = store.get('lang', 'ko');
   function t(k) { return (I18N[LANG] && I18N[LANG][k]) || I18N.ko[k] || k; }
@@ -743,7 +746,7 @@ window.UI = (function () {
   /* ---------- 모달 ---------- */
   function openModal(opts) {
     var back = document.createElement('div');
-    back.className = 'modal-back';
+    back.className = 'modal-back' + (opts.backCls ? ' ' + opts.backCls : '');
     back.innerHTML = '<div class="modal ' + (opts.cls || '') + '" role="dialog" aria-modal="true" aria-label="' + esc(opts.title) + '">' +
       '<div class="modal-head"><h3>' + esc(opts.title) + '</h3>' +
       '<button class="modal-x" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
@@ -823,16 +826,18 @@ window.UI = (function () {
     theme: function () {
       var cur = document.documentElement.getAttribute('data-theme') || 'dark';
       var m = openModal({
-        title: '테마 변경',
-        body: '<div class="pick-grid">' +
-          '<button class="pick' + (cur === 'dark' ? ' is-on' : '') + '" data-th="dark" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 13.5A8.5 8.5 0 0 1 10.5 4 8.5 8.5 0 1 0 20 13.5z" stroke-linejoin="round"/></svg>다크</button>' +
-          '<button class="pick' + (cur === 'light' ? ' is-on' : '') + '" data-th="light" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5 5l1.7 1.7M17.3 17.3L19 19M19 5l-1.7 1.7M6.7 17.3L5 19" stroke-linecap="round"/></svg>라이트</button>' +
+        title: '테마 설정',
+        cls: 'modal--settings-choice modal--theme',
+        backCls: 'modal-back--settings-choice',
+        body: '<div class="setting-choice-list">' +
+          '<button class="setting-choice' + (cur === 'light' ? ' is-on' : '') + '" data-th="light" type="button"><span class="setting-choice-icon ic-v2-control-theme-light-fill" aria-hidden="true"></span><span>라이트 모드</span></button>' +
+          '<button class="setting-choice' + (cur === 'dark' ? ' is-on' : '') + '" data-th="dark" type="button"><span class="setting-choice-icon ic-v2-control-theme-dark-fill" aria-hidden="true"></span><span>다크 모드</span></button>' +
           '</div>'
       });
-      m.body.querySelectorAll('.pick').forEach(function (b) {
+      m.body.querySelectorAll('.setting-choice').forEach(function (b) {
         b.addEventListener('click', function () {
           applyTheme(b.getAttribute('data-th'));
-          m.body.querySelectorAll('.pick').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+          m.body.querySelectorAll('.setting-choice').forEach(function (x) { x.classList.toggle('is-on', x === b); });
           toast('테마가 적용되었습니다.', 'ok');
         });
       });
@@ -873,19 +878,28 @@ window.UI = (function () {
       });
     },
     lang: function () {
+      var options = [
+        ['ko', '한국어'],
+        ['en', 'English'],
+        ['ja', '日本語'],
+        ['zh-CN', '简体中文'],
+        ['zh-TW', '繁體中文']
+      ];
       var m = openModal({
-        title: '언어 변경',
-        body: '<div class="pick-grid">' +
-          '<button class="pick' + (LANG === 'ko' ? ' is-on' : '') + '" data-lg="ko" type="button">한국어</button>' +
-          '<button class="pick' + (LANG === 'en' ? ' is-on' : '') + '" data-lg="en" type="button">English</button></div>'
+        title: '언어 설정',
+        cls: 'modal--settings-choice modal--language',
+        backCls: 'modal-back--settings-choice',
+        body: '<div class="setting-choice-list">' + options.map(function (it) {
+          return '<button class="setting-choice' + (LANG === it[0] ? ' is-on' : '') + '" data-lg="' + it[0] + '" type="button"><span>' + it[1] + '</span></button>';
+        }).join('') + '</div>'
       });
-      m.body.querySelectorAll('.pick').forEach(function (b) {
+      m.body.querySelectorAll('.setting-choice').forEach(function (b) {
         b.addEventListener('click', function () {
           LANG = b.getAttribute('data-lg');
           store.set('lang', LANG);
           applyI18n(); buildDeskNav(); buildTabs(); setActiveNav(activeNav);
-          m.body.querySelectorAll('.pick').forEach(function (x) { x.classList.toggle('is-on', x === b); });
-          toast(LANG === 'ko' ? '한국어로 변경되었습니다.' : 'Language set to English.', 'ok');
+          m.body.querySelectorAll('.setting-choice').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+          toast(b.textContent + (LANG === 'en' ? ' selected.' : '로 변경되었습니다.'), 'ok');
         });
       });
     }
