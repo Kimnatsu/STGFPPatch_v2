@@ -10,6 +10,7 @@
   var S = { chars: [], supports: [], pvps: [], patches: [], events: [], boards: [], banners: [], loaded: false };
   var F = { tab: 'char', grade: 'all', attr: 'all', type: 'all', sort: 'id', fav: false, q: '' };
   var pvpSelDate = '';
+  var homeEventTimer = null;
 
   /* 한 컬렉션이 실패해도 나머지는 표시 — 실패한 쪽은 빈 배열로 처리 */
   function safe(p, label) {
@@ -138,7 +139,7 @@
     /* 진행 중이면서 실제 내용(제목·본문·이미지 중 하나라도)이 있는 이벤트만 */
     var evs = S.events.filter(function (e) {
       return e.status === 'ing' && (e.title || e.content || e.image);
-    });
+    }).slice(0, 5);
     var noEv = !evs.length;
     var patchBox = $('homePatchBox');
     if (patchBox) patchBox.classList.toggle('no-event', noEv);
@@ -187,6 +188,10 @@
 
     /* 3) 이벤트 — 진행 중만 롤링, 없으면 Box 숨김 */
     var evBox = $('homeEventBox'), evRoll = $('homeEventRoll');
+    if (homeEventTimer) {
+      clearInterval(homeEventTimer);
+      homeEventTimer = null;
+    }
     if (noEv) {
       if (evBox) evBox.hidden = true;
     } else {
@@ -198,17 +203,32 @@
           '<div class="ev-tx"><b>' + UI.esc(e.title) + '</b><small>' + UI.esc(UI.fmtDate(e.date)) + '</small></div></article>';
       }).join('');
       var cards = evRoll.querySelectorAll('.ev-card');
-      var idx = 0, timer = null;
+      var idx = 0;
       function showEv(i) {
         idx = (i + cards.length) % cards.length;
         cards.forEach(function (cc, j) { cc.classList.toggle('on', j === idx); });
       }
       showEv(0);
-      if (cards.length > 1) timer = setInterval(function () { showEv(idx + 1); }, 4200);
-      evRoll.parentElement.addEventListener('mouseenter', function () { if (timer) clearInterval(timer); });
-      evRoll.parentElement.addEventListener('mouseleave', function () {
-        if (cards.length > 1 && !timer) timer = setInterval(function () { showEv(idx + 1); }, 4200);
-      });
+      var evBody = evRoll.parentElement;
+      var prev = $('homeEventPrev'), next = $('homeEventNext');
+      function startEvTimer() {
+        if (cards.length > 1 && !homeEventTimer) {
+          homeEventTimer = setInterval(function () { showEv(idx + 1); }, 4200);
+        }
+      }
+      function pauseEvTimer() {
+        if (homeEventTimer) {
+          clearInterval(homeEventTimer);
+          homeEventTimer = null;
+        }
+      }
+      if (prev) prev.onclick = function () { pauseEvTimer(); showEv(idx - 1); startEvTimer(); };
+      if (next) next.onclick = function () { pauseEvTimer(); showEv(idx + 1); startEvTimer(); };
+      if (evBody) {
+        evBody.onmouseenter = pauseEvTimer;
+        evBody.onmouseleave = startEvTimer;
+      }
+      startEvTimer();
       cards.forEach(function (cc) {
         cc.addEventListener('click', function () { location.href = 'Community.html#event/view/' + cc.getAttribute('data-ev'); });
       });
