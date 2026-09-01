@@ -700,20 +700,20 @@ body.body-lock{
 .modal-back--settings-choice{padding:0}
 .modal--settings-choice{
   width:min(310px,100%);max-height:min(86vh,410px);
-  background:#292929;border:0;border-radius:22px;
-  box-shadow:0 24px 70px rgba(0,0,0,.58);color:#f2f2f2;
+  background:var(--surface);border:1px solid var(--line-2);border-radius:22px;
+  box-shadow:0 24px 70px rgba(0,0,0,.58);color:var(--text);
 }
 .modal--settings-choice .modal-head{
   min-height:55px;padding:15px 20px 8px;border-bottom:0;
 }
 .modal--settings-choice .modal-head h3{
-  color:#f2f2f2;font-size:16px;font-weight:900;letter-spacing:0;
+  color:var(--text);font-size:16px;font-weight:900;letter-spacing:0;
 }
 .modal--settings-choice .modal-x{
-  width:28px;height:28px;border-radius:50%;color:#d7d7d7;
+  width:28px;height:28px;border-radius:50%;color:var(--text-3);
 }
 .modal--settings-choice .modal-x svg{width:22px;height:22px}
-.modal--settings-choice .modal-x:hover{background:transparent;color:#d7d7d7}
+.modal--settings-choice .modal-x:hover{background:var(--surface-2);color:var(--text)}
 .modal--settings-choice .modal-body{
   padding:0 20px 16px;overflow:auto;
 }
@@ -721,21 +721,89 @@ body.body-lock{
 .setting-choice{
   position:relative;width:100%;min-height:48px;padding:0 18px;
   display:flex;align-items:center;justify-content:center;
-  border:0;border-radius:99px;background:#343434;color:#d2d2d2;
+  border:1px solid transparent;border-radius:99px;background:var(--surface-2);color:var(--text-2);
   font-size:14px;font-weight:700;line-height:1;transition:.18s;
 }
-.setting-choice:hover{background:#3b3b3b;transform:none}
-.setting-choice.is-on{background:#f0f0f0;color:#333}
-.setting-choice.is-on:hover{background:#f0f0f0}
+.setting-choice:hover{background:var(--surface-3);transform:none}
+.setting-choice.is-on{
+  background:color-mix(in srgb,var(--gold) 14%,var(--surface));
+  border-color:color-mix(in srgb,var(--gold) 42%,transparent);
+  color:var(--gold);
+}
+.setting-choice.is-on:hover{background:color-mix(in srgb,var(--gold) 18%,var(--surface))}
 .setting-choice-icon{
   position:absolute;left:26px;top:50%;width:24px;height:24px;
   display:inline-flex;align-items:center;justify-content:center;
   transform:translateY(-50%);font-size:22px;line-height:1;
 }
 
+/* ---------- 설정 선택형 팝업 공통 확장 ---------- */
+.modal--notice{
+  width:min(520px,100%);max-height:min(86vh,620px);
+}
+.modal--notice .modal-body,
+.modal--notification-settings .modal-body,
+.modal--app-icon .modal-body{
+  padding:0 20px 16px;
+}
+.modal--notification-settings{
+  width:min(360px,100%);max-height:min(86vh,500px);
+}
+.modal--notification-settings .tgl-row{
+  min-height:48px;padding:0 18px;margin-bottom:8px;
+  border:1px solid transparent;border-radius:99px;
+  background:var(--surface-2);color:var(--text-2);
+  transition:.18s;
+}
+.modal--notification-settings .tgl-row:last-child{margin-bottom:0}
+.modal--notification-settings .tgl-row:hover{
+  background:var(--surface-3);border-color:var(--line-2);
+}
+.modal--notification-settings .tgl-copy{padding:0 8px 0 0}
+.modal--notification-settings .tgl-copy b{font-size:13px;color:var(--text-2)}
+.modal--notification-settings .tgl-copy small{display:none}
+.modal--notification-settings .tgl.on{
+  background:color-mix(in srgb,var(--gold) 24%,var(--surface-3));
+}
+.modal--notification-settings .tgl.on i{background:var(--gold)}
+.modal--app-icon{
+  width:min(360px,100%);max-height:min(86vh,560px);
+}
+.modal--app-icon .pick-grid{
+  display:flex;flex-direction:column;gap:8px;
+}
+.modal--app-icon .pick--icon{
+  position:relative;width:100%;min-height:48px;height:48px;padding:0 18px;
+  border:1px solid transparent;border-radius:99px;
+  flex-direction:row;justify-content:center;
+  background:var(--surface-2);color:var(--text-2);
+  font-size:14px;transition:.18s;
+}
+.modal--app-icon .pick--icon:hover{
+  transform:none;background:var(--surface-3);border-color:var(--line-2);
+}
+.modal--app-icon .pick--icon.is-on{
+  border-color:color-mix(in srgb,var(--gold) 42%,transparent);
+  background:color-mix(in srgb,var(--gold) 14%,var(--surface));
+  color:var(--gold);box-shadow:none;
+}
+.modal--app-icon .pick--icon .icon-prev{
+  position:absolute;left:18px;width:32px;height:32px;border-radius:10px;
+}
+.modal--app-icon .pick--icon .icon-prev svg{width:20px;height:20px}
+.modal--app-icon .pick-note{
+  margin:12px 4px 0;color:var(--text-3);
+}
+.modal--app-icon #mkShortcut{margin-top:12px!important}
+
 /* 공지 */
-.ntc-row{display:block;width:100%;text-align:left;padding:13px 6px;border-bottom:1px solid var(--line);cursor:pointer;transition:.2s;min-height:52px}
-.ntc-row:last-child{border-bottom:0}
+.ntc-row{
+  display:block;width:100%;text-align:left;padding:12px 16px;margin-bottom:8px;
+  border:1px solid transparent;border-radius:14px;background:var(--surface-2);
+  cursor:pointer;transition:.18s;min-height:52px;
+}
+.ntc-row:last-child{margin-bottom:0}
+.ntc-row:hover{background:var(--surface-3);border-color:var(--line-2)}
 .ntc-row:hover .ntc-t{color:var(--gold)}
 .ntc-t{font-weight:800;font-size:14px;display:flex;gap:8px;align-items:center}
 .ntc-m{font-size:11.5px;color:var(--text-3);margin-top:3px}

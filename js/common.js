@@ -771,7 +771,12 @@ window.UI = (function () {
   /* ---------- 설정 액션 ---------- */
   var SET_ACTIONS = {
     notice: function () {
-      var m = openModal({ title: '공지사항', body: '<div class="skel-row"><div class="skel" style="height:14px;width:70%"></div></div><div class="skel-row"><div class="skel" style="height:14px;width:55%"></div></div>' });
+      var m = openModal({
+        title: '공지사항',
+        cls: 'modal--settings-choice modal--notice',
+        backCls: 'modal-back--settings-choice',
+        body: '<div class="skel-row"><div class="skel" style="height:14px;width:70%"></div></div><div class="skel-row"><div class="skel" style="height:14px;width:55%"></div></div>'
+      });
       FB.getNotices().then(function (list) {
         if (!list.length) { m.body.innerHTML = '<div class="empty"><p>등록된 공지사항이 없습니다.</p></div>'; return; }
         m.body.innerHTML = list.map(function (n) {
@@ -802,6 +807,8 @@ window.UI = (function () {
       ];
       var m = openModal({
         title: '알림 설정',
+        cls: 'modal--settings-choice modal--notification-settings',
+        backCls: 'modal-back--settings-choice',
         body: rows.map(function (r) {
           var on = s[r[0]] === true;
           return '<div class="tgl-row"><span class="tgl-copy"><b>' + r[1] + ' 알림</b><small>' + r[2] + '</small></span>' +
@@ -847,6 +854,8 @@ window.UI = (function () {
       var icons = [['navy', '네이비'], ['gold', '골드'], ['red', '크림슨'], ['teal', '틸']];
       var m = openModal({
         title: '앱 아이콘 변경',
+        cls: 'modal--settings-choice modal--app-icon',
+        backCls: 'modal-back--settings-choice',
         body: '<div class="pick-grid">' + icons.map(function (ic) {
           return '<button class="pick pick--icon' + (cur === ic[0] ? ' is-on' : '') + '" data-ic="' + ic[0] + '" type="button">' +
             '<span class="icon-prev icon-' + ic[0] + '"><svg viewBox="0 0 64 64" width="30" height="30"><path d="M32 10c-9 0-16 7-16 15 0 6 3 10 8 12v7l5-2 3 3 3-3 5 2v-7c5-2 8-6 8-12 0-8-7-15-16-15z" fill="currentColor"/></svg></span>' + ic[1] + '</button>';
