@@ -576,15 +576,16 @@ select{appearance:none;-webkit-appearance:none;cursor:pointer;
 .profile-menu-user{display:flex;align-items:center;gap:12px;min-width:0}
 .profile-menu .prof-ava{
   position:relative;width:58px;height:58px;padding:0;border:0;border-radius:50%;
-  overflow:hidden;flex:none;background:var(--surface-2);box-shadow:0 4px 14px rgba(0,0,0,.36);
+  overflow:visible;flex:none;background:var(--surface-2);box-shadow:0 4px 14px rgba(0,0,0,.36);
 }
-.profile-menu .prof-ava img{width:100%;height:100%;object-fit:cover}
+.profile-menu .prof-ava img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .profile-menu .prof-ava-home{
-  position:absolute;right:0;bottom:0;width:20px;height:20px;
-  display:flex;align-items:center;justify-content:center;border:2px solid var(--surface);
-  border-radius:50%;background:#fff;color:#26313e;
+  position:absolute;right:-8px;bottom:-8px;width:24px;height:24px;z-index:2;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:2px solid var(--surface);border-radius:50%;
+  background:var(--surface-2);color:var(--gold);font-size:14px;line-height:1;
 }
-.profile-menu .prof-ava-home svg{display:block}
+.profile-menu .prof-ava-home::before{display:block}
 .profile-menu-name{min-width:0}
 .profile-menu-name > div{display:flex;align-items:center;gap:5px}
 .profile-menu .prof-nick{font-family:var(--font-d);font-size:18px;letter-spacing:.1px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

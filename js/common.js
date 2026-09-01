@@ -676,7 +676,7 @@ window.UI = (function () {
     var pop = openPopup(anchor,
       '<div class="profile-menu">' +
       '<div class="profile-menu-head">' +
-      '<div class="profile-menu-user"><button class="prof-ava" id="pfAvatar" type="button" aria-label="프로필 정보 열기"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"><span class="prof-ava-home" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.2L12 4l8.5 7.2"/><path d="M5.5 10.5V20h13v-9.5M9.5 20v-5h5v5"/></svg></span></button>' +
+      '<div class="profile-menu-user"><button class="prof-ava" id="pfAvatar" type="button" aria-label="프로필 정보 열기"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"><span class="prof-ava-home ic-v2-navigation-home-fill" aria-hidden="true"></span></button>' +
       '<div class="profile-menu-name"><div><b class="prof-nick">' + esc(ud.nickname || u.displayName || '선원') + '</b>' +
       '<button class="profile-copy" id="pfCopy" type="button" aria-label="닉네임 복사">' +
       '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div></div>' +
