@@ -10,6 +10,7 @@
   var S = { chars: [], supports: [], pvps: [], patches: [], events: [], boards: [], banners: [], loaded: false };
   var F = { tab: 'char', grade: 'all', attr: 'all', type: 'all', sort: 'id', fav: false, q: '' };
   var pvpSelDate = '';
+  var homeEventTimer = null;
 
   /* 한 컬렉션이 실패해도 나머지는 표시 — 실패한 쪽은 빈 배열로 처리 */
   function safe(p, label) {
@@ -92,11 +93,18 @@
   }
 
   /* ================= 목록 행 (홈 공용) ================= */
+  function viewMeta(count) {
+    var value = count == null ? 0 : count;
+    return '<span class="view-count" aria-label="조회수 ' + UI.esc(value) + '">' +
+      '<i class="ic-v2-community-number-of-view-line" aria-hidden="true"></i>' +
+      '<span>' + UI.esc(value) + '</span></span>';
+  }
   function rowHTML(o) {
     return '<li class="lst-row" data-go="' + UI.esc(o.page) + '" tabindex="0" role="button" aria-label="' + UI.esc(o.title) + '">' +
       '<div class="lst-main"><div class="lst-l1">' + o.badge +
       '<span class="lst-title">' + UI.esc(o.title) + '</span></div>' +
-      '<div class="lst-l2"><span>' + UI.esc(o.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(o.date)) + '</span></div></div>' +
+      '<div class="lst-l2"><span>' + UI.esc(o.author) + '</span><span>·</span><span>' + UI.esc(UI.fmtDate(o.date)) + '</span>' +
+      '<span>·</span>' + viewMeta(o.viewCount) + '</div></div>' +
       (UI.isNew(o.date || o.ts) ? '<span class="lst-new">NEW</span>' : '') + '</li>';
   }
   function bindRows(root) {
@@ -131,7 +139,7 @@
     /* 진행 중이면서 실제 내용(제목·본문·이미지 중 하나라도)이 있는 이벤트만 */
     var evs = S.events.filter(function (e) {
       return e.status === 'ing' && (e.title || e.content || e.image);
-    });
+    }).slice(0, 5);
     var noEv = !evs.length;
     var patchBox = $('homePatchBox');
     if (patchBox) patchBox.classList.toggle('no-event', noEv);
@@ -142,7 +150,7 @@
     else {
       var n = (noEv && window.matchMedia('(min-width:768px)').matches) ? 12 : 5;
       pl.innerHTML = '<ul class="lst">' + S.patches.slice(0, n).map(function (p) {
-        return rowHTML({ page: 'Community.html#patch/view/' + p.docId, badge: '<span class="badge badge--patch">패치노트</span>', title: p.title, author: p.author, date: p.date, ts: p.ts });
+        return rowHTML({ page: 'Community.html#patch/view/' + p.docId, badge: '<span class="badge badge--patch">패치노트</span>', title: p.title, author: p.author, date: p.date, ts: p.ts, viewCount: p.viewCount });
       }).join('') + '</ul>';
       bindRows(pl);
     }
@@ -180,6 +188,10 @@
 
     /* 3) 이벤트 — 진행 중만 롤링, 없으면 Box 숨김 */
     var evBox = $('homeEventBox'), evRoll = $('homeEventRoll');
+    if (homeEventTimer) {
+      clearInterval(homeEventTimer);
+      homeEventTimer = null;
+    }
     if (noEv) {
       if (evBox) evBox.hidden = true;
     } else {
@@ -191,17 +203,32 @@
           '<div class="ev-tx"><b>' + UI.esc(e.title) + '</b><small>' + UI.esc(UI.fmtDate(e.date)) + '</small></div></article>';
       }).join('');
       var cards = evRoll.querySelectorAll('.ev-card');
-      var idx = 0, timer = null;
+      var idx = 0;
       function showEv(i) {
         idx = (i + cards.length) % cards.length;
         cards.forEach(function (cc, j) { cc.classList.toggle('on', j === idx); });
       }
       showEv(0);
-      if (cards.length > 1) timer = setInterval(function () { showEv(idx + 1); }, 4200);
-      evRoll.parentElement.addEventListener('mouseenter', function () { if (timer) clearInterval(timer); });
-      evRoll.parentElement.addEventListener('mouseleave', function () {
-        if (cards.length > 1 && !timer) timer = setInterval(function () { showEv(idx + 1); }, 4200);
-      });
+      var evBody = evRoll.parentElement;
+      var prev = $('homeEventPrev'), next = $('homeEventNext');
+      function startEvTimer() {
+        if (cards.length > 1 && !homeEventTimer) {
+          homeEventTimer = setInterval(function () { showEv(idx + 1); }, 4200);
+        }
+      }
+      function pauseEvTimer() {
+        if (homeEventTimer) {
+          clearInterval(homeEventTimer);
+          homeEventTimer = null;
+        }
+      }
+      if (prev) prev.onclick = function () { pauseEvTimer(); showEv(idx - 1); startEvTimer(); };
+      if (next) next.onclick = function () { pauseEvTimer(); showEv(idx + 1); startEvTimer(); };
+      if (evBody) {
+        evBody.onmouseenter = pauseEvTimer;
+        evBody.onmouseleave = startEvTimer;
+      }
+      startEvTimer();
       cards.forEach(function (cc) {
         cc.addEventListener('click', function () { location.href = 'Community.html#event/view/' + cc.getAttribute('data-ev'); });
       });
@@ -213,7 +240,7 @@
     else {
       var CAT_CLS = { '자유': 'badge--free', '정보': 'badge--info', '질문': 'badge--q', '자랑': 'badge--brag' };
       bl.innerHTML = '<ul class="lst">' + S.boards.slice(0, 5).map(function (b) {
-        return rowHTML({ page: 'Community.html#board/view/' + b.docId, badge: '<span class="badge ' + (CAT_CLS[b.category] || 'badge--free') + '">' + UI.esc(b.category) + '</span>', title: b.title, author: b.author, date: b.date, ts: b.ts });
+        return rowHTML({ page: 'Community.html#board/view/' + b.docId, badge: '<span class="badge ' + (CAT_CLS[b.category] || 'badge--free') + '">' + UI.esc(b.category) + '</span>', title: b.title, author: b.author, date: b.date, ts: b.ts, viewCount: b.viewCount });
       }).join('') + '</ul>';
       bindRows(bl);
     }
@@ -319,7 +346,7 @@
           (bt && typeIconSrc(bt) ? '<img class="char-type-icon" src="' + typeIconSrc(bt) + '" alt="' + UI.esc(bt) + '" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
           '</div>' : '') +
         (c.grade ? '<span class="char-grade-badge grade-' + UI.esc(c.grade) + '">' + UI.esc(c.grade) + '</span>' : '') +
-        '<button class="char-fav-btn' + (favOn ? ' active' : '') + '" data-fav="' + UI.esc(String(c.id)) + '" aria-pressed="' + favOn + '" aria-label="즐겨찾기" type="button">' + (favOn ? '★' : '☆') + '</button>' +
+        '<button class="char-fav-btn' + (favOn ? ' active' : '') + '" data-fav="' + UI.esc(String(c.id)) + '" aria-pressed="' + favOn + '" aria-label="즐겨찾기" type="button"><i class="' + (favOn ? 'ic-v2-community-star-fill' : 'ic-v2-community-star-line') + '" aria-hidden="true"></i></button>' +
         '</div><div class="char-card-name">' + UI.esc(c.name) + '</div></article>';
     }).join('');
 
@@ -338,8 +365,9 @@
         var willBeOn = !UI.isFav(kind, key);
         UI.toggleFav(kind, key).then(function () {
           b.classList.toggle('active', willBeOn);
-          b.textContent = willBeOn ? '★' : '☆';
           b.setAttribute('aria-pressed', String(willBeOn));
+          var favIcon = b.querySelector('i');
+          if (favIcon) favIcon.className = willBeOn ? 'ic-v2-community-star-fill' : 'ic-v2-community-star-line';
           if (F.fav) renderChars();
         });
       });
@@ -374,7 +402,7 @@
       '<div class="cp-side">' +
       '<h3 class="cp-name" id="cpName"></h3>' +
       '<div class="cp-meta" id="cpMeta"></div>' +
-      '<button class="cp-fav" id="cpFav" type="button"><span id="cpFavTx">☆ 즐겨찾기 추가</span></button></div>' +
+      '<button class="cp-fav" id="cpFav" type="button"><i id="cpFavIcon" class="ic-v2-community-star-line" aria-hidden="true"></i><span id="cpFavTx">즐겨찾기 추가</span></button></div>' +
       '</div>' +
       '<div class="cp-tabs" id="cpTabs" role="tablist">' +
       '<button class="cp-tab is-on" data-cpt="skills" type="button" role="tab">스킬</button>' +
@@ -722,7 +750,9 @@
     var on = UI.isFav(kind, CP.c.id);
     var btn = $('cpFav');
     btn.classList.toggle('on', on);
-    $('cpFavTx').textContent = on ? '★ 즐겨찾기 해제' : '☆ 즐겨찾기 추가';
+    var icon = $('cpFavIcon');
+    if (icon) icon.className = on ? 'ic-v2-community-star-fill' : 'ic-v2-community-star-line';
+    $('cpFavTx').textContent = on ? '즐겨찾기 해제' : '즐겨찾기 추가';
   }
   function openCharPanel(c, supportOverride) {
     ensureCharPanel();
@@ -857,7 +887,7 @@
     }).join('');
     UI.openModal({
       cls: 'pvp-modal',
-      title: name,
+      title: 'PvP 밸런스 패치',
       body:
       '<div class="pvp-top">' +
       '<span class="pvp-ava"><img src="' + UI.esc(img) + '" alt="" onerror="this.style.display=\'none\'"></span>' +
@@ -1006,6 +1036,35 @@
       var vc = $('view-characters');
       if (vc && !vc.hidden) renderChars();
     });
+
+    /* ===== Scroll to Top Button (캐릭터 페이지 전용) ===== */
+    var scrollTopBtn = $('scrollTopBtn');
+    if (scrollTopBtn) {
+      var scrollTimeout = null;
+      window.addEventListener('scroll', function () {
+        if (scrollTimeout) return;
+        scrollTimeout = setTimeout(function () {
+          scrollTimeout = null;
+          var viewChars = $('view-characters');
+          if (viewChars && !viewChars.hidden) {
+            if (window.scrollY > 300) {
+              scrollTopBtn.classList.add('show');
+              scrollTopBtn.removeAttribute('hidden');
+            } else {
+              scrollTopBtn.classList.remove('show');
+              scrollTopBtn.setAttribute('hidden', '');
+            }
+          } else {
+            scrollTopBtn.classList.remove('show');
+            scrollTopBtn.setAttribute('hidden', '');
+          }
+        }, 100);
+      }, { passive: true });
+
+      scrollTopBtn.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);

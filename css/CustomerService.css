@@ -4,7 +4,7 @@
 .cs-wrap{padding-top:22px;padding-bottom:10px}
 
 .cs-search{position:relative;max-width:680px;margin:0 auto}
-.cs-search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-3)}
+.cs-search > svg,.cs-search > [class^="ic-v2"],.cs-search > [class*=" ic-v2"]{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:20px;line-height:1;pointer-events:none;z-index:1}
 .cs-search input{
   padding:14px 18px 14px 48px;min-height:56px;border-radius:99px;font-size:15px;
   background:var(--surface);box-shadow:var(--shadow);

@@ -62,10 +62,7 @@ window.UI = (function () {
   /* ---------- i18n ---------- */
   var I18N = {
     ko: { home: '홈', characters: '캐릭터', pvp: 'PvP 패치', community: '커뮤니티', cs: '고객센터', login: '로그인', signup: '회원가입' },
-    en: { home: 'Home', characters: 'Characters', pvp: 'PvP Patch', community: 'Community', cs: 'Support', login: 'Login', signup: 'Sign up' },
-    ja: { home: 'ホーム', characters: 'キャラクター', pvp: 'PvPパッチ', community: 'コミュニティ', cs: 'サポート', login: 'ログイン', signup: 'アカウント登録' },
-    'zh-CN': { home: '主页', characters: '角色', pvp: 'PvP 补丁', community: '社区', cs: '客服中心', login: '登录', signup: '注册' },
-    'zh-TW': { home: '首頁', characters: '角色', pvp: 'PvP 更新', community: '社群', cs: '客服中心', login: '登入', signup: '註冊' }
+    en: { home: 'Home', characters: 'Characters', pvp: 'PvP Patch', community: 'Community', cs: 'Support', login: 'Login', signup: 'Sign up' }
   };
   var LANG = store.get('lang', 'ko');
   function t(k) { return (I18N[LANG] && I18N[LANG][k]) || I18N.ko[k] || k; }
@@ -104,18 +101,16 @@ window.UI = (function () {
     if (!demoData()) {
       store.set(DEMO_KEY, {
         uid: 'demo-user', email: 'demo@fpp.kr', nickname: '데모 선원', profileIcon: 1,
-         settings: { patch: false, fav: false, event: false, comment: false },
+        settings: { patch: true, fav: true, event: true, comment: true },
         favChars: [1, 2, 3, 4, 5, 6], favSupports: [1, 2],
         counts: { posts: 3, comments: 12, likes: 27 }
       });
     }
     toast('데모 로그인으로 전환했습니다.', 'ok');
-    loadUserDoc().then(function () { return loadNotifications(true); }).then(notifyUser);
+    loadUserDoc().then(notifyUser);
   }
   function exitDemo() {
     store.set(DEMO_KEY, null);
-    _userDoc = null;
-    notificationState = { uid: null, items: [], loaded: true, loading: null };
     toast('데모 로그아웃 되었습니다.');
     notifyUser();
   }
@@ -154,151 +149,6 @@ window.UI = (function () {
       return _userDoc;
     });
   }
-
-  /* ---------- 알림 ---------- */
-  var notificationState = { uid: null, items: [], loaded: false, loading: null };
-  var NOTIFY_DESCRIPTIONS = {
-    event: '새 이벤트 등록 시 알림이 울립니다.',
-    patch: '새 패치노트 등록 시 알림이 울립니다.',
-    fav: '즐겨찾기한 캐릭터/서폿 캐릭터 PvP 패치 등록 시 알림이 울립니다.',
-    comment: '내 게시글과 댓글에 댓글과 답글이 달릴 때 알림이 울립니다.'
-  };
-  function notificationEnabled(type) {
-    var settings = (userDoc() && userDoc().settings) || {};
-    return settings[type] === true;
-  }
-  function visibleNotifications() {
-    return notificationState.items.filter(function (n) { return notificationEnabled(n.type); });
-  }
-  function notifyTime(value) {
-    var ms = 0;
-    if (value && value.seconds != null) ms = Number(value.seconds) * 1000;
-    else if (typeof value === 'number') ms = value > 1e12 ? value : value * 1000;
-    else if (value) ms = Date.parse(String(value).replace(/\./g, '-').replace(' ', 'T')) || 0;
-    if (!ms) return '';
-    var diff = Math.max(0, Date.now() - ms);
-    if (diff < 60 * 1000) return '방금 전';
-    if (diff < 60 * 60 * 1000) return Math.floor(diff / (60 * 1000)) + '분 전';
-    if (diff < 24 * 60 * 60 * 1000) return Math.floor(diff / (60 * 60 * 1000)) + '시간 전';
-    if (diff < 7 * 24 * 60 * 60 * 1000) return Math.floor(diff / (24 * 60 * 60 * 1000)) + '일 전';
-    return fmtDate(new Date(ms).toISOString());
-  }
-  function updateNotificationBadge() {
-    var btn = $('btnNotify');
-    if (!btn) return;
-    var unread = visibleNotifications().filter(function (n) { return !n.read; }).length;
-    var dot = btn.querySelector('.notify-dot');
-    if (dot) {
-      dot.hidden = !unread;
-      dot.setAttribute('aria-label', unread ? '읽지 않은 알림 ' + unread + '개' : '');
-    }
-    btn.classList.toggle('has-notifications', unread > 0);
-  }
-  function loadNotifications(force) {
-    var u = currentUser();
-    if (!u) {
-      notificationState = { uid: null, items: [], loaded: true, loading: null };
-      updateNotificationBadge();
-      return Promise.resolve([]);
-    }
-    if (!force && notificationState.loaded && notificationState.uid === u.uid) return Promise.resolve(notificationState.items);
-    if (notificationState.loading && notificationState.uid === u.uid) return notificationState.loading;
-    notificationState.uid = u.uid;
-    if (u.demo) {
-      notificationState.items = store.get('demo_notifications', []);
-      notificationState.loaded = true;
-      updateNotificationBadge();
-      return Promise.resolve(notificationState.items);
-    }
-    notificationState.loading = FB.getNotifications(u.uid).then(function (items) {
-      notificationState.items = items || [];
-      notificationState.loaded = true;
-      notificationState.loading = null;
-      updateNotificationBadge();
-      return notificationState.items;
-    }).catch(function () {
-      notificationState.items = [];
-      notificationState.loaded = true;
-      notificationState.loading = null;
-      updateNotificationBadge();
-      return [];
-    });
-    return notificationState.loading;
-  }
-  function notificationHref(n) {
-    if (n.href) return n.href;
-    if (!n.targetId) return '';
-    if (n.type === 'patch') return 'Community.html#patch/view/' + encodeURIComponent(n.targetId);
-    if (n.type === 'event') return 'Community.html#event/view/' + encodeURIComponent(n.targetId);
-    if (n.type === 'comment') return (String(n.targetType).toLowerCase() === 'event' ? 'Community.html#event/view/' : 'Community.html#board/view/') + encodeURIComponent(n.targetId);
-    return 'Main.html#pvp';
-  }
-  function notificationIcon(type) {
-    var paths = {
-      patch: '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9.5 12h6M9.5 15.5h4"/>',
-      fav: '<path d="M12 20.4l-7.2-7A4.8 4.8 0 0 1 12 6.6a4.8 4.8 0 0 1 7.2 6.8z"/>',
-      event: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>',
-      comment: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>'
-    };
-    return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (paths[type] || paths.comment) + '</svg>';
-  }
-  function markNotificationRead(n) {
-    if (!n || n.read) return;
-    n.read = true;
-    updateNotificationBadge();
-    if (currentUser() && !currentUser().demo) FB.markNotificationsRead([n]).catch(function () { });
-  }
-  function renderNotificationPopup(pop) {
-    var items = visibleNotifications();
-    var unread = items.filter(function (n) { return !n.read; }).length;
-    var html = '<div class="notify-popup">' +
-      '<div class="notify-head"><b>알림 <em>' + unread + '</em></b>' +
-      '<div class="notify-head-actions"><button id="notifyReadAll" type="button">모두 읽음</button><button id="notifyAll" type="button">전체보기 <span aria-hidden="true">→</span></button></div></div>';
-    if (!items.length) {
-      html += '<div class="empty notify-empty"><p>새로운 알림이 없습니다.</p><small>알림 설정을 켜면 새 소식을 알려드려요.</small></div>';
-    } else {
-      html += '<div class="notify-list">' + items.map(function (n) {
-        return '<button class="notify-row' + (n.read ? '' : ' is-unread') + '" type="button" data-notify-id="' + esc(n.docId) + '">' +
-          '<span class="notify-icon notify-icon--' + esc(n.type) + '">' + notificationIcon(n.type) + '</span>' +
-          '<span class="notify-copy"><b>' + esc(n.title) + '</b>' +
-          (n.body ? '<small>' + esc(n.body) + '</small>' : '') +
-          '<time>' + esc(notifyTime(n.createdAt || n.date)) + '</time></span>' +
-          (n.read ? '' : '<i class="notify-unread-dot" aria-hidden="true"></i>') + '</button>';
-      }).join('') + '</div>';
-    }
-    html += '</div>';
-    pop.el.innerHTML = html;
-    var readAll = pop.el.querySelector('#notifyReadAll');
-    if (readAll) readAll.addEventListener('click', function () {
-      var unreadItems = items.filter(function (n) { return !n.read; });
-      unreadItems.forEach(function (n) { n.read = true; });
-      updateNotificationBadge();
-      if (currentUser() && !currentUser().demo) FB.markNotificationsRead(unreadItems).catch(function () { });
-      else if (currentUser() && currentUser().demo) store.set('demo_notifications', notificationState.items);
-      renderNotificationPopup(pop);
-    });
-    var allBtn = pop.el.querySelector('#notifyAll');
-    if (allBtn) allBtn.addEventListener('click', function () { toast('현재 받은 알림을 모두 표시하고 있습니다.'); });
-    pop.el.querySelectorAll('[data-notify-id]').forEach(function (row) {
-      row.addEventListener('click', function () {
-        var n = notificationState.items.filter(function (x) { return String(x.docId) === String(row.getAttribute('data-notify-id')); })[0];
-        if (!n) return;
-        markNotificationRead(n);
-        var href = notificationHref(n);
-        closePopups();
-        if (href) location.href = href;
-      });
-    });
-  }
-  function openNotifyPopup(anchor) {
-    var u = currentUser();
-    var pop = openPopup(anchor, '<div class="notify-popup"><div class="notify-loading">알림을 불러오는 중…</div></div>', '390px', 'pop--notifications');
-    if (!u) {
-      pop.el.innerHTML = '<div class="notify-popup"><div class="empty notify-empty"><p>로그인 후 알림을 확인할 수 있습니다.</p><a class="btn btn--gold btn--sm" href="Login.html">로그인</a></div></div>';
-      return;
-    }
-    loadNotifications(true).then(function () { renderNotificationPopup(pop); });
-  }
   function onUser(cb) { _userCbs.push(cb); }
   function notifyUser() {
     updateAuthArea();
@@ -308,9 +158,6 @@ window.UI = (function () {
   /* ---------- 즐겨찾기 ---------- */
   var favCache = { chars: [], supports: [] };
   var charCache = { chars: [], supports: [], loaded: false };
-  function emitFavChanged() {
-    document.dispatchEvent(new CustomEvent('fpp:fav-changed'));
-  }
   
   function loadCharCache() {
     if (charCache.loaded) return Promise.resolve();
@@ -337,25 +184,13 @@ window.UI = (function () {
   
   function loadFavs() {
     var u = currentUser();
-    if (!u) {
-      favCache = { chars: [], supports: [] };
-      emitFavChanged();
-      return Promise.resolve(favCache);
-    }
+    if (!u) { favCache = { chars: [], supports: [] }; return Promise.resolve(favCache); }
     if (u.demo) {
       var d = demoData() || {};
       favCache = { chars: d.favChars || [], supports: d.favSupports || [] };
-      emitFavChanged();
       return Promise.resolve(favCache);
     }
-    return FB.getFavs(u.uid).then(function (f) {
-      favCache = f;
-      emitFavChanged();
-      return f;
-    }).catch(function () {
-      emitFavChanged();
-      return favCache;
-    });
+    return FB.getFavs(u.uid).then(function (f) { favCache = f; return f; }).catch(function () { return favCache; });
   }
   function isFav(kind, id) {
     var arr = kind === 'support' ? favCache.supports : favCache.chars;
@@ -382,57 +217,43 @@ window.UI = (function () {
 
   /* ---------- 내비게이션 ---------- */
   var NAV = [
-    { key: 'home', page: 'Main.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-navigation-home-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-navigation-home-fill" aria-hidden="true"></span>' },
-    { key: 'characters', page: 'Main.html', hash: '#characters', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3.4"/><path d="M2.8 19.5c.9-3.6 3.2-5.4 6.2-5.4s5.3 1.8 6.2 5.4" stroke-linecap="round"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.4c2.9-.4 5 1.2 5.8 4.3" stroke-linecap="round"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-community-group-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-community-group-fill" aria-hidden="true"></span>' },
-    { key: 'pvp', page: 'Main.html', hash: '#pvp', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 19l4.5-4.5M14.5 4.5l-9 9 3 3 9-9zM13 6l5 5M17.5 3.5l3 3"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-navigation-store-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-navigation-store-fill" aria-hidden="true"></span>' },
-    { key: 'community', page: 'Community.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v12h-9l-4.5 3.5V17H4z"/><path d="M8 9.5h8M8 12.5h5" stroke-linecap="round"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-navigation-board-timeline-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-navigation-board-timeline-fill" aria-hidden="true"></span>' },
+    { key: 'home', page: 'Main.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg>' },
+    { key: 'characters', page: 'Main.html', hash: '#characters', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3.4"/><path d="M2.8 19.5c.9-3.6 3.2-5.4 6.2-5.4s5.3 1.8 6.2 5.4" stroke-linecap="round"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.4c2.9-.4 5 1.2 5.8 4.3" stroke-linecap="round"/></svg>' },
+    { key: 'pvp', page: 'Main.html', hash: '#pvp', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 19l4.5-4.5M14.5 4.5l-9 9 3 3 9-9zM13 6l5 5M17.5 3.5l3 3"/></svg>' },
+    { key: 'community', page: 'Community.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v12h-9l-4.5 3.5V17H4z"/><path d="M8 9.5h8M8 12.5h5" stroke-linecap="round"/></svg>' },
     { key: 'cs', page: 'CustomerService.html', hash: '', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 12a7 7 0 0 1 14 0v3.5a2 2 0 0 1-2 2h-1.5V13H19" stroke-linejoin="round"/><path d="M5 12v5.5a2 2 0 0 0 2 2H8.5V13H5" stroke-linejoin="round"/><path d="M12 21c2 0 3.5-1 4-2.5" stroke-linecap="round"/></svg>' }
   ];
   /* 커뮤니티 전용 메뉴 (§27) */
   var COMM_NAV = [
-    { key: 'comhome', page: 'Community.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v11h-8l-4 3.5V16H4z"/><path d="M8.5 9h7M8.5 12h4.5" stroke-linecap="round"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-navigation-board-timeline-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-navigation-board-timeline-fill" aria-hidden="true"></span>', tabLabel: { ko: '홈', en: 'Home' } },
-    { key: 'patch', page: 'Community.html', hash: '#patch', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9.5 12h6M9.5 15.5h4" stroke-linecap="round"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-community-board-all-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-community-board-all-fill" aria-hidden="true"></span>', tabLabel: { ko: '패치노트', en: 'Patches' } },
-    { key: 'board', page: 'Community.html', hash: '#board', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-community-board-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-community-board-fill" aria-hidden="true"></span>', tabLabel: { ko: '게시판', en: 'Board' } },
-    { key: 'event', page: 'Community.html', hash: '#event', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="4" y="9.5" width="16" height="4"/><path d="M5.5 13.5v6.5h13v-6.5M12 9.5v10.5"/><path d="M12 9.5S7.8 9.7 6.8 7.5C6 5.8 7.2 4.4 8.8 4.6c2.1.3 3.2 4.9 3.2 4.9zM12 9.5s4.2.2 5.2-2c.8-1.7-.4-3.1-2-2.9-2.1.3-3.2 4.9-3.2 4.9z"/></svg>', tabIcon: '<span class="btab-icon btab-icon--line ic-v2-navigation-community-event-line" aria-hidden="true"></span><span class="btab-icon btab-icon--fill ic-v2-navigation-community-event-fill" aria-hidden="true"></span>', tabLabel: { ko: '이벤트', en: 'Events' } },
-    { key: 'mainhome', page: 'Main.html', hash: '#home', exit: true, icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5h4A1.5 1.5 0 0 1 20 5v14a1.5 1.5 0 0 1-1.5 1.5h-4"/><path d="M10 16.5L5.5 12 10 7.5"/><path d="M5.5 12H15"/></svg>', tabIcon: '<span class="btab-icon ic-v2-navigation-login-line" aria-hidden="true"></span>', tabLabel: { ko: '메인 홈', en: 'Main' } }
+    { key: 'comhome', page: 'Community.html', hash: '#home', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v11h-8l-4 3.5V16H4z"/><path d="M8.5 9h7M8.5 12h4.5" stroke-linecap="round"/></svg>', tabLabel: { ko: '홈', en: 'Home' } },
+    { key: 'patch', page: 'Community.html', hash: '#patch', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9.5 12h6M9.5 15.5h4" stroke-linecap="round"/></svg>', tabLabel: { ko: '패치노트', en: 'Patches' } },
+    { key: 'board', page: 'Community.html', hash: '#board', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>', tabLabel: { ko: '게시판', en: 'Board' } },
+    { key: 'event', page: 'Community.html', hash: '#event', icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="4" y="9.5" width="16" height="4"/><path d="M5.5 13.5v6.5h13v-6.5M12 9.5v10.5"/><path d="M12 9.5S7.8 9.7 6.8 7.5C6 5.8 7.2 4.4 8.8 4.6c2.1.3 3.2 4.9 3.2 4.9zM12 9.5s4.2.2 5.2-2c.8-1.7-.4-3.1-2-2.9-2.1.3-3.2 4.9-3.2 4.9z"/></svg>', tabLabel: { ko: '이벤트', en: 'Events' } },
+    { key: 'mainhome', page: 'Main.html', hash: '#home', exit: true, icon: '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5h4A1.5 1.5 0 0 1 20 5v14a1.5 1.5 0 0 1-1.5 1.5h-4"/><path d="M10 16.5L5.5 12 10 7.5"/><path d="M5.5 12H15"/></svg>', tabLabel: { ko: '메인 홈', en: 'Main' } }
   ];
   function navForPage() {
     return (document.body && document.body.getAttribute('data-page') === 'community') ? COMM_NAV : NAV;
   }
   var activeNav = 'home';
 
-  function toggleHeaderPopup(anchor, opener) {
-    if (anchor.classList.contains('is-selected')) {
-      closePopups();
-    } else {
-      opener(anchor);
-    }
-  }
-
   function buildHeader() {
     var hd = $('appHeader');
     if (!hd) return;
     hd.innerHTML =
       '<div class="hd-in">' +
-      '<button class="hd-burger icon-btn" id="btnBurger" aria-label="전체 메뉴 열기" aria-expanded="false"><span class="top-menu-icon ic-v2-navigation-menu-line" aria-hidden="true"></span></button>' +
+      '<button class="hd-burger icon-btn" id="btnBurger" aria-label="전체 메뉴 열기">' + IC.burger + '</button>' +
       '<a class="logo" href="Main.html#home" aria-label="FPP 홈으로">' +
       '<img class="logo-img" src="img/logo-light.png" alt="FPP 로고" />' +
       '<img class="logo-img-dark" src="img/logo-dark.png" alt="FPP 로고" />' +
       '</a>' +
       '<div class="hd-right">' +
-      '<button class="icon-btn hd-settings" id="btnSet" aria-label="설정" aria-haspopup="dialog" aria-expanded="false">' +
-      '<span class="top-menu-icon top-menu-icon--fill ic-v2-navigation-setting-fill" aria-hidden="true"></span></button>' +
-      '<button class="icon-btn" id="btnFav" aria-label="즐겨찾기" aria-haspopup="dialog" aria-expanded="false">' +
-      '<span class="top-menu-icon top-menu-icon--fill ic-v2-community-favorite-fill" aria-hidden="true"></span></button>' +
-      '<button class="icon-btn hd-notify" id="btnNotify" aria-label="알림" aria-haspopup="dialog" aria-expanded="false">' +
-      '<span class="top-menu-icon top-menu-icon--fill ic-v2-navigation-alarm-fill" aria-hidden="true"></span><i class="notify-dot" hidden></i></button>' +
+      '<button class="icon-btn" id="btnSet" aria-label="설정">' + IC.gear + '</button>' +
+      '<button class="icon-btn" id="btnFav" aria-label="즐겨찾기">' + IC.bookmark + '</button>' +
       '<div class="hd-auth" id="hdAuth"></div>' +
       '</div></div>';
     $('btnBurger').addEventListener('click', toggleDrawer);
-    $('btnSet').addEventListener('click', function (e) { e.stopPropagation(); toggleHeaderPopup($('btnSet'), onSettingsClick); });
-    $('btnFav').addEventListener('click', function (e) { e.stopPropagation(); toggleHeaderPopup($('btnFav'), openFavPopup); });
-    $('btnNotify').addEventListener('click', function (e) { e.stopPropagation(); toggleHeaderPopup($('btnNotify'), openNotifyPopup); });
-    updateNotificationBadge();
+    $('btnSet').addEventListener('click', function (e) { e.stopPropagation(); onSettingsClick($('btnSet')); });
+    $('btnFav').addEventListener('click', function (e) { e.stopPropagation(); openFavPopup($('btnFav')); });
   }
 
   function buildDeskNav() {
@@ -461,7 +282,6 @@ window.UI = (function () {
         '<button class="btn btn--gold btn--sm" data-auth="login">' + t('login') + '</button>' +
         '<button class="btn btn--ghost btn--sm hd-demo" id="btnDemo" title="데모 로그인 — Firebase에 저장되지 않습니다">데모</button>' +
         '</div>';
-      updateNotificationBadge();
       return;
     }
     var ud = userDoc() || {};
@@ -469,7 +289,6 @@ window.UI = (function () {
       (u.demo ? '<span class="demo-chip" title="데모 모드 — Firebase에 저장되지 않습니다">DEMO</span>' : '') +
       '<button class="hd-avatar" id="btnProfile" aria-label="프로필 메뉴"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="내 프로필"></button>';
     box.querySelector('#btnProfile').addEventListener('click', function (e) { e.stopPropagation(); openProfilePopup(box.querySelector('#btnProfile')); });
-    updateNotificationBadge();
   }
 
   function buildTabs() {
@@ -482,7 +301,7 @@ window.UI = (function () {
     tabs.classList.toggle('cols5', items.length === 5);
     tabs.innerHTML = items.map(function (n) {
       var label = (n.tabLabel && n.tabLabel[LANG]) || t(n.key);
-      return '<a class="btab' + (n.exit ? ' btab--exit' : '') + '" data-nav="' + n.key + '" href="' + n.page + n.hash + '" aria-label="' + t(n.key) + '">' + (n.tabIcon || n.icon) + '<span>' + label + '</span></a>';
+      return '<a class="btab' + (n.exit ? ' btab--exit' : '') + '" data-nav="' + n.key + '" href="' + n.page + n.hash + '" aria-label="' + t(n.key) + '">' + n.icon + '<span>' + label + '</span></a>';
     }).join('');
   }
   function buildDrawer() {
@@ -491,18 +310,18 @@ window.UI = (function () {
     
     // 메인 홈 메뉴 항목
     var mainHomeItems = [
-      { key: 'home', page: 'Main.html', hash: '#home', icon: NAV[0].tabIcon || NAV[0].icon, label: t('home') },
-      { key: 'characters', page: 'Main.html', hash: '#characters', icon: NAV[1].tabIcon || NAV[1].icon, label: t('characters') },
-      { key: 'pvp', page: 'Main.html', hash: '#pvp', icon: NAV[2].tabIcon || NAV[2].icon, label: t('pvp') },
+      { key: 'home', page: 'Main.html', hash: '#home', icon: NAV[0].icon, label: t('home') },
+      { key: 'characters', page: 'Main.html', hash: '#characters', icon: NAV[1].icon, label: t('characters') },
+      { key: 'pvp', page: 'Main.html', hash: '#pvp', icon: NAV[2].icon, label: t('pvp') },
       { key: 'cs', page: 'CustomerService.html', hash: '', icon: NAV[4].icon, label: t('cs') }
     ];
     
     // 커뮤니티 홈 메뉴 항목
     var commHomeItems = [
-      { key: 'comhome', page: 'Community.html', hash: '#home', icon: COMM_NAV[0].tabIcon || COMM_NAV[0].icon, label: '커뮤니티 홈' },
-      { key: 'patch', page: 'Community.html', hash: '#patch', icon: COMM_NAV[1].tabIcon || COMM_NAV[1].icon, label: '패치노트' },
-      { key: 'board', page: 'Community.html', hash: '#board', icon: COMM_NAV[2].tabIcon || COMM_NAV[2].icon, label: '게시판' },
-      { key: 'event', page: 'Community.html', hash: '#event', icon: COMM_NAV[3].tabIcon || COMM_NAV[3].icon, label: '이벤트' }
+      { key: 'comhome', page: 'Community.html', hash: '#home', icon: COMM_NAV[0].icon, label: '커뮤니티 홈' },
+      { key: 'patch', page: 'Community.html', hash: '#patch', icon: COMM_NAV[1].icon, label: '패치노트' },
+      { key: 'board', page: 'Community.html', hash: '#board', icon: COMM_NAV[2].icon, label: '게시판' },
+      { key: 'event', page: 'Community.html', hash: '#event', icon: COMM_NAV[3].icon, label: '이벤트' }
     ];
     
     dw.innerHTML =
@@ -541,11 +360,6 @@ window.UI = (function () {
     var open = dw.classList.toggle('open');
     if (bd) bd.hidden = !open;
     dw.setAttribute('aria-hidden', String(!open));
-    var burger = $('btnBurger');
-    if (burger) {
-      burger.classList.toggle('is-selected', open);
-      burger.setAttribute('aria-expanded', String(open));
-    }
   }
   function setActiveNav(key) {
     activeNav = key;
@@ -557,15 +371,9 @@ window.UI = (function () {
   }
 
   /* ---------- 팝업 ---------- */
-  var activePopupAnchor = null;
   function closePopups() {
     var root = $('popupRoot');
     if (root) root.innerHTML = '';
-    if (activePopupAnchor) {
-      activePopupAnchor.classList.remove('is-selected');
-      activePopupAnchor.setAttribute('aria-expanded', 'false');
-      activePopupAnchor = null;
-    }
     document.removeEventListener('click', onDocClickPop);
   }
   function onDocClickPop(e) {
@@ -578,17 +386,12 @@ window.UI = (function () {
     if (width) el.style.width = width;
     el.innerHTML = html;
     $('popupRoot').appendChild(el);
-    if (anchor && anchor.classList) {
-      activePopupAnchor = anchor;
-      anchor.classList.add('is-selected');
-      anchor.setAttribute('aria-expanded', 'true');
-    }
     
     /* 중앙 고정 팝업은 앵커 위치 계산을 건너뛴다. */
     var isCentered = el.classList.contains('pop--fav') || el.classList.contains('pop--myinfo');
     if (!isCentered) {
       var r = anchor.getBoundingClientRect();
-      var pw = width ? Math.min(parseInt(width, 10), Math.max(0, window.innerWidth - 16)) : 300;
+      var pw = width ? parseInt(width, 10) : 300;
       var left = Math.min(Math.max(8, r.right - pw), window.innerWidth - pw - 8);
       el.style.left = left + 'px';
       el.style.top = (r.bottom + 10) + 'px';
@@ -661,14 +464,14 @@ window.UI = (function () {
 
   function onSettingsClick(anchor) {
     var items = [
-      ['notice', '공지사항', '<span class="menu-icon ic-v2-object-notice-line" aria-hidden="true"></span>'],
-      ['notify', '알림 설정', '<span class="menu-icon ic-v2-navigation-alarm-line" aria-hidden="true"></span>'],
-      ['theme', '테마 변경', '<span class="menu-icon ic-v2-control-theme-device-fill" aria-hidden="true"></span>'],
+      ['notice', '공지사항', '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h5" stroke-linejoin="round" stroke-linecap="round"/></svg>'],
+      ['notify', '알림 설정', '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0" stroke-linejoin="round"/></svg>'],
+      ['theme', '테마 변경', '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 13.5A8.5 8.5 0 0 1 10.5 4 8.5 8.5 0 1 0 20 13.5z" stroke-linejoin="round"/></svg>'],
       ['appIcon', '앱 아이콘 변경', '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 13.5l2.2 2.2L15.5 11" stroke-linecap="round" stroke-linejoin="round"/></svg>'],
-      ['lang', '언어 변경', '<span class="menu-icon ic-v2-navigation-language-line" aria-hidden="true"></span>']
+      ['lang', '언어 변경', '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.7 2.6 4 5.7 4 9s-1.3 6.4-4 9c-2.7-2.6-4-5.7-4-9s1.3-6.4 4-9z"/></svg>']
     ];
     var pop = openPopup(anchor,
-      '<div class="pop-head"><span class="top-menu-icon ic-v2-navigation-setting-fill" aria-hidden="true"></span><b>설정</b></div>' +
+      '<div class="pop-head"><b>설정</b></div>' +
       '<div class="pop-body">' + items.map(function (it) {
         return '<button class="pop-item" data-act="' + it[0] + '" type="button">' + it[2] + '<span>' + it[1] + '</span></button>';
       }).join('') + '</div>', '260px');
@@ -687,27 +490,28 @@ window.UI = (function () {
     if (!u) return;
     var ud = userDoc() || {};
     var c = ud.counts || {};
-    var noticeCount = visibleNotifications().filter(function (n) { return !n.read; }).length;
+    var noticeCount = ud.unreadNotifications != null ? ud.unreadNotifications :
+      (ud.notificationCount != null ? ud.notificationCount : 41);
     var pop = openPopup(anchor,
       '<div class="profile-menu">' +
       '<div class="profile-menu-head">' +
-      '<div class="profile-menu-user"><button class="prof-ava" id="pfAvatar" type="button" aria-label="프로필 정보 열기"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"><span class="prof-ava-home ic-v2-navigation-home-fill" aria-hidden="true"></span></button>' +
+      '<div class="profile-menu-user"><span class="prof-ava"><img src="' + esc(avatarOf(ud.profileIcon)) + '" alt="프로필 이미지"></span>' +
       '<div class="profile-menu-name"><div><b class="prof-nick">' + esc(ud.nickname || u.displayName || '선원') + '</b>' +
       '<button class="profile-copy" id="pfCopy" type="button" aria-label="닉네임 복사">' +
       '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div></div>' +
       '</div><button class="profile-logout" id="pfOut" type="button">로그아웃</button></div>' +
       '<div class="profile-menu-stats">' +
-      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--post" aria-hidden="true"><span class="menu-icon ic-v2-community-write-line"></span></span><span class="profile-stat-label">게시글 작성</span><b>' + (c.posts || 0) + '</b></div>' +
-      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--comment" aria-hidden="true"><span class="menu-icon ic-v2-community-reply-line"></span></span><span class="profile-stat-label">댓글 작성</span><b>' + (c.comments || 0) + '</b></div>' +
-      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--like" aria-hidden="true"><span class="menu-icon ic-v2-community-like-line"></span></span><span class="profile-stat-label">좋아요 한 글</span><b>' + (c.likes || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--post">C</span><span class="profile-stat-label">게시글 작성</span><b>' + (c.posts || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--comment">P</span><span class="profile-stat-label">댓글 작성</span><b>' + (c.comments || 0) + '</b></div>' +
+      '<div class="profile-stat-row"><span class="profile-stat-icon profile-stat-icon--like">F</span><span class="profile-stat-label">좋아요 한 글</span><b>' + (c.likes || 0) + '</b></div>' +
       '</div>' +
       '<div class="profile-menu-actions">' +
       '<button class="profile-menu-action" id="pfNotice" type="button">' +
-      '<span class="menu-icon ic-v2-navigation-alarm-line" aria-hidden="true"></span><span>알림</span><em>' + esc(noticeCount) + '</em></button>' +
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9z"/><path d="M10 21h4"/></svg><span>알림</span><em>' + esc(noticeCount) + '</em></button>' +
       '<div class="profile-menu-divider"></div>' +
-      '<button class="profile-menu-action" id="pfMy" type="button"><span class="top-menu-icon ic-v2-navigation-profile-fill" aria-hidden="true"></span><span>내 정보</span></button>' +
+      '<button class="profile-menu-action" id="pfMy" type="button">' + IC.user + '<span>내 정보</span></button>' +
       '<button class="profile-menu-action" id="pfMessages" type="button">' +
-      '<span class="menu-icon ic-v2-navigation-message-line" aria-hidden="true"></span><span>쪽지</span></button>' +
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v12H9l-5 3.5V5z"/><path d="M8 10h8M8 13h5" stroke-linecap="round"/></svg><span>쪽지</span></button>' +
       '</div>', '340px');
     pop.el.classList.add('pop--profile');
     pop.el.querySelector('#pfCopy').addEventListener('click', function () {
@@ -718,8 +522,7 @@ window.UI = (function () {
         toast('이 브라우저에서는 복사를 지원하지 않습니다.');
       }
     });
-    pop.el.querySelector('#pfAvatar').addEventListener('click', function () { closePopups(); openMyInfoPopup('profile'); });
-    pop.el.querySelector('#pfMy').addEventListener('click', function () { closePopups(); openMyInfoPopup('my-info'); });
+    pop.el.querySelector('#pfMy').addEventListener('click', function () { closePopups(); openMyInfoPopup(); });
     pop.el.querySelector('#pfOut').addEventListener('click', function () {
       closePopups();
       if (u.demo) { exitDemo(); return; }
@@ -727,7 +530,7 @@ window.UI = (function () {
     });
     pop.el.querySelector('#pfNotice').addEventListener('click', function () {
       closePopups();
-      openNotifyPopup($('btnNotify'));
+      SET_ACTIONS.notify();
     });
     pop.el.querySelector('#pfMessages').addEventListener('click', function () {
       closePopups();
@@ -761,7 +564,7 @@ window.UI = (function () {
   /* ---------- 모달 ---------- */
   function openModal(opts) {
     var back = document.createElement('div');
-    back.className = 'modal-back' + (opts.backCls ? ' ' + opts.backCls : '');
+    back.className = 'modal-back';
     back.innerHTML = '<div class="modal ' + (opts.cls || '') + '" role="dialog" aria-modal="true" aria-label="' + esc(opts.title) + '">' +
       '<div class="modal-head"><h3>' + esc(opts.title) + '</h3>' +
       '<button class="modal-x" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
@@ -786,12 +589,7 @@ window.UI = (function () {
   /* ---------- 설정 액션 ---------- */
   var SET_ACTIONS = {
     notice: function () {
-      var m = openModal({
-        title: '공지사항',
-        cls: 'modal--settings-choice modal--notice',
-        backCls: 'modal-back--settings-choice',
-        body: '<div class="skel-row"><div class="skel" style="height:14px;width:70%"></div></div><div class="skel-row"><div class="skel" style="height:14px;width:55%"></div></div>'
-      });
+      var m = openModal({ title: '공지사항', body: '<div class="skel-row"><div class="skel" style="height:14px;width:70%"></div></div><div class="skel-row"><div class="skel" style="height:14px;width:55%"></div></div>' });
       FB.getNotices().then(function (list) {
         if (!list.length) { m.body.innerHTML = '<div class="empty"><p>등록된 공지사항이 없습니다.</p></div>'; return; }
         m.body.innerHTML = list.map(function (n) {
@@ -814,19 +612,12 @@ window.UI = (function () {
     },
     notify: function () {
       var s = (userDoc() && userDoc().settings) || {};
-      var rows = [
-        ['event', '이벤트', NOTIFY_DESCRIPTIONS.event],
-        ['patch', '패치노트', NOTIFY_DESCRIPTIONS.patch],
-        ['fav', '즐겨찾기', NOTIFY_DESCRIPTIONS.fav],
-        ['comment', '댓글', NOTIFY_DESCRIPTIONS.comment]
-      ];
+      var rows = [['patch', '패치노트'], ['fav', '즐겨찾기'], ['event', '이벤트'], ['comment', '댓글']];
       var m = openModal({
         title: '알림 설정',
-        cls: 'modal--settings-choice modal--notification-settings',
-        backCls: 'modal-back--settings-choice',
         body: rows.map(function (r) {
-          var on = s[r[0]] === true;
-          return '<div class="tgl-row"><span class="tgl-copy"><b>' + r[1] + ' 알림</b><small>' + r[2] + '</small></span>' +
+          var on = s[r[0]] !== false;
+          return '<div class="tgl-row"><span>' + r[1] + ' 알림</span>' +
             '<button class="tgl' + (on ? ' on' : '') + '" data-k="' + r[0] + '" role="switch" aria-checked="' + on + '" aria-label="' + r[1] + ' 알림" type="button"><i></i></button></div>';
         }).join('')
       });
@@ -839,8 +630,7 @@ window.UI = (function () {
           var st = (userDoc() && userDoc().settings) || {};
           st[k] = on;
           saveUserPatch({ settings: st }).catch(function () { });
-           var label = rows.filter(function (r) { return r[0] === k; })[0][1];
-           updateNotificationBadge();
+          var label = rows.filter(function (r) { return r[0] === k; })[0][1];
           toast(label + ' 알림이 ' + (on ? '켜졌습니다.' : '꺼졌습니다.'), 'ok');
         });
       });
@@ -848,18 +638,16 @@ window.UI = (function () {
     theme: function () {
       var cur = document.documentElement.getAttribute('data-theme') || 'dark';
       var m = openModal({
-        title: '테마 설정',
-        cls: 'modal--settings-choice modal--theme',
-        backCls: 'modal-back--settings-choice',
-        body: '<div class="setting-choice-list">' +
-          '<button class="setting-choice' + (cur === 'light' ? ' is-on' : '') + '" data-th="light" type="button"><span class="setting-choice-icon ic-v2-control-theme-light-fill" aria-hidden="true"></span><span>라이트 모드</span></button>' +
-          '<button class="setting-choice' + (cur === 'dark' ? ' is-on' : '') + '" data-th="dark" type="button"><span class="setting-choice-icon ic-v2-control-theme-dark-fill" aria-hidden="true"></span><span>다크 모드</span></button>' +
+        title: '테마 변경',
+        body: '<div class="pick-grid">' +
+          '<button class="pick' + (cur === 'dark' ? ' is-on' : '') + '" data-th="dark" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 13.5A8.5 8.5 0 0 1 10.5 4 8.5 8.5 0 1 0 20 13.5z" stroke-linejoin="round"/></svg>다크</button>' +
+          '<button class="pick' + (cur === 'light' ? ' is-on' : '') + '" data-th="light" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5 5l1.7 1.7M17.3 17.3L19 19M19 5l-1.7 1.7M6.7 17.3L5 19" stroke-linecap="round"/></svg>라이트</button>' +
           '</div>'
       });
-      m.body.querySelectorAll('.setting-choice').forEach(function (b) {
+      m.body.querySelectorAll('.pick').forEach(function (b) {
         b.addEventListener('click', function () {
           applyTheme(b.getAttribute('data-th'));
-          m.body.querySelectorAll('.setting-choice').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+          m.body.querySelectorAll('.pick').forEach(function (x) { x.classList.toggle('is-on', x === b); });
           toast('테마가 적용되었습니다.', 'ok');
         });
       });
@@ -883,8 +671,6 @@ window.UI = (function () {
       ];
       var m = openModal({
         title: '앱 아이콘 변경',
-        cls: 'modal--settings-choice modal--app-icon',
-        backCls: 'modal-back--settings-choice',
         body: '<div class="pick-grid">' + icons.map(function (ic) {
           return '<button class="pick pick--icon' + (cur === ic[0] ? ' is-on' : '') + '" data-ic="' + ic[0] + '" type="button">' +
             '<span class="icon-prev icon-' + ic[0] + '"><img src="' + esc(ic[2]) + '" alt="" aria-hidden="true"></span><span>' + ic[1] + '</span></button>';
@@ -916,35 +702,26 @@ window.UI = (function () {
       });
     },
     lang: function () {
-      var options = [
-        ['ko', '한국어'],
-        ['en', 'English'],
-        ['ja', '日本語'],
-        ['zh-CN', '简体中文'],
-        ['zh-TW', '繁體中文']
-      ];
       var m = openModal({
-        title: '언어 설정',
-        cls: 'modal--settings-choice modal--language',
-        backCls: 'modal-back--settings-choice',
-        body: '<div class="setting-choice-list">' + options.map(function (it) {
-          return '<button class="setting-choice' + (LANG === it[0] ? ' is-on' : '') + '" data-lg="' + it[0] + '" type="button"><span>' + it[1] + '</span></button>';
-        }).join('') + '</div>'
+        title: '언어 변경',
+        body: '<div class="pick-grid">' +
+          '<button class="pick' + (LANG === 'ko' ? ' is-on' : '') + '" data-lg="ko" type="button">한국어</button>' +
+          '<button class="pick' + (LANG === 'en' ? ' is-on' : '') + '" data-lg="en" type="button">English</button></div>'
       });
-      m.body.querySelectorAll('.setting-choice').forEach(function (b) {
+      m.body.querySelectorAll('.pick').forEach(function (b) {
         b.addEventListener('click', function () {
           LANG = b.getAttribute('data-lg');
           store.set('lang', LANG);
           applyI18n(); buildDeskNav(); buildTabs(); setActiveNav(activeNav);
-          m.body.querySelectorAll('.setting-choice').forEach(function (x) { x.classList.toggle('is-on', x === b); });
-          toast(b.textContent + (LANG === 'en' ? ' selected.' : '로 변경되었습니다.'), 'ok');
+          m.body.querySelectorAll('.pick').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+          toast(LANG === 'ko' ? '한국어로 변경되었습니다.' : 'Language set to English.', 'ok');
         });
       });
     }
   };
 
   /* ---------- 프로필 설정 ---------- */
-  function openMyInfoPopup(initialPanel) {
+  function openMyInfoPopup() {
     var u = currentUser();
     if (!u) return;
     var ud = userDoc() || {};
@@ -952,27 +729,22 @@ window.UI = (function () {
     if (isNaN(initialIcon)) initialIcon = 0;
     var initialNick = ud.nickname || u.displayName || '선원';
     var draftIcon = initialIcon;
-    var isGoogle = (u.providerData || []).some(function (p) { return p.providerId === 'google.com'; });
-    var authMethod = isGoogle ? '구글' : '이메일';
-    var memberId = ud.memberNumber || ud.memberId || ud.uid || u.uid;
 
     var m = openModal({
-      title: '정보 설정',
+      title: '프로필 설정',
       cls: 'profile-settings-modal',
       body:
         '<div class="profile-settings-shell">' +
         '<aside class="profile-settings-nav">' +
-        '<button class="profile-nav-item is-on" type="button" data-profile-panel="profile" aria-selected="true">프로필 정보</button>' +
-        '<button class="profile-nav-item" type="button" data-profile-panel="my-info" aria-selected="false">내 정보</button>' +
+        '<button class="profile-nav-item is-on" type="button">기본 정보</button>' +
         '</aside>' +
         '<section class="profile-settings-content">' +
-        '<div class="profile-panel" id="profileInfoPanel">' +
         '<div class="profile-settings-grid">' +
         '<div class="profile-preview-card">' +
         '<div class="profile-cover"><img id="profileSettingCover" src="' + esc(avatarOf(draftIcon)) + '" alt=""></div>' +
         '<div class="profile-card-info">' +
-        '<div class="profile-card-avatar">' +
-        '<img id="profileSettingAvatar" src="' + esc(avatarOf(draftIcon)) + '" alt="프로필 이미지"></div>' +
+        '<button class="profile-card-avatar" id="profileSettingAvatarBtn" type="button" aria-label="프로필 이미지 등록">' +
+        '<img id="profileSettingAvatar" src="' + esc(avatarOf(draftIcon)) + '" alt="프로필 이미지"></button>' +
         '<b class="profile-card-name" id="profileSettingName">' + esc(initialNick) + '</b>' +
         '<div class="profile-card-stats">' +
         '<div><b>' + ((ud.counts && ud.counts.posts) || 0) + '</b><small>게시글</small></div>' +
@@ -991,18 +763,9 @@ window.UI = (function () {
         '<span class="field-tooltip" id="nicknameHelp" role="tooltip">• 한글, 영어, 숫자만 사용할 수 있어요.<br>• 20자까지 입력할 수 있어요.<br>• 72시간마다 한 번만 변경할 수 있어요.</span></label>' +
         '<div class="profile-input-wrap"><input id="profileNickname" maxlength="20" value="' + esc(initialNick) + '" autocomplete="nickname"><button id="profileNicknameClear" type="button" aria-label="닉네임 지우기">×</button></div>' +
         '</div>' +
-        '</div></div></div>' +
-        '<div class="profile-panel my-info-panel" id="myInfoPanel" hidden>' +
-        '<div class="my-info-card">' +
-        '<h4>기본정보</h4>' +
-        '<div class="my-info-row"><span>로그인 방식</span><b>' + authMethod + '</b></div>' +
-        '<div class="my-info-row"><span>아이디</span><b class="my-info-value">' + esc(u.email || '이메일 없음') + '</b></div>' +
-        '<div class="my-info-row"><span>비밀번호</span><button class="my-info-action" id="myInfoPassword" type="button">변경</button></div>' +
-        '<div class="my-info-row"><span>회원번호</span><b class="my-info-value my-info-member-id" title="' + esc(memberId) + '">' + esc(memberId) + '</b></div>' +
-        '</div>' +
-        '<div class="my-info-delete-wrap"><button class="my-info-delete" id="myInfoDelete" type="button">회원탈퇴 <span aria-hidden="true">›</span></button></div>' +
-        '</div>' +
-        '</section></div>' +
+        '<div class="profile-field profile-email-field"><label>로그인 이메일</label><div class="profile-readonly">' + esc(u.email || '이메일 없음') + '</div></div>' +
+        '<button class="profile-delete-link" id="profileDelete" type="button">회원 탈퇴</button>' +
+        '</div></div></section></div>' +
         '<div class="profile-settings-footer">' +
         '<button class="btn btn--ghost" id="profileClose" type="button">닫기</button>' +
         '<button class="btn btn--gold" id="profileSave" type="button" disabled>저장</button>' +
@@ -1014,8 +777,6 @@ window.UI = (function () {
     var profileName = m.body.querySelector('#profileSettingName');
     var coverImg = m.body.querySelector('#profileSettingCover');
     var avatarImg = m.body.querySelector('#profileSettingAvatar');
-    var profilePanel = m.body.querySelector('#profileInfoPanel');
-    var myInfoPanel = m.body.querySelector('#myInfoPanel');
 
     function currentNick() { return nickInput.value.trim(); }
     function isDirty() { return draftIcon !== initialIcon || currentNick() !== initialNick; }
@@ -1030,45 +791,8 @@ window.UI = (function () {
       avatarImg.src = src;
       syncDraft();
     }
-    function selectPanel(panel) {
-      var showProfile = panel === 'profile';
-      profilePanel.hidden = !showProfile;
-      myInfoPanel.hidden = showProfile;
-      m.body.querySelectorAll('.profile-nav-item').forEach(function (item) {
-        var active = item.getAttribute('data-profile-panel') === panel;
-        item.classList.toggle('is-on', active);
-        item.setAttribute('aria-selected', String(active));
-      });
-      saveBtn.hidden = !showProfile;
-    }
-    function confirmAccountDelete() {
-      var cf = openModal({
-        title: '탈퇴 확인',
-        body: '<p style="font-size:14px;line-height:1.7">정말 탈퇴하시겠습니까?<br><b style="color:var(--red)">계정과 Firebase 사용자 데이터가 삭제되며 복구할 수 없습니다.</b></p>' +
-          '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn--ghost btn--block" id="delNo" type="button">취소</button>' +
-          '<button class="btn btn--danger btn--block" id="delYes" type="button">탈퇴하기</button></div>'
-      });
-      cf.body.querySelector('#delNo').addEventListener('click', cf.close);
-      cf.body.querySelector('#delYes').addEventListener('click', function () {
-        if (u.demo) {
-          cf.close(); m.close(); exitDemo(); return;
-        }
-        var user = FB.auth().currentUser;
-        if (!user) { cf.close(); return; }
-        user.delete().then(function () {
-          cf.close(); m.close();
-          toast('탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
-        }).catch(function (e) {
-          cf.close();
-          toast(FB.errMsg(e) + ' — 보안 정책상 최근 로그인 후 다시 시도해 주세요.', 'err');
-        });
-      });
-    }
 
     m.body.querySelector('#profileClose').addEventListener('click', m.close);
-    m.body.querySelectorAll('.profile-nav-item').forEach(function (item) {
-      item.addEventListener('click', function () { selectPanel(item.getAttribute('data-profile-panel')); });
-    });
     nickInput.addEventListener('input', syncDraft);
     m.body.querySelector('#profileNicknameClear').addEventListener('click', function () {
       nickInput.value = '';
@@ -1092,31 +816,32 @@ window.UI = (function () {
     m.body.querySelector('#profileImageRegister').addEventListener('click', function () {
       openProfileImagePicker(draftIcon, function (index) { updateDraftIcon(index); });
     });
-    m.body.querySelector('#myInfoDelete').addEventListener('click', confirmAccountDelete);
-    m.body.querySelector('#myInfoPassword').addEventListener('click', function () {
-      if (u.demo) {
-        toast('데모 모드에서는 비밀번호를 변경할 수 없습니다.');
-        return;
-      }
-      if (isGoogle) {
-        toast('구글 계정의 비밀번호는 Google 계정에서 변경해 주세요.');
-        return;
-      }
-      if (!u.email) {
-        toast('비밀번호를 변경할 이메일 정보가 없습니다.', 'err');
-        return;
-      }
-      if (!FB.ready) {
-        toast('Firebase가 준비 중입니다. 잠시 후 다시 시도해 주세요.', 'err');
-        return;
-      }
-      FB.auth().sendPasswordResetEmail(u.email).then(function () {
-        toast('비밀번호 변경 메일을 보냈습니다. 메일함을 확인해 주세요.', 'ok');
-      }).catch(function (e) {
-        toast(FB.errMsg(e), 'err');
+    m.body.querySelector('#profileSettingAvatarBtn').addEventListener('click', function () {
+      openProfileImagePicker(draftIcon, function (index) { updateDraftIcon(index); });
+    });
+    m.body.querySelector('#profileDelete').addEventListener('click', function () {
+      var cf = openModal({
+        title: '탈퇴 확인',
+        body: '<p style="font-size:14px;line-height:1.7">정말 탈퇴하시겠습니까?<br><b style="color:var(--red)">계정과 Firebase 사용자 데이터가 삭제되며 복구할 수 없습니다.</b></p>' +
+          '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn--ghost btn--block" id="delNo" type="button">취소</button>' +
+          '<button class="btn btn--danger btn--block" id="delYes" type="button">탈퇴하기</button></div>'
+      });
+      cf.body.querySelector('#delNo').addEventListener('click', cf.close);
+      cf.body.querySelector('#delYes').addEventListener('click', function () {
+        if (u.demo) {
+          cf.close(); m.close(); exitDemo(); return;
+        }
+        var user = FB.auth().currentUser;
+        if (!user) { cf.close(); return; }
+        user.delete().then(function () {
+          cf.close(); m.close();
+          toast('탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
+        }).catch(function (e) {
+          cf.close();
+          toast(FB.errMsg(e) + ' — 보안 정책상 최근 로그인 후 다시 시도해 주세요.', 'err');
+        });
       });
     });
-    selectPanel(initialPanel === 'my-info' ? 'my-info' : 'profile');
   }
 
   function openProfileImagePicker(currentIcon, onRegister) {
@@ -1360,22 +1085,18 @@ window.UI = (function () {
             FB.ensureUserDoc(u).then(function () { return loadUserDoc(); }).then(function () {
               loadFavs();
               loadCharCache();
-              loadNotifications(true);
               notifyUser();
             }).catch(function () { notifyUser(); });
           } else if (!isDemo()) {
             _userDoc = null;
             favCache = { chars: [], supports: [] };
-             notificationState = { uid: null, items: [], loaded: true, loading: null };
             notifyUser();
           } else {
-        loadFavs();
             notifyUser();
           }
         });
       } else if (isDemo()) {
         loadUserDoc();
-        loadNotifications(true);
         notifyUser();
       }
     });
