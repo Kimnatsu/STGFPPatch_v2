@@ -179,7 +179,7 @@
 /* 즐겨찾기 별 — 우측 상단 모서리, 패딩 없음 */
 .char-fav-btn{
   position:absolute;top:0;right:0;z-index:3;width:28px;height:28px;border-radius:0 0 0 50%;border:none;cursor:pointer;
-  font-size:23px;line-height:1;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 5px 0 0;
+  font-size:23px;line-height:1;display:flex;align-items:flex-start;justify-content:flex-end;padding:0;
   color:#dfe8f2;background:rgba(6,16,28,.55);text-shadow:0 1px 3px rgba(0,0,0,.6);transition:.2s;
 }
 .char-fav-btn > i[class^="ic-v2"],
