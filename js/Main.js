@@ -887,7 +887,7 @@
     }).join('');
     UI.openModal({
       cls: 'pvp-modal',
-      title: name,
+      title: 'PvP 밸런스 패치',
       body:
       '<div class="pvp-top">' +
       '<span class="pvp-ava"><img src="' + UI.esc(img) + '" alt="" onerror="this.style.display=\'none\'"></span>' +
