@@ -308,6 +308,9 @@ window.UI = (function () {
   /* ---------- 즐겨찾기 ---------- */
   var favCache = { chars: [], supports: [] };
   var charCache = { chars: [], supports: [], loaded: false };
+  function emitFavChanged() {
+    document.dispatchEvent(new CustomEvent('fpp:fav-changed'));
+  }
   
   function loadCharCache() {
     if (charCache.loaded) return Promise.resolve();
@@ -334,13 +337,25 @@ window.UI = (function () {
   
   function loadFavs() {
     var u = currentUser();
-    if (!u) { favCache = { chars: [], supports: [] }; return Promise.resolve(favCache); }
+    if (!u) {
+      favCache = { chars: [], supports: [] };
+      emitFavChanged();
+      return Promise.resolve(favCache);
+    }
     if (u.demo) {
       var d = demoData() || {};
       favCache = { chars: d.favChars || [], supports: d.favSupports || [] };
+      emitFavChanged();
       return Promise.resolve(favCache);
     }
-    return FB.getFavs(u.uid).then(function (f) { favCache = f; return f; }).catch(function () { return favCache; });
+    return FB.getFavs(u.uid).then(function (f) {
+      favCache = f;
+      emitFavChanged();
+      return f;
+    }).catch(function () {
+      emitFavChanged();
+      return favCache;
+    });
   }
   function isFav(kind, id) {
     var arr = kind === 'support' ? favCache.supports : favCache.chars;
@@ -1354,6 +1369,7 @@ window.UI = (function () {
              notificationState = { uid: null, items: [], loaded: true, loading: null };
             notifyUser();
           } else {
+        loadFavs();
             notifyUser();
           }
         });
