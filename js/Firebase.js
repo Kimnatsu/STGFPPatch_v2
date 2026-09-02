@@ -91,6 +91,34 @@ window.FB = (function () {
     return out;
   }
   function col(name) { return db.collection(name); }
+  var VIEW_COLLECTIONS = { patch: 'patchViews', board: 'boardViews', event: 'eventViews' };
+  function viewCol(type) {
+    return VIEW_COLLECTIONS[type] ? col(VIEW_COLLECTIONS[type]) : null;
+  }
+  function loadViewCounts(type, items) {
+    var vc = viewCol(type);
+    if (!vc || !items.length) return Promise.resolve(items);
+    return Promise.all(items.map(function (item) {
+      if (!item.docId || String(item.docId).indexOf('local_') === 0) return Promise.resolve();
+      return vc.doc(String(item.docId)).get().then(function (snap) {
+        if (snap.exists) item.viewCount = Number(snap.data().count) || 0;
+      }).catch(function () { });
+    })).then(function () { return items; });
+  }
+  function bumpViewCount(type, id) {
+    var vc = viewCol(type);
+    if (!ready) return Promise.reject(new Error('Firebase 미준비'));
+    if (!vc || !id || String(id).indexOf('local_') === 0) return Promise.resolve(null);
+    var ref = vc.doc(String(id));
+    return db.runTransaction(function (tx) {
+      return tx.get(ref).then(function (snap) {
+        var current = snap.exists ? (Number(snap.data().count) || 0) : 0;
+        var next = current + 1;
+        tx.set(ref, { count: next }, { merge: true });
+        return next;
+      });
+    });
+  }
   function errMsg(e) {
     if (!e) return '알 수 없는 오류가 발생했습니다.';
     var c = e.code || '';
@@ -194,7 +222,7 @@ window.FB = (function () {
   function getPatchNotes() {
     if (!ready) return Promise.reject(new Error('Firebase 미준비'));
     return col('patchNotes').get().then(function (s) {
-      return mapDocs(s, function (d, id) {
+      var items = mapDocs(s, function (d, id) {
         return {
           docId: id,
           title: pick(d, 'title') || '제목 없음',
@@ -206,6 +234,7 @@ window.FB = (function () {
           viewCount: pick(d, 'viewCount', 'views', 'view', 'hitCount', 'hits') || 0
         };
       }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+      return loadViewCounts('patch', items);
     });
   }
   function getNotices() {
@@ -244,7 +273,7 @@ window.FB = (function () {
   function getEvents() {
     if (!ready) return Promise.reject(new Error('Firebase 미준비'));
     return col('events').get().then(function (s) {
-      return mapDocs(s, function (d, id) {
+      var items = mapDocs(s, function (d, id) {
         var st = String(pick(d, 'status', 'state') || '').toLowerCase();
         var status = (st === 'ing' || st === '진행중' || st === 'on' || st === 'active') ? 'ing' : (st === 'end' || st === '종료' || st === '종료됨' ? 'end' : 'ing');
         return {
@@ -263,6 +292,7 @@ window.FB = (function () {
           viewCount: pick(d, 'viewCount', 'views', 'view', 'hitCount', 'hits') || 0
         };
       }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+      return loadViewCounts('event', items);
     });
   }
   /* 로컬 임시 게시글 — 원격 쓰기 실패 시 localStorage에 보관했다가 목록에 합친다 */
@@ -290,8 +320,9 @@ window.FB = (function () {
           viewCount: pick(d, 'viewCount', 'views', 'view', 'hitCount', 'hits') || 0
         };
       });
-      return remote.concat(localBoards())
+      var items = remote.concat(localBoards())
         .sort(function (a, b) { return (b.ts || 0) - (a.ts || 0) || String(b.date).localeCompare(String(a.date)); });
+      return loadViewCounts('board', items);
     }).catch(function (e) {
       var lb = localBoards();
       if (lb.length) return lb;
@@ -685,6 +716,7 @@ window.FB = (function () {
     getBanners: getBanners, getEvents: getEvents, getBoards: getBoards, addBoard: addBoard, deleteBoard: deleteBoard, updateBoard: updateBoard,
     getTips: getTips, addTip: addTip, updateTip: updateTip, deleteTip: deleteTip, voteTip: voteTip,
     getLikeDoc: getLikeDoc, toggleGenericLike: toggleGenericLike, toggleBoardLike: toggleBoardLike,
+    bumpViewCount: bumpViewCount,
     getComments: getComments, addComment: addComment, deleteComment: deleteComment,
     getUserDoc: getUserDoc, ensureUserDoc: ensureUserDoc, updateUserDoc: updateUserDoc,
     getFavs: getFavs, bumpUserLikeCount: bumpUserLikeCount, bumpUserCommentCount: bumpUserCommentCount,

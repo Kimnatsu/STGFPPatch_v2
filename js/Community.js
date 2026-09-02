@@ -16,6 +16,22 @@
       '<i class="ic-v2-community-number-of-view-line" aria-hidden="true"></i>' +
       '<span>' + UI.esc(value) + '</span></span>';
   }
+  function trackView(type, item, root) {
+    if (!item || !item.docId || String(item.docId).indexOf('local_') === 0 || !FB.bumpViewCount) return;
+    var key = 'fpp_view_' + type + '_' + item.docId;
+    var seen = false;
+    try { seen = localStorage.getItem(key) === '1'; } catch (e) { }
+    if (seen) return;
+    FB.bumpViewCount(type, item.docId).then(function (count) {
+      if (count == null) return;
+      try { localStorage.setItem(key, '1'); } catch (e) { }
+      item.viewCount = count;
+      root.querySelectorAll('.view-count').forEach(function (el) {
+        el.setAttribute('aria-label', '조회수 ' + count);
+        if (el.lastElementChild) el.lastElementChild.textContent = count;
+      });
+    }).catch(function () { });
+  }
 
   function loadAll() {
     if (S.loaded) return Promise.resolve();
@@ -205,6 +221,7 @@
       }).join('') + '</ul></div></div>';
     bindDetail(el, p, 'patch');
     bindView(el, 'patch');
+    trackView('patch', p, el);
     el.querySelectorAll('[data-back]').forEach(function (b) { b.addEventListener('click', function () { location.hash = '#patch'; }); });
     guardImages(el);
   }
@@ -405,6 +422,7 @@
       }).join('') + '</ul></div></div>';
     bindDetail(el, b, 'board');
     bindView(el, 'board');
+    trackView('board', b, el);
     el.querySelectorAll('[data-back]').forEach(function (x) { x.addEventListener('click', function () { location.hash = '#board'; }); });
     
     /* 편집/삭제 버튼 이벤트 바인딩 */
@@ -560,6 +578,7 @@
       }).join('') + '</ul></div></div>';
     bindDetail(el, e, 'event');
     bindView(el, 'event');
+    trackView('event', e, el);
     el.querySelectorAll('[data-back]').forEach(function (x) { x.addEventListener('click', function () { location.hash = '#event'; }); });
     renderComments('event', e.docId);
     guardImages(el);
