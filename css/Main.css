@@ -82,7 +82,10 @@
 }
 .ev-nav--prev{left:0}
 .ev-nav--next{right:0}
-.ev-nav .ic-v2{font-size:26px;line-height:1}
+.ev-nav .ic-v2{
+  width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:40px;line-height:1;
+}
 .ev-nav:hover{color:var(--gold);border-color:var(--gold);transform:translateY(-50%) scale(1.08)}
 
 /* ===== 캐릭터 탭 (우측 끝 정렬) ===== */
